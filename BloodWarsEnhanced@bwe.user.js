@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2014.07.11
+// @version		2014.07.12
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2014, Ecilam
@@ -943,7 +943,7 @@ function createGrpTable(grId){
 			'tdf023':['td',{'class':'BWEbold BWELeft','id':'BWEgrp'+grId+'_foot23','colspan':'2'},,,'trf02']
 			},
 			grpNode = IU._CreateElements(grpIU);
-		var grp = LS._GetVar('BWE:G',{'A':[],'B':[]});
+		var grp = LS._GetVar('BWE:G:'+ID,{'A':[],'B':[]});
 		for (var i=0;i<grp[grId].length;i++){
 			appendGrpRow(grpNode['tbody'],grp[grId][i],grId);
 			}
@@ -954,7 +954,7 @@ function createGrpTable(grId){
 		}
 	}
 function checkGrp(e,i){// i[0] = name, i[1] = id
-	var grp = LS._GetVar('BWE:G',{'A':[],'B':[]}),
+	var grp = LS._GetVar('BWE:G:'+ID,{'A':[],'B':[]}),
 		grId = grp['A'].indexOf(i[0])>-1?'A':grp['B'].indexOf(i[0])>-1?'B':'',
 		tri = PREF._Get('grp','tri');
 	if (grId!=''){
@@ -976,7 +976,7 @@ function checkGrp(e,i){// i[0] = name, i[1] = id
 		grp[i[1]].push(i[0]);
 		grId = i[1];
 		}
-	LS._SetVar('BWE:G',grp);
+	LS._SetVar('BWE:G:'+ID,grp);
 	var checkA = DOM._GetFirstNode("//input[@id='"+escape('BWEcheckA_'+i[0])+"']"),
 		checkB = DOM._GetFirstNode("//input[@id='"+escape('BWEcheckB_'+i[0])+"']");
 	if (checkA!=null) checkA.checked = grId=='A'?true:false;
@@ -1192,7 +1192,7 @@ function CreateTable(header,list,index){
 							}
 						}
 					else if (col==21){
-						var grp = LS._GetVar('BWE:G',{'A':[],'B':[]});
+						var grp = LS._GetVar('BWE:G:'+ID,{'A':[],'B':[]});
 						IU._CreateElements({'checkA':['input',{'type':'checkbox','id':escape('BWEcheckA_'+name),
 										'checked':(grp['A'].indexOf(name)>-1)},,{'change':[checkGrp,[name,'A']]},newTD],
 									'checkB':['input',{'type':'checkbox','id':escape('BWEcheckB_'+name),
@@ -1656,7 +1656,7 @@ console.debug('BWEstart: %o %o',player,IDs);
 								if (line==7) newTR['td2'].textContent = L._Get('sNivFormat',niv,pts);
 								else if (line==8){
 									var show = PREF._Get('grp','sh')==1,
-										grp = LS._GetVar('BWE:G',{'A':[],'B':[]}),
+										grp = LS._GetVar('BWE:G:'+ID,{'A':[],'B':[]}),
 										grpIU = {'tr0':['tr',{'style':'display:'+(show?'table-row;':'none;')},,,newTable['tbody']],
 												'td00':['td',{'id':'BWEgrpA','colspan':'2'},,,'tr0'],
 												'tr1':['tr',{'style':'display:'+(show?'table-row;':'none;')},,,newTable['tbody']],
