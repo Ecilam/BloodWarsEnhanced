@@ -1,5 +1,5 @@
 ###DESCRIPTION
-Ensemble de Userscripts pour [Blood Wars](http://www.fr.bloodwars.net) où vous incarnez un vampire dans un monde post-apocalyptique :
+Ensemble de Userscripts améliorant le jeu [Blood Wars](http://www.fr.bloodwars.net) où vous incarnez un vampire dans un monde post-apocalyptique :
 * [BloodWarsEnchanced](https://github.com/Ecilam/BloodWarsEnhanced) (celui-ci)
 * [BloodWarsAnalyseRC](https://github.com/Ecilam/BloodWarsAnalyseRC)
 * [BloodWarsSpyData](https://github.com/Ecilam/BloodWarsSpyData)
