@@ -26,12 +26,12 @@ Pour les bugs, GitHub propose une section [Issues](https://github.com/Ecilam/Blo
 * Multicompte supporté (voir réglement du jeu).
 
 Les Préférences du jeu vous proposent 2 menus supplémentaires :
-* **BWE - OPTIONS :**permet de modifier le comportement des fonctions ci-dessus.
-* **BWE - BASE DE DONNÉES :** permet de consulter/supprimer les données stockées. **A utiliser avec précaution !!**
+* **BWE - OPTIONS :** permet de modifier le comportement des fonctions ci-dessus.
+* **BWE - BASE DE DONNÉES :** permet de consulter/supprimer les données stockées. A utiliser avec précaution !!
 
 ###INFORMATIONS
-* **1ère utilisation :**un message vous rappellera de consulter la Salle du Trône pour que le script puisse récupérer l'IUD du personnage afin de pouvoir fonctionner.
-* **Données :**les données sont stockées avec LOCALSTORAGE.
+* **1ère utilisation :** un message vous rappellera de consulter la Salle du Trône pour que le script puisse récupérer l'IUD du personnage afin de pouvoir fonctionner.
+* **Données :** les données sont stockées avec LOCALSTORAGE.
 * **Historique des combats :** affiche le temps passé depuis votre dernière attaque sur cette cible et donne le résultat des dernières rencontres sur cette dernière (gris= raté, vert = victoire, orange = match nul, rouge = défaite). Une "*" indique 2 attaques effectuées sur cette cible dans la même journée (le script prenant en compte l'heure de fin de l'embuscade, avec le temps de déplacement il est possible que l'attaque ait été lancée avant minuit).
 * **Aide aux embuscades :** fait clignoter l'icône de combat suivant les critères choisis (voir les Préférences BWE - OPTIONS).
 * **Aide à la création de Groupe :** permet de constituer 2 groupes pour une confrontation à venir de type siège organisé ou autres. A noter que, sur le Profil, 'Groupe' est cliquable pour permettre d'afficher/masquer les listes.<br>Petite astuce : le copier/coller peut être utilisé pour envoyer la liste à un autre joueur.
