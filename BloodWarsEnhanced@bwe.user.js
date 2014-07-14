@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2014.07.12
+// @version		2014.07.14
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2014, Ecilam
@@ -427,11 +427,11 @@ var L = (function(){
 			["Stoły","Twój Profil","Inne Profile","Widok na miasto","Twój Klan","Inne Klany","Lista Klanów","Ranking",
 			"Wiadomości","Recepcja","Zabezpieczenie","Wysyłanie",
 			"Historia","Główny","- Różny","- Charakterystyka","- Zasoby"]],
-		"sTitresDiv": [["Tri liste des amis","Total des pierres","Historique : nombre de lignes","Historique : collecte des données",
+		"sTitresDiv": [["Afficher/Masquer les descriptions des clans","Tri liste des amis","Total des pierres","Historique : nombre de lignes","Historique : collecte des données",
 			"Aide aux embuscades :","+ Niveau","+ Classement","- Minimum","- Maximum","- Ecart inférieur","- Ecart supérieur"],
-			["Sort list of friends","Total stones","History: number of lines","History : data collection",
+			["Show/Hide descriptions clans","Sort list of friends","Total stones","History: number of lines","History : data collection",
 				"Help for ambushes :","Level","Ranking","- Minimum","- Maximum","- Gap lower","- Gap higher"],
-			["Sortuj listę znajomych","Całkowitej kamienie","Historia: liczba linii","Historia: zbieranie danych",
+			["Pokaż/Ukryj opisy klany","Sortuj listę znajomych","Całkowitej kamienie","Historia: liczba linii","Historia: zbieranie danych",
 				"Pomoc dla zasadzki :","Poziom","Ranking","- Minimalny","- Maksymalny","- luka niższy","- luka wyższa"]],
 		"sDefaut":["Par défaut","By default","Zaocznie"],
 		"sAlertMsg":
@@ -640,7 +640,7 @@ var PREF = (function(){
 		// Aide Embucasde
 		'AE':{'sh':0,'nMin':'','nMax':'','aMin':'','aMax':'','cMin':'','cMax':'','acMin':'','acMax':''},
 		// Divers : stones, nbre de ligne du log,collecte log
-		'div':{'chSt':1,'nbLo':4,'chLo':1}
+		'div':{'chDe':1,'chSt':1,'nbLo':4,'chLo':1}
 		};
 	var ID = null, prefs = {};
 	return {
@@ -1095,9 +1095,9 @@ function CreateTable(header,list,index){
 			// mise à jour des données
 			var oldTR = list.snapshotItem(j),
 				newTR = newBody.appendChild(oldTR.cloneNode(false)),
-				nameSearch = (index=='pTownview'||index=='pRank')?".//td[2]/a":((index=='pOAliance'||index=='pAliance')?".//td[1]/a":null),
-				name = nameSearch!=null?DOM._GetFirstNodeTextContent(nameSearch,null,oldTR):null;
-			if (name!=null){
+				nameSearch = index=='pTownview'?".//td[2]/a":index=='pRank'?".//td[2]/a/b":(index=='pOAliance'||index=='pAliance')?".//td[1]/a":null,
+				name = (nameSearch!=null?DOM._GetFirstNodeTextContent(nameSearch+'/text()','',oldTR):'').trim();
+			if (name!=''){
 				var value = LS._GetVar('BWE:P:'+name,{});
 				if (index=='pTownview'||index=='pRank'){
 					var pts = DOM._GetFirstNodeTextContent(".//td["+(index=='pTownview'?4:8)+"]",null,oldTR),
@@ -1136,7 +1136,7 @@ function CreateTable(header,list,index){
 						}
 					if (col==24){
 						newTD.setAttribute('width','18px');
-						if (j>=0&&name!=null&&PREF._Get('AE','sh')==1){
+						if (j>=0&&name!=''&&PREF._Get('AE','sh')==1){
 							var	img = DOM._GetFirstNode(".//img",newTD);
 							if (img!=null&&img.src.indexOf('/0.gif')!=-1){
 								var value = LS._GetVar('BWE:P:'+name,{});
@@ -1192,22 +1192,25 @@ function CreateTable(header,list,index){
 							}
 						}
 					else if (col==21){
-						var grp = LS._GetVar('BWE:G:'+ID,{'A':[],'B':[]});
-						IU._CreateElements({'checkA':['input',{'type':'checkbox','id':escape('BWEcheckA_'+name),
-										'checked':(grp['A'].indexOf(name)>-1)},,{'change':[checkGrp,[name,'A']]},newTD],
-									'checkB':['input',{'type':'checkbox','id':escape('BWEcheckB_'+name),
-										'checked':(grp['B'].indexOf(name)>-1)},,{'change':[checkGrp,[name,'B']]},newTD]});
+						if (name==''){newTD.textContent = '-';}
+						else{
+							var grp = LS._GetVar('BWE:G:'+ID,{'A':[],'B':[]});
+							IU._CreateElements({'checkA':['input',{'type':'checkbox','id':escape('BWEcheckA_'+name),
+											'checked':(grp['A'].indexOf(name)>-1)},,{'change':[checkGrp,[name,'A']]},newTD],
+										'checkB':['input',{'type':'checkbox','id':escape('BWEcheckB_'+name),
+											'checked':(grp['B'].indexOf(name)>-1)},,{'change':[checkGrp,[name,'B']]},newTD]});
+							}
 						}
 					else if (col==22){
 						newTD.textContent = _Exist(value)&&_Exist(value['S'])?value['S']:'-';
 						newTD.className = 'BWEMiddle '+(_Exist(value)&&_Exist(value['S'])?value['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF':'');
 						}
 					else if (col==23){
-						if (name==null) newTD.textContent = '-';
+						if (name=='') newTD.textContent = '-';
 						else CreateHistory(ID,name,newTD);
 						}
 					else if (col==25){
-						if (name==null) newTD.textContent = '-';
+						if (name=='') newTD.textContent = '-';
 						else CreateHistory(name,ID,newTD);
 						}
 					}
@@ -1374,59 +1377,57 @@ function setMenuOptions(e){
 	var result = DOM._GetNodes(".//a", nodeOptions);
 	for (var i=0; i<result.snapshotLength; i++) result.snapshotItem(i).className = '';
 	nodeTitle['2'].className = 'active';
-	var content = DOM._GetFirstNode("./following-sibling::div[@class='hr720']/following-sibling::*",nodeOptions),
-		content2 = DOM._GetFirstNode("./following-sibling::div[@class='hr720']/following-sibling::script",nodeOptions);
-	if (content!=null){
-		var menuIU = {
-			'menudiv':['div',{'align':'center','style':'margin-top: 15px;'}],
-			'div1':['div',,['BWE : '],,'menudiv'],
-			'a1':['a',{'href':'https://github.com/Ecilam/BloodWarsEnhanced','TARGET':'_blank'},[((typeof(GM_info)=='object')?GM_info.script.version:'?')],,'div1'],
-			'br2':['br',,,,'menudiv'],
-			'table0':['table',{'style':'width:100%;','class':'BWEMenu'},,,'menudiv'],
-			'tr0_0':['tr',,,,'table0'],
-			'td0_0_0':['td',{'style':'vertical-align:top;'},,,'tr0_0'],
-			'table1':['table',{'style':'width:80%;','class':'BWEMenu'},,,'td0_0_0'],
-			'thead1':['thead',,,,'table1'],
-			'tr1_0':['tr',{'class':'tblheader'},,,'thead1'],
-			'td1_0_0':['td',{'class':'BWELeft','colspan':'3'},,,'tr1_0'],
-			'help1':['img',{'class':'BWEHelp','src':'/gfx/hint2.png','onmouseout':'nd();','onmouseover':"return overlib('"+L._Get("sInfoMsg")+"',HAUTO,WRAP);"},,,'td1_0_0'],
-			'texte1':['span',{'class':'BWELeft'},[L._Get("sTitleList")],,'td1_0_0'],
-			'select1':['select',{'class':'combobox','id':'liste'},,{'change':[createColList]},'td1_0_0'],
-			'tbody1':['tbody',,,,'table1'],
-			'td0_0_1':['td',{'style':'vertical-align:top;'},,,'tr0_0'],
-			'table2':['table',{'style':'width:80%;','class':'BWEMenu'},,,'td0_0_1'],
-			'thead2':['thead',,,,'table2'],
-			'tr2_0':['tr',{'class':'tblheader'},,,'thead2'],
-			'td2_0_0':['td',{'class':'BWELeft','colspan':'3'},[L._Get("sTitleDivers")],,'tr2_0'],
-			'tbody2':['tbody',,,,'table2'],
-			'br3':['br',,,,'menudiv'],
-			'reset':['input',{'class':'button','type':'button','value':L._Get("sDefaut")},,{'click':[razPrefs]},'menudiv']
-			},
-			nodeMenu = IU._CreateElements(menuIU),
-			// n°titre du groupe ou Array:[n°titre(cf sTitresList),nom de la liste]
-			menuList = [[0,[[1,'pOProfile'],[2,'pProfile'],[3,'pTownview'],[4,'pOAliance'],[5,'pAliance'],[6,'pAlianceList'],[7,'pRank']]],
-					[8,[[9,'pMsgList'],[10,'pMsgSaveList'],[11,'pMsgSendList']]],
-					[12,[[13,'hlog'],[14,'hdiv'],[15,'hch'],[16,'hres']]]],
-			// Array:[type,n°titre,array:['ensemble','key']] 
-			menuDiv = [["check",0,['pMsgFriendList','sh']],["check",1,['div','chSt']],["inputN",2,['div','nbLo']],["check",3,['div','chLo']],["check",4,['AE','sh']],
-					["",5],["inputN",7,['AE','nMin']],["inputN",8,['AE','nMax']],["inputN",9,['AE','aMin']],["inputN",10,['AE','aMax']],
-					["",6],["inputN",7,['AE','cMin']],["inputN",8,['AE','cMax']],["inputN",9,['AE','acMin']],["inputN",10,['AE','acMax']]];
-		// Partie Liste
-		createList(menuList,nodeMenu['select1']);
-		createColList();
-		// Partie Divers
-		for (var j=0;j<menuDiv.length;j++){
-			var cellIU = {'tr':['tr',{'class':(j%2==1?'even':'')},,,nodeMenu['tbody2']],
-				'td1':['td',{'class':'BWELeft'},,,'tr'],
-				'td2':['td',{'class':'BWERight'},,,'tr']},
-				cell = IU._CreateElements(cellIU);
-			cell['td1'].textContent = L._Get("sTitresDiv")[menuDiv[j][1]];
-			if (menuDiv[j][0]=="check") IU._CreateElement('input',{'type':'checkbox','checked':PREF._Get(menuDiv[j][2][0],menuDiv[j][2][1])==1},[],{'change':[check,[menuDiv[j][2][0],menuDiv[j][2][1]]]},cell['td2']);
-			else if (menuDiv[j][0]=="inputN") IU._CreateElement('input',{'type':'text','class':'BWEAEBut','value':PREF._Get(menuDiv[j][2][0],menuDiv[j][2][1]),'size':'5','maxlength':'5'},[],{'change':[inputNumber,[menuDiv[j][2][0],menuDiv[j][2][1]]],'keyup':[inputNumber,[menuDiv[j][2][0],menuDiv[j][2][1]]]},cell['td2']);
-			}
-		if (content != content2) content.parentNode.replaceChild(nodeMenu['menudiv'],content);
-		else content.parentNode.insertBefore(nodeMenu['menudiv'],content);
+	var menuIU = {
+		'menudiv':['div',{'align':'center','style':'margin-top: 15px;'}],
+		'div1':['div',,['BWE : '],,'menudiv'],
+		'a1':['a',{'href':'https://github.com/Ecilam/BloodWarsEnhanced','TARGET':'_blank'},[((typeof(GM_info)=='object')?GM_info.script.version:'?')],,'div1'],
+		'br2':['br',,,,'menudiv'],
+		'table0':['table',{'style':'width:100%;','class':'BWEMenu'},,,'menudiv'],
+		'tr0_0':['tr',,,,'table0'],
+		'td0_0_0':['td',{'style':'vertical-align:top;'},,,'tr0_0'],
+		'table1':['table',{'style':'width:80%;','class':'BWEMenu'},,,'td0_0_0'],
+		'thead1':['thead',,,,'table1'],
+		'tr1_0':['tr',{'class':'tblheader'},,,'thead1'],
+		'td1_0_0':['td',{'class':'BWELeft','colspan':'3'},,,'tr1_0'],
+		'help1':['img',{'class':'BWEHelp','src':'/gfx/hint2.png','onmouseout':'nd();','onmouseover':"return overlib('"+L._Get("sInfoMsg")+"',HAUTO,WRAP);"},,,'td1_0_0'],
+		'texte1':['span',{'class':'BWELeft'},[L._Get("sTitleList")],,'td1_0_0'],
+		'select1':['select',{'class':'combobox','id':'liste'},,{'change':[createColList]},'td1_0_0'],
+		'tbody1':['tbody',,,,'table1'],
+		'td0_0_1':['td',{'style':'vertical-align:top;'},,,'tr0_0'],
+		'table2':['table',{'style':'width:80%;','class':'BWEMenu'},,,'td0_0_1'],
+		'thead2':['thead',,,,'table2'],
+		'tr2_0':['tr',{'class':'tblheader'},,,'thead2'],
+		'td2_0_0':['td',{'class':'BWELeft','colspan':'3'},[L._Get("sTitleDivers")],,'tr2_0'],
+		'tbody2':['tbody',,,,'table2'],
+		'br3':['br',,,,'menudiv'],
+		'reset':['input',{'class':'button','type':'button','value':L._Get("sDefaut")},,{'click':[razPrefs]},'menudiv']
+		},
+		nodeMenu = IU._CreateElements(menuIU),
+		// n°titre du groupe ou Array:[n°titre(cf sTitresList),nom de la liste]
+		menuList = [[0,[[1,'pOProfile'],[2,'pProfile'],[3,'pTownview'],[4,'pOAliance'],[5,'pAliance'],[6,'pAlianceList'],[7,'pRank']]],
+				[8,[[9,'pMsgList'],[10,'pMsgSaveList'],[11,'pMsgSendList']]],
+				[12,[[13,'hlog'],[14,'hdiv'],[15,'hch'],[16,'hres']]]],
+		// Array:[type,n°titre,array:['ensemble','key']] 
+		menuDiv = [["check",0,['div','chDe']],["check",1,['pMsgFriendList','sh']],["check",2,['div','chSt']],["inputN",3,['div','nbLo']],["check",4,['div','chLo']],["check",5,['AE','sh']],
+				["",6],["inputN",8,['AE','nMin']],["inputN",9,['AE','nMax']],["inputN",10,['AE','aMin']],["inputN",11,['AE','aMax']],
+				["",7],["inputN",8,['AE','cMin']],["inputN",9,['AE','cMax']],["inputN",10,['AE','acMin']],["inputN",11,['AE','acMax']]];
+	// Partie Liste
+	createList(menuList,nodeMenu['select1']);
+	createColList();
+	// Partie Divers
+	for (var j=0;j<menuDiv.length;j++){
+		var cellIU = {'tr':['tr',{'class':(j%2==1?'even':'')},,,nodeMenu['tbody2']],
+			'td1':['td',{'class':'BWELeft'},,,'tr'],
+			'td2':['td',{'class':'BWERight'},,,'tr']},
+			cell = IU._CreateElements(cellIU);
+		cell['td1'].textContent = L._Get("sTitresDiv")[menuDiv[j][1]];
+		if (menuDiv[j][0]=="check") IU._CreateElement('input',{'type':'checkbox','checked':PREF._Get(menuDiv[j][2][0],menuDiv[j][2][1])==1},[],{'change':[check,[menuDiv[j][2][0],menuDiv[j][2][1]]]},cell['td2']);
+		else if (menuDiv[j][0]=="inputN") IU._CreateElement('input',{'type':'text','class':'BWEAEBut','value':PREF._Get(menuDiv[j][2][0],menuDiv[j][2][1]),'size':'5','maxlength':'5'},[],{'change':[inputNumber,[menuDiv[j][2][0],menuDiv[j][2][1]]],'keyup':[inputNumber,[menuDiv[j][2][0],menuDiv[j][2][1]]]},cell['td2']);
 		}
+	var oldDiv = DOM._GetNodes("//div[@id='content-mid']/*[preceding-sibling::div[@class='top-options'] and following-sibling::script[last()]]");
+	for (var i=0;i<oldDiv.snapshotLength;i++){oldDiv.snapshotItem(i).parentNode.removeChild(oldDiv.snapshotItem(i));}
+	nodeOptions.parentNode.insertBefore(nodeMenu['menudiv'],nodeOptions.nextSibling);
+	nodeOptions.parentNode.insertBefore(IU._CreateElement('div',{'class':'hr720'}),nodeOptions.nextSibling);
 	}
 // pages 'pRootSettings','pSettingsAi','pSettingsAcc','pSettingsVac','pSettingsDelchar'
 function setMenuDB(e){
@@ -1503,81 +1504,79 @@ function setMenuDB(e){
 	var result = DOM._GetNodes(".//a", nodeOptions);
 	for (var i=0; i<result.snapshotLength; i++) result.snapshotItem(i).className = '';
 	nodeTitle['4'].className = 'active';
-	var content = DOM._GetFirstNode("./following-sibling::div[@class='hr720']/following-sibling::*",nodeOptions),
-		content2 = DOM._GetFirstNode("./following-sibling::div[@class='hr720']/following-sibling::script",nodeOptions);
-	if (content!=null){
-		var menuIU = {
-			'menudiv':['div',{'align':'center','style':'margin-top: 15px;'}],
-			'divalert':['div',{'class':'auBid','style':'border: 1px solid red; padding: 3px; margin: 3px;'},,,'menudiv'],
-			'table':['table',{'style':'width: 100%;'},,,'divalert'],
-			'tr_0':['tr',,,,'table'],
-			'td_0_0':['td',{'align':'center','width':'30'},,,'tr_0'],
-			'img_0_0':['img',{'src':'./gfx/infobox_fail.gif'},,,'td_0_0'],
-			'td_0_1':['td',{'class':'error'},[L._Get('sAlertMsg')],,'tr_0'],
-			'BR0':['br',,,,'menudiv'],
-			'table0':['table',{'style':'width: 100%;','cellspacing':'0','cellpadding':'0'},,,'menudiv'],
-			'tr0_0':['tr',{'class':'tblheader'},,,'table0'],
-			'td0_0_0':['td',{'class':'BWELeft'},[L._Get('sTitleLS')],,'tr0_0'],
-			'tr0_1':['tr',,,,'table0'],
-			'td0_1_0':['td',,,,'tr0_1'],
-			'table1':['table',{'style':'padding:5px;width: 100%;'},,,'td0_1_0'],
-			'tr1_0':['tr',,,,'table1'],
-			'td1_0_0':['td',{'colspan':'4'},,,'tr1_0'],
-			'LLSSearch':['label',{'class':'BWELeft','for':'LSsearch'},[L._Get('sLabelSearch')],,'td1_0_0'],
-			'tr1_1':['tr',,,,'table1'],
-			'td1_1_0':['td',,,,'tr1_1'],
-			'LSsearch':['input',{'class':'inputbox','type':'text'},,{'change':[triLSList],'keyup':[triLSList]},'td1_1_0'],
-			'td1_1_1':['td',,,,'tr1_1'],
-			'td1_1_2':['td',{'class':'BWELeft'},,,'tr1_1'],
-			'delLS':['input',{'class':'button','type':'button','value':L._Get("sDelete")},,{'click':[delLS]},'td1_1_2'],
-			'td1_1_3':['td',{'class':'BWERight'},,,'tr1_1'],
-			'razLS':['input',{'class':'button','type':'button','value':L._Get("sRAZ")},,{'click':[razLS]},'td1_1_3'],
-			'tr1_2':['tr',,,,'table1'],
-			'td1_2_0':['td',{'colspan':'4'},,,'tr1_2'],
-			'tr1_3':['tr',,,,'table1'],
-			'td1_3_0':['td',{'colspan':'2','valign':'top','style':'width:220px;'},,,'tr1_3'],
-			'selectLS':['select',{'class':'inputbox select BWEselectLS','size':'20','style':'width:200px;'},,{'change':[selectLSChange]},'td1_3_0'],
-			'td1_3_1':['td',{'colspan':'2','valign':'top','style':'width:490px;'},,,'tr1_3'],
-			'divLS':['div',{'class':'inputbox BWEdivLS','style':'width:490px;'},,,'td1_3_1'],
-			'BR1':['br',,,,'menudiv'],
-			'table2':['table',{'style':'width: 100%;','cellspacing':'0','cellpadding':'0'},,,'menudiv'],
-			'tr2_0':['tr',{'class':'tblheader'},,,'table2'],
-			'td2_0_0':['td',{'class':'BWELeft'},[L._Get('sTitleIE')],,'tr2_0'],
-			'tr2_1':['tr',,,,'table2'],
-			'td2_1_0':['td',,,,'tr2_1'],
-			'table3':['table',{'style':'padding:5px;width: 100%;'},,,'td2_1_0'],
-			'tr3_0':['tr',,,,'table3'],
-			'td3_0_0':['td',{'class':'BWELeft'},[L._Get('sExportText')],,'tr3_0'],
-			'ExportHelp':['img',{'class':'BWEHelp','src':'/gfx/hint2.png','onmouseout':'nd();','onmouseover':"return overlib('"+L._Get("sExportHelp")+"',HAUTO,WRAP);"},,,'td3_0_0'],
-			'td3_0_1':['td',{'class':'BWERight'},,,'tr3_0'],
-			'export':['input',{'class':'button','type':'button','value':L._Get("sOutputLog")},,{'click':[outputLog]},'td3_0_1'],
-			'td3_0_2':['td',,,,'tr3_0'],
-			'td3_0_3':['td',{'class':'BWELeft'},[L._Get('sImportText')],,'tr3_0'],
-			'ImportHelp':['img',{'class':'BWEHelp','src':'/gfx/hint2.png','onmouseout':'nd();','onmouseover':"return overlib('"+L._Get("sImportHelp")+"',HAUTO,WRAP);"},,,'td3_0_3'],
-			'td3_0_4':['td',{'class':'BWERight'},,,'tr3_0'],
-			'import':['input',{'class':'button','type':'button','value':L._Get("sImportLog")},,{'click':[importLog]},'td3_0_4'],
-			'tr3_1':['tr',,,,'table3'],
-			'td3_1_0':['td',{'colspan':'2','valign':'top','style':'width:345px;'},,,'tr3_1'],
-			'divIE':['div',{'class':'inputbox BWEdivIE','style':'width:345px;'},,,'td3_1_0'],
-			'td3_1_1':['td',{'style':'width:20px;'},,,'tr3_1'],
-			'td3_1_2':['td',{'colspan':'2','valign':'top','style':'width:345px;'},,,'tr3_1'],
-			'textIE':['textarea',{'class':'textarea BWEdivIE','style':'width:345px;'},,,'td3_1_2'],
-			'tr3_2':['tr',,,,'table3'],
-			'td3_2_0':['td',{'colspan':'2'},,,'tr3_2'],
-			'td3_2_1':['td',{'colspan':'2'},,,'tr3_2']
-			},
-			nodeMenu = IU._CreateElements(menuIU);
-		if (content != content2) content.parentNode.replaceChild(nodeMenu['menudiv'],content);
-		else content.parentNode.insertBefore(nodeMenu['menudiv'],content);
-		// LS
-		var LSList = [],
-			result = [];
-		for (var i=0;i<LS._Length();i++){
-			var key = LS._Key(i);
-			LSList.push(key); //if(key.indexOf('BWE:')==0)
-			}
-		triLSList();
+	var menuIU = {
+		'menudiv':['div',{'align':'center','style':'margin-top: 15px;'}],
+		'divalert':['div',{'class':'auBid','style':'border: 1px solid red; padding: 3px; margin: 3px;'},,,'menudiv'],
+		'table':['table',{'style':'width: 100%;'},,,'divalert'],
+		'tr_0':['tr',,,,'table'],
+		'td_0_0':['td',{'align':'center','width':'30'},,,'tr_0'],
+		'img_0_0':['img',{'src':'./gfx/infobox_fail.gif'},,,'td_0_0'],
+		'td_0_1':['td',{'class':'error'},[L._Get('sAlertMsg')],,'tr_0'],
+		'BR0':['br',,,,'menudiv'],
+		'table0':['table',{'style':'width: 100%;','cellspacing':'0','cellpadding':'0'},,,'menudiv'],
+		'tr0_0':['tr',{'class':'tblheader'},,,'table0'],
+		'td0_0_0':['td',{'class':'BWELeft'},[L._Get('sTitleLS')],,'tr0_0'],
+		'tr0_1':['tr',,,,'table0'],
+		'td0_1_0':['td',,,,'tr0_1'],
+		'table1':['table',{'style':'padding:5px;width: 100%;'},,,'td0_1_0'],
+		'tr1_0':['tr',,,,'table1'],
+		'td1_0_0':['td',{'colspan':'4'},,,'tr1_0'],
+		'LLSSearch':['label',{'class':'BWELeft','for':'LSsearch'},[L._Get('sLabelSearch')],,'td1_0_0'],
+		'tr1_1':['tr',,,,'table1'],
+		'td1_1_0':['td',,,,'tr1_1'],
+		'LSsearch':['input',{'class':'inputbox','type':'text'},,{'change':[triLSList],'keyup':[triLSList]},'td1_1_0'],
+		'td1_1_1':['td',,,,'tr1_1'],
+		'td1_1_2':['td',{'class':'BWELeft'},,,'tr1_1'],
+		'delLS':['input',{'class':'button','type':'button','value':L._Get("sDelete")},,{'click':[delLS]},'td1_1_2'],
+		'td1_1_3':['td',{'class':'BWERight'},,,'tr1_1'],
+		'razLS':['input',{'class':'button','type':'button','value':L._Get("sRAZ")},,{'click':[razLS]},'td1_1_3'],
+		'tr1_2':['tr',,,,'table1'],
+		'td1_2_0':['td',{'colspan':'4'},,,'tr1_2'],
+		'tr1_3':['tr',,,,'table1'],
+		'td1_3_0':['td',{'colspan':'2','valign':'top','style':'width:220px;'},,,'tr1_3'],
+		'selectLS':['select',{'class':'inputbox select BWEselectLS','size':'20','style':'width:200px;'},,{'change':[selectLSChange]},'td1_3_0'],
+		'td1_3_1':['td',{'colspan':'2','valign':'top','style':'width:490px;'},,,'tr1_3'],
+		'divLS':['div',{'class':'inputbox BWEdivLS','style':'width:490px;'},,,'td1_3_1'],
+		'BR1':['br',,,,'menudiv'],
+		'table2':['table',{'style':'width: 100%;','cellspacing':'0','cellpadding':'0'},,,'menudiv'],
+		'tr2_0':['tr',{'class':'tblheader'},,,'table2'],
+		'td2_0_0':['td',{'class':'BWELeft'},[L._Get('sTitleIE')],,'tr2_0'],
+		'tr2_1':['tr',,,,'table2'],
+		'td2_1_0':['td',,,,'tr2_1'],
+		'table3':['table',{'style':'padding:5px;width: 100%;'},,,'td2_1_0'],
+		'tr3_0':['tr',,,,'table3'],
+		'td3_0_0':['td',{'class':'BWELeft'},[L._Get('sExportText')],,'tr3_0'],
+		'ExportHelp':['img',{'class':'BWEHelp','src':'/gfx/hint2.png','onmouseout':'nd();','onmouseover':"return overlib('"+L._Get("sExportHelp")+"',HAUTO,WRAP);"},,,'td3_0_0'],
+		'td3_0_1':['td',{'class':'BWERight'},,,'tr3_0'],
+		'export':['input',{'class':'button','type':'button','value':L._Get("sOutputLog")},,{'click':[outputLog]},'td3_0_1'],
+		'td3_0_2':['td',,,,'tr3_0'],
+		'td3_0_3':['td',{'class':'BWELeft'},[L._Get('sImportText')],,'tr3_0'],
+		'ImportHelp':['img',{'class':'BWEHelp','src':'/gfx/hint2.png','onmouseout':'nd();','onmouseover':"return overlib('"+L._Get("sImportHelp")+"',HAUTO,WRAP);"},,,'td3_0_3'],
+		'td3_0_4':['td',{'class':'BWERight'},,,'tr3_0'],
+		'import':['input',{'class':'button','type':'button','value':L._Get("sImportLog")},,{'click':[importLog]},'td3_0_4'],
+		'tr3_1':['tr',,,,'table3'],
+		'td3_1_0':['td',{'colspan':'2','valign':'top','style':'width:345px;'},,,'tr3_1'],
+		'divIE':['div',{'class':'inputbox BWEdivIE','style':'width:345px;'},,,'td3_1_0'],
+		'td3_1_1':['td',{'style':'width:20px;'},,,'tr3_1'],
+		'td3_1_2':['td',{'colspan':'2','valign':'top','style':'width:345px;'},,,'tr3_1'],
+		'textIE':['textarea',{'class':'textarea BWEdivIE','style':'width:345px;'},,,'td3_1_2'],
+		'tr3_2':['tr',,,,'table3'],
+		'td3_2_0':['td',{'colspan':'2'},,,'tr3_2'],
+		'td3_2_1':['td',{'colspan':'2'},,,'tr3_2']
+		},
+		nodeMenu = IU._CreateElements(menuIU);
+	var oldDiv = DOM._GetNodes("//div[@id='content-mid']/*[preceding-sibling::div[@class='top-options'] and following-sibling::script[last()]]");
+	for (var i=0;i<oldDiv.snapshotLength;i++){oldDiv.snapshotItem(i).parentNode.removeChild(oldDiv.snapshotItem(i));}
+	nodeOptions.parentNode.insertBefore(nodeMenu['menudiv'],nodeOptions.nextSibling);
+	nodeOptions.parentNode.insertBefore(IU._CreateElement('div',{'class':'hr720'}),nodeOptions.nextSibling);
+	// LS
+	var LSList = [],
+		result = [];
+	for (var i=0;i<LS._Length();i++){
+		var key = LS._Key(i);
+		LSList.push(key); //if(key.indexOf('BWE:')==0)
 		}
+	triLSList();
 	}
 
 /******************************************************
@@ -1728,7 +1727,7 @@ console.debug('BWEstart: %o %o',player,IDs);
 			else if (page=='pOAliance'||page=='pAliance'){
 				// options pour afficher/masquer
 				var td = DOM._GetNodes("//div[@id='content-mid']//div[@class='clan-desc']");
-				if (td!=null){
+				if (td!=null&&PREF._Get('div','chDe')==1){
 					if (_Exist(td.snapshotItem(0))){
 						var td1prev = DOM._GetFirstNode(".//parent::td/preceding-sibling::td/b",td.snapshotItem(0));
 						if (td1prev!=null){
