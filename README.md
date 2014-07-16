@@ -31,10 +31,20 @@ Les Préférences du jeu vous proposent 2 menus supplémentaires :
 * **BWE - OPTIONS :** permet de modifier le comportement des fonctions ci-dessus.
 * **BWE - BASE DE DONNÉES :** permet de consulter/supprimer les données stockées. A utiliser avec précaution !!
 
-###INFORMATIONS
+###AIDE
 * **1ère utilisation :** un message vous rappellera de consulter la Salle du Trône pour que le script puisse récupérer l'IUD du personnage afin de pouvoir fonctionner.
+* **Historique des combats :**
+	- affiche le temps passé depuis votre dernière attaque sur cette cible (gris= raté, vert = victoire, orange = match nul, rouge = défaite)
+	- une * indique 2 attaques effectuées sur cette cible dans la même journée/ Le script prenant en compte l'heure de fin de l'embuscade, avec le temps de déplacement il est possible que l'attaque ait été lancée avant minuit.
+	- au passage de la souris, affiche une info bulle avec les éléments de la rencontre (voir les Préférences).
+* **Aide aux embuscades :**
+	- fait clignoter l'icône de combat suivant les critères choisis (voir les Préférences). 
+	- Ex : pour la version 1.5.5 du jeu, mettre 100 dans la partie "Classement"/"Ecart supérieur" pour obtenir les cibles rapportant 2 points d'évolution. Laisser les autres cases vides.
+* **Aide à la création de Groupe :**
+	- permet de constituer 2 groupes pour une confrontation à venir de type siège organisé ou autres.
+	- sur le Profil, 'Groupe' est cliquable pour permettre d'afficher/masquer les listes.
+	- petite astuce : le copier/coller peut être utilisé pour envoyer la liste à un autre joueur.
+
+###INFORMATIONS
 * **Données :** les données sont stockées avec LOCALSTORAGE.
-* **Historique des combats :** affiche le temps passé depuis votre dernière attaque sur cette cible et donne le résultat des dernières rencontres sur cette dernière (gris= raté, vert = victoire, orange = match nul, rouge = défaite). Une "*" indique 2 attaques effectuées sur cette cible dans la même journée (le script prenant en compte l'heure de fin de l'embuscade, avec le temps de déplacement il est possible que l'attaque ait été lancée avant minuit).
-* **Aide aux embuscades :** fait clignoter l'icône de combat suivant les critères choisis (voir les Préférences BWE - OPTIONS).
-* **Aide à la création de Groupe :** permet de constituer 2 groupes pour une confrontation à venir de type siège organisé ou autres. A noter que, sur le Profil, 'Groupe' est cliquable pour permettre d'afficher/masquer les listes.<br>Petite astuce : le copier/coller peut être utilisé pour envoyer la liste à un autre joueur.
 * **Localisation :** n'ayant que des personnages de bas niveau sur les serveurs Anglais/Polonais, je n'ai pas la possibilité de tester certaines fonctions de ce script.
