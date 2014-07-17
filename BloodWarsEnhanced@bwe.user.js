@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2014.07.14
+// @version		2014.07.17
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2014, Ecilam
@@ -831,7 +831,9 @@ function CreateHistory(att,def,node){
 						}
 					}
 				}
-			else if (logCol.length>=1) IU._CreateElement('td',{'class':'BWELogTD2','style':'background-color:white;color:black;','colspan':logCol.length},[L._Get('sLogNC')],{},overlib);
+			else if (logCol.length>=1){
+				IU._CreateElement('td',{'class':'BWELogTD2','style':'background-color:white;color:black;','colspan':logCol.length},[(new Date(h[j][1])).toLocaleDateString()+' '+L._Get('sLogNC')],{},overlib);
+				}
 			j++;
 			}
 		IU._removeEvent(i[2],'mouseover',CreateOverlib);
@@ -852,7 +854,7 @@ function CreateHistory(att,def,node){
 			:delayABS<31536000?L._Get('sLogTime4',Math.floor(delay/(86400)))
 			:L._Get('sLogTime5');
 		var resultIU = {
-			'span':['span',{'id':'BWEOL','onmouseout':'nd();'},,,node],
+			'span':['span',{'id':'BWElog','onmouseout':'nd();'},,,node],
 			'table':['table',{'style':'display:inline;'},,,'span'],
 			'tr':['tr',,,,'table'],
 			'td1':['td',{'class':'BWEbold'},[delay],,'tr'],
@@ -875,7 +877,7 @@ function CreateHistory(att,def,node){
 			}
 		if (actuH>=2) result['td1'].textContent = '*'+result['td1'].textContent;
 		}
-	else node.textContent = '-';
+	else{IU._CreateElement('span',{'id':'BWElog'},['-'],{},node);}
 	}
 // Gestion des groupes
 // Pages Clan et Profil
@@ -1238,11 +1240,23 @@ function FctTriA(key,order,tbody,list){
 		if (col!=null){
 			var isInput = DOM._GetFirstNode(".//input[1]", col),
 				isInput2 = DOM._GetFirstNode(".//input[2]", col),
+				isLog = DOM._GetFirstNode("./span[@id='BWElog']", col),
 				isIMG = DOM._GetFirstNode(".//img", col),
 				isA = DOM._GetFirstNode(".//a", col),
 				value = col.textContent.trim().toLowerCase();// tri de base
-			if (isInput!=null&&isInput2!=null){// tri pour les cases à cocher du Groupe
+			if (isInput!=null&&isInput2!=null){// cases à cocher du Groupe
 				value = (isInput.checked?"0":"1")+(isInput2.checked?"0":"1");
+				}
+			else if (isLog!=null){ // log
+				var result = new RegExp("(^-*[0-9]+)").exec(value);
+				if (value=='-') value = 31708800; // 367jrs
+				else if (result!=null){
+					if (value==L._Get('sLogTime5')) value = 31622400; // 366jrs
+					else if (value==L._Get('sLogTime1',result[1])) value = result[1];
+					else if (value==L._Get('sLogTime2',result[1])) value = result[1]*60;
+					else if (value==L._Get('sLogTime3',result[1])) value = result[1]*3600;
+					else if (value==L._Get('sLogTime4',result[1])) value = result[1]*86400;
+					}
 				}
 			else if (isIMG==null&&isA==null){
 				// colonne de type nombre : "xx","x.x","x."
