@@ -19,12 +19,12 @@ Pour les bugs, GitHub propose une section [Issues](https://github.com/Ecilam/Blo
 
 ###FONCTIONS
 * Listes/Tableaux modulables et triables (Profiles, Clans, Classement, Vue sur la cité, Amis).
-* **Historique des combats** aussi bien en attaque qu'en défense. Les infos sont modulables via les préférences.
-* Mécanisme d'aide aux embuscades.
-* Mécanisme d'aide à la création de groupe.
+* **Historique des combats** aussi bien en attaque qu'en défense.
+* Mécanisme d'aide aux embuscades (désactivé par défaut).
+* Mécanisme d'aide à la création de groupe (désactivé par défaut).
 * Afficher/masquer les zones d'informations des clans en cliquant sur leur titre.
 * Mémorisations de certaines données pour affichage sur d'autres pages (sexe,race...).
-* Puit des âmes : affiche le total des pierres
+* Puit des âmes : affiche le total des pierres.
 * Multicompte supporté (voir réglement du jeu).
 
 Les Préférences du jeu vous proposent 2 menus supplémentaires :
@@ -36,7 +36,7 @@ Les Préférences du jeu vous proposent 2 menus supplémentaires :
 * **Historique des combats :**
 	- affiche le temps passé depuis votre dernière attaque sur cette cible (gris= raté, vert = victoire, orange = match nul, rouge = défaite)
 	- une * indique 2 attaques effectuées sur cette cible dans la même journée/ Le script prenant en compte l'heure de fin de l'embuscade, avec le temps de déplacement il est possible que l'attaque ait été lancée avant minuit.
-	- au passage de la souris, affiche une info bulle avec les éléments de la rencontre (voir les Préférences).
+	- au passage de la souris, affiche une info bulle avec les éléments de la rencontre (modulable via les Préférences).
 * **Aide aux embuscades :**
 	- fait clignoter l'icône de combat suivant les critères choisis (voir les Préférences). 
 	- Ex : pour la version 1.5.5 du jeu, mettre 100 dans la partie "Classement"/"Ecart supérieur" pour obtenir les cibles rapportant 2 points d'évolution. Laisser les autres cases vides.
