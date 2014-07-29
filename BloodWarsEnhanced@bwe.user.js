@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2014.07.17
+// @version		2014.07.28
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2014, Ecilam
@@ -412,12 +412,15 @@ var L = (function(){
 		"sTitleMenu1":["BWE - OPTIONS","BWE - OPTIONS","BWE - OPCJE"],
 		"sTitleMenu2":["BWE - BASE DE DONNÉES","BWE - DATABASE","BWE - BAZY DANYCH"],
 		"sInfoMsg":
-			["Un simple clic pour afficher/masquer les colonnes souhaitées dans la liste concernée.<br>Désactiver une liste désactive aussi la collecte des données de cette liste.<br>Désactiver la colonne Groupe désactive les tableaux correspondants.",
-			"A single click to show/hide the columns you want on the appropriate list.<br>Disable a list also disables the collection of data from this list.<br>Disable the Group column disables the corresponding tables.",
-			"Jedno kliknięcie, aby pokazać/ukryć kolumny, które mają na odpowiedniej liście.<br>Wyłącz lista wyłącza także zbierania danych z tej listy.<br>Wyłącz kolumna Grupa wyłącza odpowiednie tabele."],
+			["Un simple clic pour afficher/masquer les colonnes souhaitées dans la liste concernée.<br>Désactiver une liste désactive aussi la collecte des données de cette liste.<br>Désactiver la colonne Groupe désactive les tableaux correspondants.<br>G M D : Aligne à Gauche, Milieu ou Droite.",
+			"A single click to show/hide the columns you want on the appropriate list.<br>Disable a list also disables the collection of data from this list.<br>Disable the Group column disables the corresponding tables.<br>L M R : Align Left, Middle, or Right.",
+			"Jedno kliknięcie, aby pokazać/ukryć kolumny, które mają na odpowiedniej liście.<br>Wyłącz lista wyłącza także zbierania danych z tej listy.<br>Wyłącz kolumna Grupa wyłącza odpowiednie tabele.<br>L Ś P: Wyrównaj do Lewej, Środkowy lub Prawy."],
 		"sTitleList":["LISTES : ","LISTS : ","LISTY : "],
 		"sTitleDivers":["DIVERS","MISCELLANEOUS","RÓŻNE"],
 		"sActive":["Activer/Désactiver","Enable / Disable","Włącz / Wyłącz"],
+		"sLeft":["G","L","L"],
+		"sMiddle":["M","M","Ś"],
+		"sRight":["D","R","P"],
 		"sTitresList": [["Tableaux","Votre Profile","Autres Profiles","Vue sur la Cité","Votre Clan","Autres Clans","Liste des Clans","Classement",// 0-7
 				"Messagerie","Réception","Sauvegarde","Envoi", //8-11
 				"Historique","Principal","- Divers","- Caractéristiques","- Ressources"],// 12-16
@@ -620,17 +623,17 @@ var PREF = (function(){
 		// sh : Affiche (0=non,1=oui), tri (0=ascendant,1=descendant)
 		// list: [n°titre des colonnes (cf sColTitle),afficher{1:0},n°colonne originale(-1 si a créer)]
 		// Tableaux existants
-		'pOProfile':{'sh':1,'list':[[0,1,0],[1,1,1],[2,1,2],[3,1,3],[4,1,4],[5,0,5],[6,0,6],[7,1,-1],[8,0,-1],[10,1,7],[9,1,8],[4,1,9],[11,1,10],[12,1,11],[4,1,12],[13,1,13]]},
-		'pProfile':{'sh':1,'list':[[0,1,0],[1,1,1],[2,1,2],[3,1,3],[4,1,4],[5,0,5],[6,0,6],[7,1,-1],[8,0,-1],[14,1,-1],[10,1,7],[9,1,8],[4,1,9],[11,1,10],[12,1,11],[4,1,12],[13,1,13]]},
-		'pTownview':{'sh':1,'tri':[1,1],'list':[[28,1,1],[29,1,2],[9,1,3],[6,0,4],[5,0,-1],[7,1,-1],[23,1,-1],[24,1,5],[25,1,-1],[0,1,6],[1,0,7],[22,1,-1],[3,1,8],[30,1,9]]},
-		'pOAliance':{'sh':1,'sh1':1,'sh2':1,'tri':[1,1],'list':[[15,1,1],[16,0,2],[17,1,-1],[18,1,-1],[19,1,-1],[2,1,3],[20,1,4],[5,0,5],[6,0,6],[7,1,-1],[21,0,-1],[22,1,-1],[0,1,-1],[1,0,-1],[11,0,7]]},
-		'pAliance':{'sh':1,'sh1':1,'tri':[1,1],'list':[[15,1,1],[23,1,-1],[24,1,2],[25,1,-1],[2,1,3],[20,1,4],[5,0,5],[6,0,6],[7,1,-1],[21,0,-1],[22,1,-1],[0,1,-1],[1,0,-1],[11,0,7]]},
-		'pAlianceList':{'sh':1,'list':[[66,1,1],[67,1,2],[68,1,3],[69,1,4],[70,1,5],[71,1,6],[6,1,7]]},
-		'pMsgList':{'sh':0,'tri':[4,0],'list':[[62,1,1],[63,1,2],[64,1,3],[65,1,4]]},
-		'pMsgSaveList':{'sh':0,'tri':[4,0],'list':[[62,1,1],[63,1,2],[64,1,3],[65,1,4]]},
-		'pMsgSendList':{'sh':0,'tri':[4,0],'list':[[62,1,1],[63,1,2],[64,1,3],[65,1,4]]},
-		'pMsgFriendList':{'sh':1,'tri':[1,1],'list':[[-1,1,1],[-1,1,2]]},
-		'pRank':{'sh':1,'tri':[1,1],'list':[[26,1,1],[27,1,2],[0,1,3],[1,0,4],[22,1,-1],[23,1,-1],[24,1,5],[25,1,-1],[2,1,6],[3,1,7],[5,0,-1],[6,0,8],[7,1,-1]]},
+		'pOProfile':{'sh':1,'list':[[0,1,0,0],[1,1,1,0],[2,1,2,0],[3,1,3,0],[4,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[8,0,-1,0],[10,1,7,0],[9,1,8,0],[4,1,9,0],[11,1,10,0],[12,1,11,0],[4,1,12,0],[13,1,13,0]]},
+		'pProfile':{'sh':1,'list':[[0,1,0,0],[1,1,1,0],[2,1,2,0],[3,1,3,0],[4,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[8,0,-1,0],[14,1,-1,0],[10,1,7,0],[9,1,8,0],[4,1,9,0],[11,1,10,0],[12,1,11,0],[4,1,12,0],[13,1,13,0]]},
+		'pTownview':{'sh':1,'tri':[1,1],'list':[[28,1,1,2],[29,1,2,0],[9,1,3,0],[6,0,4,0],[5,0,-1,0],[7,1,-1,0],[23,1,-1,2],[24,1,5,1],[25,1,-1,0],[0,1,6,0],[1,0,7,0],[22,1,-1,1],[3,1,8,0],[30,1,9,0]]},
+		'pOAliance':{'sh':1,'sh1':1,'sh2':1,'tri':[1,1],'list':[[15,1,1,0],[16,0,2,1],[17,1,-1,1],[18,1,-1,1],[19,1,-1,1],[2,1,3,0],[20,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[21,0,-1,1],[22,1,-1,1],[0,1,-1,0],[1,0,-1,0],[11,0,7,0]]},
+		'pAliance':{'sh':1,'sh1':1,'tri':[1,1],'list':[[15,1,1,0],[23,1,-1,2],[24,1,2,1],[25,1,-1,0],[2,1,3,0],[20,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[21,0,-1,1],[22,1,-1,1],[0,1,-1,0],[1,0,-1,0],[11,0,7,0]]},
+		'pAlianceList':{'sh':1,'list':[[66,1,1,2],[67,1,2,0],[68,1,3,0],[69,1,4,0],[70,1,5,0],[71,1,6,0],[6,1,7,0]]},
+		'pMsgList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
+		'pMsgSaveList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
+		'pMsgSendList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
+		'pMsgFriendList':{'sh':1,'tri':[1,1],'list':[[-1,1,1,0],[-1,1,2,0]]},
+		'pRank':{'sh':1,'tri':[1,1],'list':[[26,1,1,2],[27,1,2,0],[0,1,3,0],[1,0,4,0],[22,1,-1,1],[23,1,-1,2],[24,1,5,1],[25,1,-1,0],[2,1,6,0],[3,1,7,0],[5,0,-1,0],[6,0,8,0],[7,1,-1,0]]},
 		// tableaux à créer
 		'grp':{'sh':1,'tri':[1,1]},
 		'hlog':{'list':[[31,1],[32,1],[33,1],[34,1],[35,1],[36,1]]},
@@ -651,6 +654,10 @@ var PREF = (function(){
 		_Get: function(grp,key){
 			if (_Exist(prefs[grp])&&_Exist(prefs[grp][key])) return prefs[grp][key];
 			else if (_Exist(defPrefs[grp])&&_Exist(defPrefs[grp][key]))return defPrefs[grp][key];
+			else return null;
+			},
+		_GetDef: function(grp,key){
+			if (_Exist(defPrefs[grp])&&_Exist(defPrefs[grp][key]))return defPrefs[grp][key];
 			else return null;
 			},
 		_Set: function(grp,key,value){
@@ -683,17 +690,17 @@ function SetCSS(){
 		+".BWEAEBut,.BWEAEButError{height:10px;margin:2px 0;}"
 		+".BWEAEButError{background-color:red;}"
 		+".BWEHelp{border:0;vertical-align:middle;padding:3px 5px;}"
-		+".BWELeft,.BWERight,.BWEMiddle,.BWELeftHeader,.BWEMiddleHeader,.BWELogTD,.BWEGrpChg,.BWEGrpDel{padding:1px;text-align:left;white-space:nowrap;}"
+		+".BWELeft,.BWERight,.BWEMiddle,.BWELeftHeader,.BWEMiddleHeader,.BWERightHeader,.BWELogTD,.BWEGrpChg,.BWEGrpDel{padding:1px;text-align:left;white-space:nowrap;}"
 		+".BWELogTD2{padding:1px 4px;text-align:left;white-space:nowrap;}"
 		+".BWELeft2{padding: 0 10px;text-align:left;}"
 		+".BWEGrpChg,.BWEGrpDel{color:#FFF;background-color:#F07000;border:thin solid #000;}"
 		+".BWEGrpDel{color:#FFF;background-color:red;}"
 		+".BWELogTD{border:thin dotted #000;}"
-		+".BWERight{text-align:right;}"
+		+".BWERight,.BWERightHeader{text-align:right;}"
 		+".BWEMiddle,.BWEMiddleHeader,.BWEGrpChg,.BWEGrpDel{text-align:center;}"
 		+".BWEGrpChg,.BWEGrpDel,.BWEPrefTD1,.BWEbold{font-weight:700;}"
 		+".BWEMenu,.BWETabMsg{margin-left:auto;margin-right:auto;padding:0;border-collapse:collapse;}"
-		+".BWELeftHeader,.BWEMiddleHeader,.BWEGrpChg,.BWEGrpDel,.BWEPrefTD2,.BWEPrefTD3 a{cursor: pointer;}"
+		+".BWELeftHeader,.BWEMiddleHeader,.BWERightHeader,.BWEGrpChg,.BWEGrpDel,.BWEPrefTD2,.BWEPrefTD3 a{cursor: pointer;}"
 		+".BWEPrefTD1,.BWEPrefTD2,.BWEPrefTD3{padding: 1px;text-align:left;white-space: nowrap;}"
 		+".BWEPrefTD3{width:10px;}"
 		+".BWEselectLS,.BWEdivLS,.BWEdivIE{width:20em;height:20em;margin:0;}"
@@ -1069,7 +1076,7 @@ function CreateTable(header,list,index){
 		for (var i=0; i<newCol.length; i++){
 			if (newCol[i][1]!=1){newCol.splice(i,1);i--;}
 			else{
-				var newTD = IU._CreateElement('td',{'class':(tri!=null?'BWELeftHeader':'BWELeft')},[],{}),
+				var newTD = IU._CreateElement('td',{},[],{}),
 					col = newCol[i][0];
 				if (newCol[i][2]!=-1){ // en-tête existante
 					var td = DOM._GetFirstNode("./td["+newCol[i][2]+"]",header);
@@ -1077,18 +1084,19 @@ function CreateTable(header,list,index){
 						newTD = td.cloneNode(true);
 						if ([62,65].indexOf(col)==-1) newTD.removeAttribute('width');
 						newTD.removeAttribute('style'); 
-						newTD.className += (newTD.className?' ':'')+(tri==null?'BWELeft':([28,62].indexOf(col)==-1)?'BWELeftHeader':'BWEMiddleHeader');
 						}
 					}
 				else{ // en-tête à créer
-					if ([1,17,18,19,21,22].indexOf(col)!=-1) newTD.className = tri!=null?'BWEMiddleHeader':'BWEMiddle';
 					// récupère le titre sauf pr quelques exceptions
 					if ([-1,17,18,19,22].indexOf(col)==-1) newTD.textContent = L._Get("sColTitle")[col];
 					if (col==21) newTD.setAttribute('id','BWEgrpcol');
 					if (col==22) IU._CreateElement('img',{'style':"width:16px; height:16px; vertical-align:middle;",'src':"data:image/png,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%10%00%00%00%10%08%06%00%00%00%1F%F3%FFa%00%00%02%1FIDATx%DAcd%20%12%9C%3CyB%FF%F2%E5%CB5%3F%7F%FE%D2%FA%F7%FF%9F%D6%E9S%A7%E7-Z%B4(%99%91X%03v%ED%DA%C1%EF%E6%E6%F1q%CA%94I%FF%BF%7D%FF%CE%B0w%EF%DE%AE%9D%3Bv%95%E34%E0%DA%B5%AB%F6%BF%7F%FDb%F8%F9%EB%D7%0333%F3%87%13%26%F4%E9%0B%89%08%1Dx%FB%E6%9D%C0%D7%AF_%18%0E%1E8%5C%BB%7B%F7%EE%16%0C%03v%ED%DC%11%FF%EF%DF%FFI%CF%9E%3D%E1%FB%F9%E3%17%03%03P%C5%DF%7F%7FO%B0%B1%B1i%BC%FF%F0%9E%E9%E3%C7%8F~m%AD%1D%07%DD%DD%DD3w%EE%DC9%1D%C5%80%E3%C7%0F%FB%3F%7C%F8d%C3%B3%A7O.%FC%FC%F9%A3%E1%DB%B7o%1F~%FC%FC%E5%A0%A8%A8X%F0%FD%FBw%81%5B%B7n9%CC%9C9%FB%20%B2%1E%14%03%E6%CF%9B%F7%F8%DE%FD%BBo%9A%9B%5B%0D%91%C5%17%2C%9Co%FF%EB%D7%AF%03%87%0E%1FnZ%B2hI%3DV%03f%CC%9C%AE%FF%E3%DB%F7%0B%17%2F_J%98%3Fo%C1Bt%AF%B5%B4%B6%9C%BF%7F%FF%DE%87%B9s%E69b5%A0%B5%AD%D5%FE%FB%D7%AF%07._%BD%E2%B0q%C3%A6%83%E8%06%14%97%14%ED%7F%F7%F6%1D%C3%FC%F9%0B%B0%1B%60hl%C8ook%FF%E1%E6%AD%9B%0B%B6o%DB%9E%88%AC%C8%DB%CF%9B_%5DU%ED%C1%B3%E7%CF7%ACX%B6%22%11%AB%01%20%10%9F%10%3F%FF%DB%D7o%09%2C%AC%2C%05%CB%97-%9F%08%12%B3s%B0%E3WQV9%C0%CE%CEnp%FD%C6u%87%03%FB%0E%E0%0ED%0F%2F%0F~nN%AE%03%9C%9C%9C%06%BF%FF%FCy%F0%EF%DF%BF%07%2C%CC%CC%0El%EC%EC%0C%EF%DE%BDI%D8%BCi%2BF%D8%60MH%F6%0E%F6%F1%26%C6%26%09%8F%1E%3Dr%F8%FA%ED%EB%84%E7%2F%9EO8%7F%F6%FCCljq%A6%C4%9E%DE%9E%FA%FD%07%F67l%DD%BC%15or%C7*%99%98%98x%FC%C7%8F%1F%16_%BF%7CaP%D7%D0%60%B8z%EDj%FF%B6%AD%DB%8AHr%01%08%B8%B9%B9%FD%DF%B5k%17%E9.%80%01%5B%3B%DB%FF%87%0F%1D%C6%AB%06%00%A2%EE%06%20%5B%F9%3D%19%00%00%00%00IEND%AEB%60%82"},[],{},newTD);
 					}
-				// Event de tri si possible
-				if (tri!=null) IU._addEvent(newTD,'click',clickCol,[i+1,index]);
+				if (tri!=null){
+					IU._addEvent(newTD,'click',clickCol,[i+1,index]);
+					newTD.className += (newTD.className?' ':'')+(_Exist(newCol[i][3])?['BWELeftHeader','BWEMiddleHeader','BWERightHeader'][newCol[i][3]]:'BWELeftHeader');
+					}
+				else newTD.className += (newTD.className?' ':'')+(_Exist(newCol[i][3])?['BWELeft','BWEMiddle','BWERight'][newCol[i][3]]:'BWELeft');
 				newHead.appendChild(newTD);
 				}
 			}
@@ -1134,7 +1142,6 @@ function CreateTable(header,list,index){
 						newTD = newTR.appendChild(td.cloneNode(true));
 						newTD.removeAttribute('width');
 						newTD.removeAttribute('style'); 
-						newTD.className += (newTD.className?' ':'')+([62].indexOf(col)==-1?'BWELeft':'BWEMiddle');
 						}
 					if (col==24){
 						newTD.setAttribute('width','18px');
@@ -1160,8 +1167,7 @@ function CreateTable(header,list,index){
 						}
 					}
 				else{ // colonne à créer
-					newTD = IU._CreateElement('td',{'class':'BWELeft'},[],{},newTR);
-					if ([1,17,18,19,21,22].indexOf(col)!=-1) newTD.className = 'BWEMiddle';
+					newTD = IU._CreateElement('td',{},[],{},newTR);
 					if (col==0){
 						var races = L._Get('sRaces');
 						newTD.textContent = _Exist(value)&&_Exist(value['R'])&&_Exist(races[value['R']])?races[value['R']]:'-';
@@ -1205,7 +1211,7 @@ function CreateTable(header,list,index){
 						}
 					else if (col==22){
 						newTD.textContent = _Exist(value)&&_Exist(value['S'])?value['S']:'-';
-						newTD.className = 'BWEMiddle '+(_Exist(value)&&_Exist(value['S'])?value['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF':'');
+						newTD.className = (_Exist(value)&&_Exist(value['S']))?(value['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF'):'';
 						}
 					else if (col==23){
 						if (name=='') newTD.textContent = '-';
@@ -1216,6 +1222,7 @@ function CreateTable(header,list,index){
 						else CreateHistory(name,ID,newTD);
 						}
 					}
+				newTD.className += (newTD.className?' ':'')+(_Exist(newCol[i][3])?['BWELeft','BWEMiddle','BWERight'][newCol[i][3]]:'BWELeft');
 				}
 			}
 		// tri du nouveau tableau
@@ -1335,22 +1342,23 @@ function setMenuOptions(e){
 		}
 	function changeCol(e,i){// i[0]= liste, i[1]= ligne, i[2]= ligne + ou -
 		var col = PREF._Get(i[0],'list'),
-			cell1 = DOM._GetFirstNode("//td[@id='BWE_"+i[0]+'_'+i[1]+"']"),
-			cell2 = DOM._GetFirstNode("//td[@id='BWE_"+i[0]+'_'+i[2]+"']"),
 			temp = col[i[1]];
 		col[i[1]] = col[i[2]];
 		col[i[2]] = temp;
-		cell1.setAttribute('style','text-decoration:'+(col[i[1]][1]==1?'none':'line-through'));
-		cell2.setAttribute('style','text-decoration:'+(col[i[2]][1]==1?'none':'line-through'));
-		cell1.textContent = L._Get('sColTitle')[col[i[1]][0]];
-		cell2.textContent = L._Get('sColTitle')[col[i[2]][0]];
 		PREF._Set(i[0],'list',col);
+		createColList();
 		}
 	function clickCol(e,i){// i[0]= liste, i[1]= ligne
 		var col = PREF._Get(i[0],'list');
 		col[i[1]][1] = col[i[1]][1]==1?0:1;
-		e.target.setAttribute('style','text-decoration:'+(col[i[1]][1]==1?'none':'line-through'));
 		PREF._Set(i[0],'list',col);
+		createColList();
+		}
+	function clickA(e,i){// i[0]= liste, i[1]= ligne, i[2]= choix
+		var col = PREF._Get(i[0],'list');
+		col[i[1]][3] = i[2];
+		PREF._Set(i[0],'list',col);
+		createColList();
 		}
 	function razPrefs(e){
 		PREF._Raz();
@@ -1358,24 +1366,31 @@ function setMenuOptions(e){
 		}
 	function createColList(){
 		var liste = nodeMenu['select1'].options[nodeMenu['select1'].selectedIndex].value,
-			col = PREF._Get(liste,'list');
+			col = PREF._Get(liste,'list'),
+			colDef = PREF._GetDef(liste,'list');
 		nodeMenu['tbody1'].innerHTML = "";
 		if (PREF._Get(liste,'sh')!=null){
 			IU._CreateElements({'tr':['tr',,,,nodeMenu['tbody1']],
 			'td1':['td',,[],,'tr'],
 			'td2':['td',,[],,'tr'],
 			'label':['label',{'for':'BWElabel'},[L._Get("sActive")],,'td2'],
-			'td3':['td',,[],,'tr'],
+			'td3':['td',{'colspan':'4'},[],,'tr'],
 			'check':['input',{'type':'checkbox','id':'BWElabel','checked':PREF._Get(liste,'sh')==1},,{'change':[check,[liste,'sh']]},'td3']});
 			}
 		for (var j=0;j<col.length;j++){
 			var cellIU = {'tr':['tr',{'class':(j%2==1?'even':''),'onmouseout':"this.className="+(j%2==1?"'even';":"'';"),'onmouseover':"this.className='selectedItem';"},,,nodeMenu['tbody1']],
 				'td1':['td',{'class':'BWEPrefTD1'},[j],,'tr'],
-				'td2':['td',{'class':'BWEPrefTD2','id':('BWE_'+liste+'_'+j),'style':'text-decoration:'+(col[j][1]==1?'none':'line-through')},[L._Get('sColTitle')[col[j][0]]],{'click':[clickCol,[liste,j]]},'tr'],
-				'td3':['td',{'class':'BWEPrefTD3'},,,'tr']},
+				'td2':['td',{'class':'BWEPrefTD2 '+(col[j][1]==1?'defHit':'atkHit'),'style':'text-decoration:'+(col[j][1]==1?'none':'line-through')},[L._Get('sColTitle')[col[j][0]]],{'click':[clickCol,[liste,j]]},'tr']},
 				cell = IU._CreateElements(cellIU);
-			if (j!=0) IU._CreateElement('a',{},[L._Get('sTriUp')],{'click':[changeCol,[liste,j,(j-1)]]},cell['td3']);
-			if (j<col.length-1) IU._CreateElement('a',{},[L._Get('sTriDown')],{'click':[changeCol,[liste,j,(j+1)]]},cell['td3']);
+			if (_Exist(colDef[0][3])){// alignement ? - suite MAJ 2014-07-28
+				if (!_Exist(col[j][3])) col[j][3] = 0;
+				IU._CreateElements({'td3':['td',{'class':'BWEPrefTD2'+(col[j][3]==0?' heal':'')},[L._Get('sLeft')],{'click':[clickA,[liste,j,0]]},cell['tr']],
+				'td4':['td',{'class':'BWEPrefTD2'+(col[j][3]==1?' heal':'')},[L._Get('sMiddle')],{'click':[clickA,[liste,j,1]]},cell['tr']],
+				'td5':['td',{'class':'BWEPrefTD2'+(col[j][3]==2?' heal':'')},[L._Get('sRight')],{'click':[clickA,[liste,j,2]]},cell['tr']]});
+				}
+			var td6 = IU._CreateElement('td',{'class':'BWEPrefTD3'},[],{},cell['tr']);
+			if (j!=0) IU._CreateElement('a',{},[L._Get('sTriUp')],{'click':[changeCol,[liste,j,(j-1)]]},td6);
+			if (j<col.length-1) IU._CreateElement('a',{},[L._Get('sTriDown')],{'click':[changeCol,[liste,j,(j+1)]]},td6);
 			}
 		}
 	function createList(list,node){
@@ -1402,7 +1417,7 @@ function setMenuOptions(e){
 		'table1':['table',{'style':'width:80%;','class':'BWEMenu'},,,'td0_0_0'],
 		'thead1':['thead',,,,'table1'],
 		'tr1_0':['tr',{'class':'tblheader'},,,'thead1'],
-		'td1_0_0':['td',{'class':'BWELeft','colspan':'3'},,,'tr1_0'],
+		'td1_0_0':['td',{'class':'BWELeft','colspan':'6'},,,'tr1_0'],
 		'help1':['img',{'class':'BWEHelp','src':'/gfx/hint2.png','onmouseout':'nd();','onmouseover':"return overlib('"+L._Get("sInfoMsg")+"',HAUTO,WRAP);"},,,'td1_0_0'],
 		'texte1':['span',{'class':'BWELeft'},[L._Get("sTitleList")],,'td1_0_0'],
 		'select1':['select',{'class':'combobox','id':'liste'},,{'change':[createColList]},'td1_0_0'],
@@ -1658,14 +1673,16 @@ console.debug('BWEstart: %o %o',player,IDs);
 					var newLig = PREF._Get(page,'list');
 					for (var j=0;j<newLig.length;j++){
 						if (newLig[j][1]==1){
+							var ligne;
 							// ligne existante
-							if (newLig[j][2]!=-1) newTR = newTable['tbody'].appendChild(trList.snapshotItem(newLig[j][2]).cloneNode(true));
+							if (newLig[j][2]!=-1) ligne = newTable['tbody'].appendChild(trList.snapshotItem(newLig[j][2]).cloneNode(true));
 							else{ // ligne à créer
 								var trIU = {'tr':['tr',,,,newTable['tbody']],
 											'td1':['td',,,,'tr'],'b':['b',,[L._Get("sColTitle")[newLig[j][0]]],,'td1'],
 											'td2':['td',,,,'tr']},
 									newTR = IU._CreateElements(trIU),
 									line = newLig[j][0];
+								ligne = newTR['tr'];
 								if (line==7) newTR['td2'].textContent = L._Get('sNivFormat',niv,pts);
 								else if (line==8){
 									var show = PREF._Get('grp','sh')==1,
@@ -1693,14 +1710,15 @@ console.debug('BWEstart: %o %o',player,IDs);
 									var trIU = {'table':['table',{'style':'width:90%;'},,,newTR['td2']],
 												'tr10':['tr',,,,'table'],
 													'td11':['td',,[L._Get('sProfAtt')],,'tr10'],
-													'td12':['td',{'class':'BWEMiddle','style':'min-width:4em;'},,,'tr10'],
+													'td12':['td',{'style':'min-width:4em;'},,,'tr10'],
 													'td13':['td',,[L._Get('sProfDef')],,'tr10'],
-													'td14':['td',{'class':'BWEMiddle','style':'min-width:4em;'},,,'tr10']},
+													'td14':['td',{'style':'min-width:4em;'},,,'tr10']},
 										embTR = IU._CreateElements(trIU);
 									CreateHistory(ID,name[1],embTR['td12']);
 									CreateHistory(name[1],ID,embTR['td14']);
 									}
 								}
+							ligne.className += (ligne.className?' ':'')+(_Exist(newLig[j][3])?['BWELeft','BWEMiddle','BWERight'][newLig[j][3]]:'BWELeft');
 							}
 						}
 					ttable.setAttribute('style','display:none');
