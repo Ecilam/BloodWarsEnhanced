@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2014.07.28
+// @version		2014.08.31
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2014, Ecilam
@@ -89,7 +89,7 @@ var LS = (function(){
 			},
 		_Key: function(index){
 			return LS.key(index);
-			},
+			}
 		};
 	})();
 
@@ -556,6 +556,8 @@ var DATAS = (function(){
 					}
 				// Salle du Trône
 				else if (qsA==null||qsA=="main") page="pMain";
+				// Site de construction
+				else if (qsA=="build") page="pBuild";
 				// Vue sur la Cité
 				else if (qsA=="townview") page="pTownview";
 				// Clan
@@ -691,6 +693,8 @@ function SetCSS(){
 		+".BWEAEButError{background-color:red;}"
 		+".BWEHelp{border:0;vertical-align:middle;padding:3px 5px;}"
 		+".BWELeft,.BWERight,.BWEMiddle,.BWELeftHeader,.BWEMiddleHeader,.BWERightHeader,.BWELogTD,.BWEGrpChg,.BWEGrpDel{padding:1px;text-align:left;white-space:nowrap;}"
+		+".BWELog2{display:inline-block;vertical-align:middle;}"
+		+".BWELog3{height:3px;width:4px;margin:1px 2px;}"
 		+".BWELogTD2{padding:1px 4px;text-align:left;white-space:nowrap;}"
 		+".BWELeft2{padding: 0 10px;text-align:left;}"
 		+".BWEGrpChg,.BWEGrpDel{color:#FFF;background-color:#F07000;border:thin solid #000;}"
@@ -741,11 +745,11 @@ function UpdateHistory(att,def,msgId,msgDate,emb){
 			}
 		}
 	if (h.length>PREF._Get('div','nbLo')) h = h.slice(0,PREF._Get('div','nbLo'));
-	if (h.length>0)	LS._SetVar('BWE:L:'+att+':'+def,h);
+	if (h.length>0) LS._SetVar('BWE:L:'+att+':'+def,h);
 	}
 function CreateHistory(att,def,node){
 	// créé l'historique à la volée
-	function CreateOverlib(e,i){ // i[0] = att, i[1] = def, i[0] = result['span'], 
+	function CreateOverlib(e,i){ // i[0] = att, i[1] = def, i[2] = node, 
 		var	histoIU = {'root':['div'],
 			'table':['table',{'style':'border-collapse:collapse;'},,,'root'],
 			'tr':['tr',{'class':'tblheader'},,,'table']},
@@ -852,7 +856,7 @@ function CreateHistory(att,def,node){
 		nbLog = PREF._Get('div','nbLo');
 	if (actuTime!=null&&_Exist(h[0])&&_Exist(h[0][1])&&nbLog>0){
 		//prépare les éléments de l'historique
-		var actuH = 0, j=0,
+		var actuH = 0, j = 0,
 			delay = (actuTime.getTime()-h[0][1])/1000,
 			delayABS = Math.abs(delay);
 		delay = delayABS<60?L._Get('sLogTime1',Math.floor(delay))
@@ -861,28 +865,23 @@ function CreateHistory(att,def,node){
 			:delayABS<31536000?L._Get('sLogTime4',Math.floor(delay/(86400)))
 			:L._Get('sLogTime5');
 		var resultIU = {
-			'span':['span',{'id':'BWElog','onmouseout':'nd();'},,,node],
-			'table':['table',{'style':'display:inline;'},,,'span'],
-			'tr':['tr',,,,'table'],
-			'td1':['td',{'class':'BWEbold'},[delay],,'tr'],
-			'td2':['td',,,,'tr'],
-			'table2':['table',,,,'td2']},
+			'span':['span',{'id':'BWElog','class':'BWEbold'},[delay],,node],
+			'span2':['span',{'class':'BWELog2'},,,node]},
 			result = IU._CreateElements(resultIU);
-		IU._addEvent(result['span'],'mouseover',CreateOverlib,[att,def,result['span']]);
+		node.setAttribute('onmouseout','nd();');
+		IU._addEvent(node,'mouseover',CreateOverlib,[att,def,node]);
 		while (_Exist(h[j])&&_Exist(h[j][1])&&j<nbLog){
 			var bgcolor = h[j][2]!=null&&_Exist(h[j][2][1])?h[j][2][1]=='r'?'#707070'
 					:h[j][2][1]=='n'?'#F07000'
 					:h[j][2][1]=='v'?att==ID?'#2A9F2A':'#DB0B32'
 					:h[j][2][1]=='d'?att==ID?'#DB0B32':'#2A9F2A'
 					:'white':'white';
-			if (j==0) result['td1'].setAttribute('style','color:'+bgcolor+';');
-			IU._CreateElements({'tr':['tr',,,,result['table2']],
-								'td':['td',{'style':'background-color:transparent;padding:1px 0 0 0;'},,,'tr'],
-								'div':['div',{'style':'height:3px;width:4px;background-color:'+bgcolor+';'},,,'td']});
+			if (j==0) result['span'].setAttribute('style','color:'+bgcolor+';');
+			IU._CreateElement('div',{'class':'BWELog3','style':'background-color:'+bgcolor+';'},[],{},result['span2']);
 			if (new Date(h[j][1]).toDateString()==actuTime.toDateString()) actuH++;
 			j++;
 			}
-		if (actuH>=2) result['td1'].textContent = '*'+result['td1'].textContent;
+		if (actuH>=2) result['span'].textContent = '*'+result['span'].textContent;
 		}
 	else{IU._CreateElement('span',{'id':'BWElog'},['-'],{},node);}
 	}
@@ -1724,7 +1723,9 @@ console.debug('BWEstart: %o %o',player,IDs);
 					ttable.setAttribute('style','display:none');
 					}
 				}
-			else if (page=='pTownview'&&PREF._Get(page,'sh')==1){
+/*			else if (page=='pBuild'&&PREF._Get(page,'sh')==1){
+				}
+*/			else if (page=='pTownview'&&PREF._Get(page,'sh')==1){
 				var target = DOM._GetFirstNode("//div[@id='content-mid']//div[@id='tw_table']"),
 					theader = DOM._GetFirstNode(".//tr[@class='tblheader']",target),
 					ttable = DOM._GetFirstNode("./ancestor::table[last()]",theader);
@@ -1825,22 +1826,27 @@ console.debug('BWEstart: %o %o',player,IDs);
 					ttable.setAttribute('style','display:none');
 					}
 				}
-			else if ((page=='pMkstone'||page=='pUpgitem'||page=='pMixitem'||page=='pDestitem'||page=='pTatoo')&&PREF._Get('div','chSt')==1){
-				var cost = new Array(['disp_stone_blood',1],['disp_stone_heart',10],['disp_stone_life',50],['disp_stone_change',150],['disp_stone_soul',500]),
-					sum = 0;
-				for (var i=0;i<cost.length;i++){
-					var result = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//span[@id='"+cost[i][0]+"']",null);
-					if (result!=null) sum = sum + (cost[i][1]*parseInt(result));
+			else if (page=='pMkstone'||page=='pUpgitem'||page=='pMixitem'||page=='pDestitem'||page=='pTatoo'){
+				if (PREF._Get('div','chSt')==1){
+					var cost = new Array(['disp_stone_blood',1],['disp_stone_heart',10],['disp_stone_life',50],['disp_stone_change',150],['disp_stone_soul',500]),
+						sum = 0;
+					for (var i=0;i<cost.length;i++){
+						var result = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//span[@id='"+cost[i][0]+"']",null);
+						if (result!=null) sum = sum + (cost[i][1]*parseInt(result));
+						}
+					var result = DOM._GetFirstNode("//div[@id='content-mid']//fieldset[@class='profile mixer']");
+					if (result!=null){
+						var totalIU = {'div1':['div',{'align':'center'}],
+										'div2':['div',{'style':'padding:2px;'},[L._Get("sTotal")],,'div1'],
+										'b':['b',,[sum],,'div2']},
+							total = IU._CreateElements(totalIU);
+						result.parentNode.insertBefore(total['div1'],result.nextSibling);
+						}
 					}
-				var result = DOM._GetFirstNode("//div[@id='content-mid']//fieldset[@class='profile mixer']");
-				if (result!=null){
-					var totalIU = {'div1':['div',{'align':'center'}],
-									'div2':['div',{'style':'padding:2px;'},[L._Get("sTotal")],,'div1'],
-									'b':['b',,[sum],,'div2']},
-						total = IU._CreateElements(totalIU);
-					result.parentNode.insertBefore(total['div1'],result.nextSibling);
+/*				if (page=='pMixitem'&&PREF._Get('div','chSt')==1){
+					
 					}
-				}
+*/				}
 			else if (page=='pAmbushRoot'&&PREF._Get('div','chLo')==1){
 				var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
 				if (atkaction!=null){
