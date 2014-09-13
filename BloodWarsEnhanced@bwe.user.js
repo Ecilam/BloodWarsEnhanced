@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2014.08.31
+// @version		2014.09.13
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2014, Ecilam
@@ -18,13 +18,13 @@
 // ==/UserScript==
 "use strict";
 
-function _Type(value){
-	var type = Object.prototype.toString.call(value);
+function _Type(v){
+	var type = Object.prototype.toString.call(v);
 	return type.slice(8,type.length-1);
 	}
 
-function _Exist(value){
-	return _Type(value)!='Undefined';
+function _Exist(v){
+	return _Type(v)!='Undefined';
 	}
 
 // passe l'objet par valeur et non par référence
@@ -40,26 +40,26 @@ function clone(objet){
 * - stringification des données
 ******************************************************/
 var JSONS = (function(){
-	function reviver(key,value){
-		if (_Type(value)=='String'){
-			var a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
+	function reviver(key,v){
+		if (_Type(v)=='String'){
+			var a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(v);
 			if (a!=null) return new Date(Date.UTC(+a[1],+a[2]-1,+a[3],+a[4],+a[5],+a[6]));
 			}
-		return value;
+		return v;
 		}
 	return {
-		_Decode: function(value){
-			var result = null;
+		_Decode: function(v){
+			var r = null;
 			try	{
-				result = JSON.parse(value,reviver);
+				r = JSON.parse(v,reviver);
 				}
 			catch(e){
-				console.error('JSONS_Decode error :',value,e);
+				console.error('JSONS_Decode error :',v,e);
 				}
-			return result;
+			return r;
 			},
-		_Encode: function(value){
-			return JSON.stringify(value);
+		_Encode: function(v){
+			return JSON.stringify(v);
 			}
 		};
 	})();
@@ -73,12 +73,12 @@ var LS = (function(){
 	var LS = window.localStorage;
 	return {
 		_GetVar: function(key,defaut){
-			var value = LS.getItem(key); // if key does not exist return null 
-			return ((value!=null)?JSONS._Decode(value):defaut);
+			var v = LS.getItem(key); // if key does not exist return null 
+			return ((v!=null)?JSONS._Decode(v):defaut);
 			},
-		_SetVar: function(key,value){
-			LS.setItem(key,JSONS._Encode(value));
-			return value;
+		_SetVar: function(key,v){
+			LS.setItem(key,JSONS._Encode(v));
+			return v;
 			},
 		_Delete: function(key){
 			LS.removeItem(key);
@@ -101,29 +101,27 @@ var LS = (function(){
 var DOM = (function(){
 	return {
 		_GetNodes: function(path,root){
-			var contextNode=(_Exist(root)&&root!=null)?root:document;
-			var result=document.evaluate(path, contextNode, null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-			return result;
+			return (_Exist(root)&&root==null)?null:document.evaluate(path,(_Exist(root)?root:document), null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
 			},
 		_GetFirstNode: function(path,root){
-			var result = this._GetNodes(path,root);
-			return ((result.snapshotLength >= 1)?result.snapshotItem(0):null);
+			var r = this._GetNodes(path,root);
+			return (r!=null&&r.snapshotLength>=1?r.snapshotItem(0):null);
 			},
 		_GetLastNode: function(path, root){
-			var result = this._GetNodes(path,root);
-			return ((result.snapshotLength >= 1)?result.snapshotItem(result.snapshotLength-1):null);
+			var r = this._GetNodes(path,root);
+			return (r!=null&&r.snapshotLength>=1?r.snapshotItem(r.snapshotLength-1):null);
 			},
 		_GetFirstNodeTextContent: function(path,defaultValue,root){
-			var result = this._GetFirstNode(path,root);
-			return (((result!=null)&&(result.textContent!=null))?result.textContent:defaultValue);
+			var r = this._GetFirstNode(path,root);
+			return (r!=null&&r.textContent!=null?r.textContent:defaultValue);
 			},
 		_GetFirstNodeInnerHTML: function(path,defaultValue,root){
-			var result = this._GetFirstNode(path,root);
-			return (((result!=null)&&(result.innerHTML!=null))?result.innerHTML:defaultValue);
+			var r = this._GetFirstNode(path,root);
+			return (r!=null&&r.innerHTML!=null?r.innerHTML:defaultValue);
 			},
 		_GetLastNodeInnerHTML: function(path,defaultValue,root){
-			var result = this._GetLastNode(path,root);
-			return (((result!=null)&&(result.innerHTML!=null))?result.innerHTML:defaultValue);
+			var r = this._GetLastNode(path,root);
+			return (r!=null&&r.innerHTML!=null?r.innerHTML:defaultValue);
 			},
 		// retourne la valeur de la clé "key" trouvé dans l'url
 		// null: n'existe pas, true: clé existe mais sans valeur, autres: valeur
@@ -147,16 +145,16 @@ var IU = (function(){
 		// reçoit une liste d'éléments pour créér l'interface
 		// ex: {'name':['input',{'type':'checkbox','checked':true},['coucou'],{'click':[funcname,5]},body]
 		_CreateElements: function(list){
-			var result = {};
+			var r = {};
 			for (var key in list){
 				var type = _Exist(list[key][0])?list[key][0]:null,
 					attributes = _Exist(list[key][1])?list[key][1]:{},
 					content = _Exist(list[key][2])?list[key][2]:[],
 					events = _Exist(list[key][3])?list[key][3]:{},
-					node = _Exist(result[list[key][4]])?result[list[key][4]]:(_Exist(list[key][4])?list[key][4]:null);
-				if (type!=null) result[key] = this._CreateElement(type,attributes,content,events,node);
+					node = _Exist(r[list[key][4]])?r[list[key][4]]:(_Exist(list[key][4])?list[key][4]:null);
+				if (type!=null) r[key] = this._CreateElement(type,attributes,content,events,node);
 				}
-			return result;
+			return r;
 			},
 		_CreateElement: function(type,attributes,content,events,node){
 			if (_Exist(type)&&type!=null){
@@ -164,27 +162,27 @@ var IU = (function(){
 				content = _Exist(content)?content:[];
 				events = _Exist(events)?events:{};
 				node = _Exist(node)?node:null;
-				var result = document.createElement(type);
+				var r = document.createElement(type);
 				for (var key in attributes){
-					if (_Type(attributes[key])!='Boolean') result.setAttribute(key,attributes[key]);
-					else if (attributes[key]==true) result.setAttribute(key,key.toString());
+					if (_Type(attributes[key])!='Boolean') r.setAttribute(key,attributes[key]);
+					else if (attributes[key]==true) r.setAttribute(key,key.toString());
 					}
 				for (var key in events){
-					this._addEvent(result,key,events[key][0],events[key][1]);
+					this._addEvent(r,key,events[key][0],events[key][1]);
 					}
 				for (var i=0; i<content.length; i++){
-					if (_Type(content[i])==='Object') result.appendChild(content[i]);
-					else result.textContent+= content[i];
+					if (_Type(content[i])==='Object') r.appendChild(content[i]);
+					else r.textContent+= content[i];
 					}
-				if (node!=null) node.appendChild(result);
-				return result;
+				if (node!=null) node.appendChild(r);
+				return r;
 				}
 			else return null;
 			},
 		// IU._addEvent(obj: objet,type: eventype,fn: function,par: parameter);
-		// function fn(e,par) {alert('result : ' + this.value+e.type+par);}
+		// function fn(e,par) {alert('r : ' + this.value+e.type+par);}
 		// this = obj, e = event
-		// ex : IU._addEvent(result,'click',test,"2");
+		// ex : IU._addEvent(r,'click',test,"2");
 		_addEvent: function(obj,type,fn,par){
 			var funcName = function(event){return fn.call(obj,event,par);};
 			obj.addEventListener(type,funcName,false);
@@ -220,16 +218,10 @@ var L = (function(){
 	var locStr = {// key:[français,anglais,polonais]
 		//DATAS
 		"sNiveau":["NIVEAU ([0-9]+)","LEVEL ([0-9]+)","POZIOM ([0-9]+)"],
-		"sXP":
-			["EXPÉRIENCE: <strong>([0-9 ]+)<\\/strong> \\/ ([0-9 ]+)",
-			"EXPERIENCE: <strong>([0-9 ]+)<\\/strong> \\/ ([0-9 ]+)",
-			"DOŚWIADCZENIE: <strong>([0-9 ]+)<\\/strong> \\/ ([0-9 ]+)"],
 		"sPdP":
 			["PTS DE PROGRÈS: <strong>([0-9 ]+)<\\/strong>",
 			"PTS OF PROGRESS: <strong>([0-9 ]+)<\\/strong>",
 			"PKT ROZWOJU: <strong>([0-9 ]+)<\\/strong>"],
-		"sLOL":["([0-9 ]+) LOL","([0-9 ]+) Lgo","([0-9 ]+) PLN"],
-		"sPopulation":["([0-9 ]+) "],
 		"sDeconnecte":
 			["Vous avez été déconnecté en raison d`une longue inactivité.",
 			"You have been logged out because of inactivity.",
@@ -252,14 +244,27 @@ var L = (function(){
 		"sSexeF":["F","F","K"],
 		"sProfAtt":["ATT:","ATT:","ATA:"],
 		"sProfDef":["DEF:","DEF:","OBR:"],
-		// Titres des Groupes
-		"BWEgrpA":["GROUPE A","GROUP A","GRUPA A"],
-		"BWEgrpB":["GROUPE B","GROUP B","GRUPA B"],
-		"BWEgrpAct":["ACTIONS","ACTIONS","AKCJA"],
-		"BWEgrpPl":["$1 joueur","$1 player","$1 gracz"],
-		"BWEgrpPls":["$1 joueurs","$1 players","$1 gracze"],
-		"BWEgrpTt":["Somme:","Sum:","Suma:"],
-		"BWEgrpMoy":["Moyenne:","Average:","Średnia:"],
+		// Groupes
+		"sGrpA":["GROUPE A","GROUP A","GRUPA A"],
+		"sGrpB":["GROUPE B","GROUP B","GRUPA B"],
+		"sGrpAct":["ACTIONS","ACTIONS","AKCJA"],
+		"sGrpPl":["$1 joueur","$1 player","$1 gracz"],
+		"sGrpPls":["$1 joueurs","$1 players","$1 gracze"],
+		"sGrpTt":["Somme:","Sum:","Suma:"],
+		"sGrpMoy":["Moyenne:","Average:","Średnia:"],
+		// Constructions
+		"sBuildZone":["ZONE ([0-9]+)","ZONE ([0-9]+)","STREFA ([0-9]+)"],
+		"sBuildPrgUp":["Actuellement en construction","Under construction","Aktualnie budowany"],  			 
+		"sBuildPrgDown":["Démolition","Demolition","wyburzanie"],
+		"sBuildNiv":["\\(NIVEAU ([0-9]+)\\)","\\(LEVEL ([0-9]+)\\)","\\(POZIOM ([0-9]+)\\)"],
+		"sBuildNewOk":["FAIRE CONSTRUIRE","BUILD","ZBUDUJ"],
+		"sBuildUpOk":["DÉVELOPPER JUSQU`AU NIVEAU","UPGRADE TO LEVEL","ROZBUDOWA DO POZIOMU"],
+		"sBuildDownOk":["DEMOLIR UN NIVEAU DE BATIMENT","DEMOLISH ONE LEVEL","WYBURZ JEDEN POZIOM"],
+		"sBuildlol":["LOL","Lgo","PLN"],
+		"sBuildMdo":["de mains-d`œuvre","people","ludzi"],
+		"sBuildSang":["litres de sang","litres of blood","litrów krwi"],
+		"sBuildTime":["<b>Temps de construction:<\\/b>\\s*","<b>Time of construction:<\\/b>\\s*","<b>Czas budowy:<\\/b>\\s*"],
+		"sBuildMaxLvl":["Niveau max","Max level","Max poziom"],
 		// Divers
 		"sNivFormat":["$1 ($2)"],
 		// Race
@@ -270,14 +275,13 @@ var L = (function(){
 		"sTriUp":["▲"],
 		"sTriDown":["▼"],
 		"sTriOLTest":
-			["^(([0-9]+) j\\. |)(([0-9]+) h |)(([0-9]+) min |)(([0-9]+) sec\\.|)\\s?$",
-			"^(([0-9]+) day\\(s\\) |)(([0-9]+) hour\\(s\\) |)(([0-9]+) min\\. |)(([0-9]+) sec\\.|)\\s?$",
-			"^(([0-9]+) d\\. |)(([0-9]+) godz\\. |)(([0-9]+) min\\. |)(([0-9]+) sek\\.|)\\s?$"],
+			["(?:([0-9]+) j\\.? ?|)(?:([0-9]+) h ?|)(?:([0-9]+) m(?:in)? ?|)(?:([0-9]+) s(?:ec\\.)? ?|)",
+			"(?:([0-9]+) d(?:ay\\(s\\))? ?|)(?:([0-9]+) h(?:our\\(s\\))? ?|)(?:([0-9]+) m(?:in\\.)? ?|)(?:([0-9]+) s(?:ec\\.)? ?|)",
+			"(?:([0-9]+) d\\.? ?|)(?:([0-9]+) g(?:odz\\.)? ?|)(?:([0-9]+) m(?:in\\.)? ?|)(?:([0-9]+) s(?:ek\\.)? ?|)"],
 		"sTriImgTest":[".*/._(ok|not)\\.gif"],
 		"sTriAdrTest":["([0-9]+)\\/([0-9]+)\\/([0-9]+)"],
-		"sTriNbTest":["^([0-9]+(?:\\.[0-9]*)?)$"],
+		"sTriNbTest":["^([0-9 ]+)(?:\\.?|->[0-9]+)$"],
 		"sTriPtsTest":["^([0-9]+)(?:\\-[0-9]+)? \\(([0-9 ]+)\\)$"],
-		"sTriPrcTest":["^([0-9]+)\\([0-9 ]+\\%\\)$"],
 		// pMsgList/pMsgSaveList
 		"sTitleIndex":["Titre du message","Message title","Tytuł wiadomości"],
 		"sDateIndex":["Date d`envoi","Send date","Data wysłania"],
@@ -389,7 +393,9 @@ var L = (function(){
 			"NIVEAU","Pts DE VIE","Défense","FORCE","AGILITÉ","RÉSISTANCE","APPARENCE","CHARISME","RÉPUTATION","PERCEPTION","INTELLIGENCE","SAVOIR","AGI+PER", // 43-55
 			"PdP","PdH","Pts évo","LOL","Sang","Pop", // 56-61
 			"<Checkbox>","Titre du message","Expéditeur","Date d`envoi", // 62-65
-			"<Place au classement>","Nom du clan","Tag du clan","Chef","Date de la fondation","Membres"], // 66-71
+			"<Place au classement>","Nom du clan","Tag du clan","Chef","Date de la fondation","Membres", // 66-71
+			"LISTE D`AMIS", //72
+			"Zone","Bâtiment","Niveau","Sang","Argent","Population","Temps","Actions"], // 73-80
 			["RACE","SEX","ADDRESS","CLAN","<empty>","LEVEL","POINTS","LVL (PTS)","GROUP","STATUS","Standing","Date of entry","Last logged","Provenance","HISTORY",
 			"Name","On-line","<On-line>","<Expedition>","King Of the hill","Rank","A-B","SEX - icon","ATT","<ATTACK>","DEF",
 			"STANDING","NAME","<N° of square>","SQUARE OWNER","ACTIONS",
@@ -398,7 +404,9 @@ var L = (function(){
 			"LEVEL","HIT POINTS","Defence","STRENGTH","AGILITY","TOUGHNESS","APPEARANCE","CHARISMA","REPUTATION","PERCEPTION","INTELLIGENCE","KNOWLEDGE","AGI+PER",
 			"PoP","PoH","Evo pts","Lgo","blood","People",
 			"<Checkbox>","Message title","Sender","Send date",
-			"<Place ranking>","Clan name","Clan tag","Leader","Creation date","Members"],
+			"<Place ranking>","Clan name","Clan tag","Leader","Creation date","Members",
+			"FRIENDLIST",
+			"Zone","Building","Level","Blood","Money","People","Time","Action"],
 			["RASA","PŁEĆ","ADRES","KLAN","<pusty>","POZIOM","PUNKTY","POZ (PKT)","GRUPA","STATUS","Miejsce w rankingu","Data dołączenia","Ostatnie logowanie","Pochodzenie","HISTORY",
 			"Imię","On-line","<On-line>","<Ekspedycja>","Król Wzgórza","Ranga","A-B","PŁEĆ - ikona","ATA","<NAPADNIJ>","OBR",
 			"MIEJSCE","IMIĘ","<N° kwadratu>","WŁADCA KWADRATU","DZIAŁANIA",
@@ -407,7 +415,9 @@ var L = (function(){
 			"POZIOM","PKT. ŻYCIA","Obrona","SIŁA","ZWINNOŚĆ","ODPORNOŚĆ","WYGLĄD","CHARYZMA","WPŁYWY","SPOSTRZEGAWCZOŚĆ","INTELIGENCJA","WIEDZA","ZWI+SPO",
 			"Pkt roz","Pkt rep","Pkt ewo","PLN","Krew","Ludzie",
 			"<Checkbox>","Tytuł wiadomości","Nadawca","Data wysłania",
-			"<Ranking umieszczać>","Nazwa klanu","Tag klanu","Przywódca","Data powstania","Członków"]],
+			"<Ranking umieszczać>","Nazwa klanu","Tag klanu","Przywódca","Data powstania","Członków",
+			"LISTA PRZYJACIÓŁ",
+			"Strefa","Budowy","Poziom","Krew","Pieniądze","Ludzie","Czas","Akcja"]],
 		// Menus
 		"sTitleMenu1":["BWE - OPTIONS","BWE - OPTIONS","BWE - OPCJE"],
 		"sTitleMenu2":["BWE - BASE DE DONNÉES","BWE - DATABASE","BWE - BAZY DANYCH"],
@@ -422,7 +432,7 @@ var L = (function(){
 		"sMiddle":["M","M","Ś"],
 		"sRight":["D","R","P"],
 		"sTitresList": [["Tableaux","Votre Profile","Autres Profiles","Vue sur la Cité","Votre Clan","Autres Clans","Liste des Clans","Classement",// 0-7
-				"Messagerie","Réception","Sauvegarde","Envoi", //8-11
+				"Messagerie","Réception","Sauvegarde","Envoi",//8-11
 				"Historique","Principal","- Divers","- Caractéristiques","- Ressources"],// 12-16
 			["Tables","Profile owner","Other Profiles","View of the city","Clan owner","Other Clans","List of Clans","Ranking",
 			"Messaging","Reception","Safeguard","Sending",
@@ -431,11 +441,11 @@ var L = (function(){
 			"Wiadomości","Recepcja","Zabezpieczenie","Wysyłanie",
 			"Historia","Główny","- Różny","- Charakterystyka","- Zasoby"]],
 		"sTitresDiv": [["Afficher/Masquer les descriptions des clans","Tri liste des amis","Total des pierres","Historique : nombre de lignes","Historique : collecte des données",
-			"Aide aux embuscades :","+ Niveau","+ Classement","- Minimum","- Maximum","- Ecart inférieur","- Ecart supérieur"],
+			"Aide aux embuscades :","+ Niveau","+ Classement","- Minimum","- Maximum","- Ecart inférieur","- Ecart supérieur","Tableau des constructions"],
 			["Show/Hide descriptions clans","Sort list of friends","Total stones","History: number of lines","History : data collection",
-				"Help for ambushes :","Level","Ranking","- Minimum","- Maximum","- Gap lower","- Gap higher"],
+				"Help for ambushes :","Level","Ranking","- Minimum","- Maximum","- Gap lower","- Gap higher","Building array"],
 			["Pokaż/Ukryj opisy klany","Sortuj listę znajomych","Całkowitej kamienie","Historia: liczba linii","Historia: zbieranie danych",
-				"Pomoc dla zasadzki :","Poziom","Ranking","- Minimalny","- Maksymalny","- luka niższy","- luka wyższa"]],
+				"Pomoc dla zasadzki :","Poziom","Ranking","- Minimalny","- Maksymalny","- luka niższy","- luka wyższa","Tablica budynek"]],
 		"sDefaut":["Par défaut","By default","Zaocznie"],
 		"sAlertMsg":
 			["ATTENTION! Cette page vous permet d'effacer les données du Script. A utiliser avec précaution.",
@@ -476,15 +486,15 @@ var L = (function(){
 		// ex: "test": ["<b>$2<\/b> a tué $1 avec $3.",]
 		// L._Get('test','Dr Moutarde','Mlle Rose','le chandelier'); => "<b>Mlle Rose<\/b> a tué le Dr Moutarde avec le chandelier."
 		_Get: function(key){
-			var result = locStr[key];
-			if (!_Exist(result)) throw new Error("L::Error:: la clé n'existe pas : "+key);
-			if (_Exist(result[langue])) result = result[langue];
-			else result = result[0];
+			var r = locStr[key];
+			if (!_Exist(r)) throw new Error("L::Error:: la clé n'existe pas : "+key);
+			if (_Exist(r[langue])) r = r[langue];
+			else r = r[0];
 			for (var i=arguments.length-1;i>=1;i--){
 				var reg = new RegExp("\\$"+i,"g");
-				result = result.replace(reg,arguments[i]);
+				r = r.replace(reg,arguments[i]);
 				}
-			return result;
+			return r;
 			}
 		};
 	})();
@@ -497,9 +507,9 @@ var DATAS = (function(){
 	// pour _Time()
 	var timeDiff = null,
 		stTime = new Date(),
-		result = DOM._GetFirstNodeInnerHTML("/html/body/script",null),
-		result2 = /var timeDiff = ([0-9]+) - Math\.floor\(stTime\.getTime\(\)\/1000\) \+ ([0-9]+) \+ stTime\.getTimezoneOffset\(\)\*60;/.exec(result);
-	if (result2!=null) timeDiff = parseInt(result2[1]) - Math.floor(stTime.getTime()/1000) + parseInt(result2[2]) + stTime.getTimezoneOffset()*60;
+		r = DOM._GetFirstNodeInnerHTML("/html/body/script",null),
+		r2 = /var timeDiff = ([0-9]+) - Math\.floor\(stTime\.getTime\(\)\/1000\) \+ ([0-9]+) \+ stTime\.getTimezoneOffset\(\)\*60;/.exec(r);
+	if (r2!=null) timeDiff = parseInt(r2[1]) - Math.floor(stTime.getTime()/1000) + parseInt(r2[2]) + stTime.getTimezoneOffset()*60;
 	var _PlayerExpBar = function(){
 		var stats = DOM._GetFirstNode("//div[@class='stats-player']/div[@class='expbar']"),
 			player_datas = stats?stats.getAttribute('onmouseover'):null;
@@ -520,24 +530,24 @@ var DATAS = (function(){
 			},
 		_PlayerLevel: function(){ // Niveau => /NIVEAU ([0-9]+)/
 			var playerLevel = new RegExp(L._Get('sNiveau')).exec(_PlayerExpBar());
-			if (playerLevel!=null) playerLevel=parseInt((playerLevel[1]).replace(/ /g,""));
+			if (playerLevel!=null) playerLevel=parseInt((playerLevel[1]).replace(new RegExp(' ','g'),''));
 			return playerLevel;
 			},
 		_PlayerPdP: function(){// PdP => /PTS DE PROGRÈS: <strong>([0-9 ]+)<\/strong>/
 			var playerPdP=new RegExp(L._Get('sPdP')).exec(_PlayerExpBar());
-			if (playerPdP!=null) playerPdP=parseInt((playerPdP[1]).replace(/ /g,""));
+			if (playerPdP!=null) playerPdP=parseInt((playerPdP[1]).replace(new RegExp(' ','g'),''));
 			return playerPdP;
 			},
 	/* Données diverses	*/
 		_GetPage: function(){
-			var page = 'null',
+			var p = 'null',
 			// message Serveur (à approfondir)
-				result = DOM._GetFirstNode("//div[@class='komunikat']");
-			if (result!=null){
-				var result = DOM._GetFirstNodeTextContent(".//u",result);
-				if (result == L._Get('sDeconnecte')) page="pServerDeco";
-				else if (result == L._Get('sCourtePause')) page="pServerUpdate";
-				else page="pServerOther";
+				r = DOM._GetFirstNode("//div[@class='komunikat']");
+			if (r!=null){
+				var r = DOM._GetFirstNodeTextContent(".//u",r);
+				if (r == L._Get('sDeconnecte')) p="pServerDeco";
+				else if (r == L._Get('sCourtePause')) p="pServerUpdate";
+				else p="pServerOther";
 				}
 			else{
 				var qsA = DOM._QueryString("a"),
@@ -551,65 +561,65 @@ var DATAS = (function(){
 				else if (qsA=="profile"){
 					var qsUid = DOM._QueryString("uid");
 					var qsEdit = DOM._QueryString("edit");
-					if (qsUid==null) page="pOProfile";
-					else if (!qsEdit) page="pProfile";
+					if (qsUid==null) p="pOProfile";
+					else if (!qsEdit) p="pProfile";
 					}
 				// Salle du Trône
-				else if (qsA==null||qsA=="main") page="pMain";
+				else if (qsA==null||qsA=="main") p="pMain";
 				// Site de construction
-				else if (qsA=="build") page="pBuild";
+				else if (qsA=="build") p="pBuild";
 				// Vue sur la Cité
-				else if (qsA=="townview") page="pTownview";
+				else if (qsA=="townview") p="pTownview";
 				// Clan
 				else if (qsA=="aliance"){
-					if (qsDo=="list") page="pAlianceList";
-					else if (qsDo==null||qsDo=="leave") page="pOAliance";
+					if (qsDo=="list") p="pAlianceList";
+					else if (qsDo==null||qsDo=="leave") p="pOAliance";
 					else if (qsDo=="view"){
-						var result = DOM._GetFirstNode("//div[@class='top-options']/span[@class='lnk']");
-						if (result!=null) page="pOAliance";
-						else page="pAliance";
+						var r = DOM._GetFirstNode("//div[@class='top-options']/span[@class='lnk']");
+						if (r!=null) p="pOAliance";
+						else p="pAliance";
 						}
 					} 
 				// Le Puits des Âmes - Moria I
 				else if (qsA=="mixer"){
-					if (qsDo==null||qsDo=="mkstone") page="pMkstone";
-					else if (qsDo=="upgitem") page="pUpgitem";
-					else if (qsDo=="mixitem") page="pMixitem";
-					else if (qsDo=="destitem") page="pDestitem";
-					else if (qsDo=="tatoo") page="pTatoo";
+					if (qsDo==null||qsDo=="mkstone") p="pMkstone";
+					else if (qsDo=="upgitem") p="pUpgitem";
+					else if (qsDo=="mixitem") p="pMixitem";
+					else if (qsDo=="destitem") p="pDestitem";
+					else if (qsDo=="tatoo") p="pTatoo";
 					}
 				// Préparer une embuscade
 				else if (qsA=="ambush"){
 					var qsOpt = DOM._QueryString("opt");
-					if (qsOpt==null) page="pAmbushRoot";
+					if (qsOpt==null) p="pAmbushRoot";
 					}
 				// Page des messages
 				else if (qsA=="msg"){
 					var qsType = DOM._QueryString("type");
 					if (qsDo==null||qsDo=="list"){
-						if (qsType==null||qsType=="1") page="pMsgList";
-						else if (qsType=="2") page="pMsgSaveList";
-						else if (qsType=="3") page="pMsgSendList";
+						if (qsType==null||qsType=="1") p="pMsgList";
+						else if (qsType=="2") p="pMsgSaveList";
+						else if (qsType=="3") p="pMsgSendList";
 						}
-					else if (qsDo=="fl") page="pMsgFriendList";
+					else if (qsDo=="fl") p="pMsgFriendList";
 					else if (qsDo=="view" && qsMid!=null){
-						if (qsType==null||qsType=="1") page="pMsg";
-						else if (qsType=="2") page="pMsgSave";
-						else if (qsType=="3") page="pMsgSend";
+						if (qsType==null||qsType=="1") p="pMsg";
+						else if (qsType=="2") p="pMsgSave";
+						else if (qsType=="3") p="pMsgSend";
 						}
 					}
 				// Page Classement
-				else if (qsA=="rank") page="pRank";
+				else if (qsA=="rank") p="pRank";
 				// Page Préférences
 				else if (qsA=="settings"){
-					if (qsDo==null) page="pRootSettings";
-					else if (qsDo=="ai") page="pSettingsAi";
-					else if (qsDo=="acc") page="pSettingsAcc";
-					else if (qsDo=="vac") page="pSettingsVac";
-					else if (qsDo=="delchar") page="pSettingsDelchar";
+					if (qsDo==null) p="pRootSettings";
+					else if (qsDo=="ai") p="pSettingsAi";
+					else if (qsDo=="acc") p="pSettingsAcc";
+					else if (qsDo=="vac") p="pSettingsVac";
+					else if (qsDo=="delchar") p="pSettingsDelchar";
 					}
 				}
-			return page;
+			return p;
 			}
 		};
 	})();
@@ -623,8 +633,8 @@ var PREF = (function(){
 		defPrefs = {
 		// Tableaux - sélection des colonnes/lignes
 		// sh : Affiche (0=non,1=oui), tri (0=ascendant,1=descendant)
-		// list: [n°titre des colonnes (cf sColTitle),afficher{1:0},n°colonne originale(-1 si a créer)]
-		// Tableaux existants
+		// list: [n°titre des colonnes (cf sColTitle),afficher{1:0},n°colonne originale(-1 si a créer),alignement]
+		// pages existantes
 		'pOProfile':{'sh':1,'list':[[0,1,0,0],[1,1,1,0],[2,1,2,0],[3,1,3,0],[4,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[8,0,-1,0],[10,1,7,0],[9,1,8,0],[4,1,9,0],[11,1,10,0],[12,1,11,0],[4,1,12,0],[13,1,13,0]]},
 		'pProfile':{'sh':1,'list':[[0,1,0,0],[1,1,1,0],[2,1,2,0],[3,1,3,0],[4,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[8,0,-1,0],[14,1,-1,0],[10,1,7,0],[9,1,8,0],[4,1,9,0],[11,1,10,0],[12,1,11,0],[4,1,12,0],[13,1,13,0]]},
 		'pTownview':{'sh':1,'tri':[1,1],'list':[[28,1,1,2],[29,1,2,0],[9,1,3,0],[6,0,4,0],[5,0,-1,0],[7,1,-1,0],[23,1,-1,2],[24,1,5,1],[25,1,-1,0],[0,1,6,0],[1,0,7,0],[22,1,-1,1],[3,1,8,0],[30,1,9,0]]},
@@ -634,8 +644,9 @@ var PREF = (function(){
 		'pMsgList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
 		'pMsgSaveList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
 		'pMsgSendList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
-		'pMsgFriendList':{'sh':1,'tri':[1,1],'list':[[-1,1,1,0],[-1,1,2,0]]},
+		'pMsgFriendList':{'sh':1,'tri':[1,1],'list':[[72,1,1,1],[-1,1,2,1]]},
 		'pRank':{'sh':1,'tri':[1,1],'list':[[26,1,1,2],[27,1,2,0],[0,1,3,0],[1,0,4,0],[22,1,-1,1],[23,1,-1,2],[24,1,5,1],[25,1,-1,0],[2,1,6,0],[3,1,7,0],[5,0,-1,0],[6,0,8,0],[7,1,-1,0]]},
+		'pBuild':{'sh':1,'tri':[1,0]},
 		// tableaux à créer
 		'grp':{'sh':1,'tri':[1,1]},
 		'hlog':{'list':[[31,1],[32,1],[33,1],[34,1],[35,1],[36,1]]},
@@ -662,10 +673,10 @@ var PREF = (function(){
 			if (_Exist(defPrefs[grp])&&_Exist(defPrefs[grp][key]))return defPrefs[grp][key];
 			else return null;
 			},
-		_Set: function(grp,key,value){
+		_Set: function(grp,key,v){
 			if (ID!=null){
 				if (!_Exist(prefs[grp])) prefs[grp] = {};
-				prefs[grp][key] = value;
+				prefs[grp][key] = v;
 				LS._SetVar(index+ID,prefs);
 				}
 			},
@@ -679,41 +690,75 @@ var PREF = (function(){
 /******************************************************
 * CSS
 ******************************************************/
-function SetCSS(){
-	const css = "@-moz-keyframes blinker {from {opacity:1;} 50% {opacity:0.1;} to {opacity:1;}}"
-		+"@-webkit-keyframes blinker {from {opacity:1;} to {opacity:0;}}"
-		+".BWEblink {-webkit-animation-name: blinker;-webkit-animation-iteration-count: infinite;-webkit-animation-timing-function: cubic-bezier(1.0,0,0,1.0);-webkit-animation-duration: 1s;"
-		+"-moz-animation-name: blinker;-moz-animation-iteration-count: infinite;-moz-animation-timing-function: cubic-bezier(1.0,0,0,1.0);-moz-animation-duration: 1s;}"
-		+".BWEtriSelect{color:lime;}"
-		+".BWEOpacity{opacity:1;}"
-		+".BWEtriNoSelect{color:#A9A9A9;}"
-		+".BWEsexF{color:#AD00A5;}"
-		+".BWEsexH{color:#006BAD;}"
-		+".BWEAEBut,.BWEAEButError{height:10px;margin:2px 0;}"
-		+".BWEAEButError{background-color:red;}"
-		+".BWEHelp{border:0;vertical-align:middle;padding:3px 5px;}"
-		+".BWELeft,.BWERight,.BWEMiddle,.BWELeftHeader,.BWEMiddleHeader,.BWERightHeader,.BWELogTD,.BWEGrpChg,.BWEGrpDel{padding:1px;text-align:left;white-space:nowrap;}"
-		+".BWELog2{display:inline-block;vertical-align:middle;}"
-		+".BWELog3{height:3px;width:4px;margin:1px 2px;}"
-		+".BWELogTD2{padding:1px 4px;text-align:left;white-space:nowrap;}"
-		+".BWELeft2{padding: 0 10px;text-align:left;}"
-		+".BWEGrpChg,.BWEGrpDel{color:#FFF;background-color:#F07000;border:thin solid #000;}"
-		+".BWEGrpDel{color:#FFF;background-color:red;}"
-		+".BWELogTD{border:thin dotted #000;}"
-		+".BWERight,.BWERightHeader{text-align:right;}"
-		+".BWEMiddle,.BWEMiddleHeader,.BWEGrpChg,.BWEGrpDel{text-align:center;}"
-		+".BWEGrpChg,.BWEGrpDel,.BWEPrefTD1,.BWEbold{font-weight:700;}"
-		+".BWEMenu,.BWETabMsg{margin-left:auto;margin-right:auto;padding:0;border-collapse:collapse;}"
-		+".BWELeftHeader,.BWEMiddleHeader,.BWERightHeader,.BWEGrpChg,.BWEGrpDel,.BWEPrefTD2,.BWEPrefTD3 a{cursor: pointer;}"
-		+".BWEPrefTD1,.BWEPrefTD2,.BWEPrefTD3{padding: 1px;text-align:left;white-space: nowrap;}"
-		+".BWEPrefTD3{width:10px;}"
-		+".BWEselectLS,.BWEdivLS,.BWEdivIE{width:20em;height:20em;margin:0;}"
-		+".BWEdivLS,.BWEdivIE{overflow:auto;word-wrap:break-word;white-space:normal;}",
-		head = DOM._GetFirstNode("//head");
-	if (head!=null) IU._CreateElement('style',{'type':'text/css'},[css],{},head);
+function getCssRules(selector,sheet){
+    var sheets = _Exist(sheet)?[sheet]:document.styleSheets;
+    for (var i = 0; i<sheets.length; i++){
+        var sheet = sheets[i];
+        if(!sheet.cssRules) continue;
+        for (var j=0;j<sheet.cssRules.length;j++){
+            var rule = sheet.cssRules[j];
+            if (rule.selectorText&&rule.selectorText.split(',').indexOf(selector)!==-1) return rule.style;
+			}
+		}
+    return null;
 	}
-
-
+function SetCSS(){
+	const css = 
+		// Global
+		[".BWELeft{text-align: left;padding: 1px;white-space: nowrap;}",
+		".BWERight{text-align: right;padding: 1px;white-space: nowrap;}",
+		".BWEMiddle{text-align: center;padding: 1px;white-space: nowrap;}",
+		".BWELeftHeader{text-align: left;padding: 1px;white-space: nowrap;cursor: pointer;}",
+		".BWERightHeader{text-align: right;padding: 1px;white-space: nowrap;cursor: pointer;}",
+		".BWEMiddleHeader{text-align: center;padding: 1px;white-space: nowrap;cursor: pointer;}",
+		".BWEInput{padding: 1px;margin:0px 2px;}",
+		".BWEbold{font-weight: 700;}",
+		".BWEtriSelect{color:lime;}",
+		".BWEtriNoSelect{color:#A9A9A9;}",
+		".BWEsexF{color:#AD00A5;}",
+		".BWEsexH{color:#006BAD;}",
+		// blink
+		"@-moz-keyframes blinker {from {opacity:1;} 50% {opacity:0.1;} to {opacity:1;}}",
+		"@-webkit-keyframes blinker {from {opacity:1;} to {opacity:0;}}",
+		".BWEblink {-webkit-animation-name: blinker;-webkit-animation-iteration-count: infinite;-webkit-animation-timing-function: cubic-bezier(1.0,0,0,1.0);-webkit-animation-duration: 1s;",
+		"-moz-animation-name: blinker;-moz-animation-iteration-count: infinite;-moz-animation-timing-function: cubic-bezier(1.0,0,0,1.0);-moz-animation-duration: 1s;}",
+		// Bâtiment
+		".BWEBuild{table-layout: fixed;}",
+		".BWEBuild th{border:thin dotted black;}",
+		".BWEBuild td{width: 100%;text-overflow: ellipsis;-o-text-overflow: ellipsis;overflow: hidden;white-space: nowrap;}",
+		".BWEBldChg{text-align: center;color: #FFF;background-color: #F07000;font-weight: 700;white-space: nowrap;cursor: pointer;padding: 1px;}",
+		".BWEBldDel{text-align: center;color: #FFF;background-color: red;font-weight: 700;white-space: nowrap;cursor: pointer;padding: 1px;}",
+		".BWEBldOk{text-align: center;color: #FFF;background-color: green;font-weight: 700;white-space: nowrap;cursor: pointer;padding: 1px;}",
+		// Groupe
+		".BWEGrp{table-layout: fixed;}",
+		".BWEGrp td{width: 100%;text-overflow: ellipsis;-o-text-overflow: ellipsis;overflow:hidden;white-space: nowrap;}",
+		".BWEGrpChg{text-align: center;color: #FFF;background-color: #F07000;font-weight: 700;white-space: nowrap;cursor: pointer;padding: 1px;}",
+		".BWEGrpDel{text-align: center;color: #FFF;background-color: red;font-weight: 700;white-space: nowrap;cursor: pointer;padding: 1px;}",
+		// historique
+		".BWELog2{display: inline-block;vertical-align: middle;}",
+		".BWELog3{height: 3px;width: 4px;margin: 1px 2px;}",
+		".BWELogTD{border: thin dotted black;white-space: nowrap;padding: 1px;text-align: left;}",
+		".BWELogTD2{width:100%;padding:1px 4px;white-space: nowrap;}",
+		// Préférences
+		".BWEPrefTD1{font-weight: 700;white-space: nowrap;padding: 1px;text-align: left;}",
+		".BWEPrefTD2{white-space: nowrap;cursor: pointer;padding: 1px;text-align: left;}",
+		".BWEPrefTD3{width: 10px;white-space: nowrap;padding: 1px;text-align: left;}",
+		".BWEPrefTD3 a{cursor: pointer;}",
+		".BWEHelp{border:0;vertical-align:middle;padding:3px 5px;}",
+		".BWEAEButError{color:#FFF;background-color:red;}",
+		".BWEMenu,.BWETabMsg{margin-left:auto;margin-right:auto;padding:0;border-collapse:collapse;}",
+		".BWEselectLS,.BWEdivLS,.BWEdivIE{width:20em;height:20em;margin:0;}",
+		".BWEdivLS,.BWEdivIE{overflow:auto;word-wrap:break-word;white-space:normal;}"],
+		head = DOM._GetFirstNode("//head");
+	if (head!=null){
+		var even = getCssRules('.even',document.styleSheets[0]),
+			selectedItem = getCssRules('.selectedItem',document.styleSheets[0]);
+		if (even!=null&&selectedItem!=null) css.push('.BWEeven{'+even.cssText+'}','.BWETR:hover{'+selectedItem.cssText+'}');
+		IU._CreateElement('style',{'type':'text/css'},[css.join('')],{},head);
+		}
+console.debug('css',even,selectedItem,css);
+	}
+	
 /******************************************************
 * FUNCTIONS
 ******************************************************/
@@ -781,14 +826,16 @@ function CreateHistory(att,def,node){
 						for (var y=0; y<div.length; y++){
 							if (div[y][1]==1){
 								var ligne = div[y][0]-37,
-									datas = '', tdClass = "BWELogTD2";
+									datas = '', tdClass = '';
 								if (ligne==0){datas = (new Date(h[j][1])).toLocaleDateString();} // date
 								else if (ligne==1&&h[j][2][0]!=''){datas = h[j][2][0]+'%';} // emb
-								else if (ligne==2&&h[j][2][2]!=''){datas = h[j][2][2];tdClass = "atkHit BWELogTD2";} // PV Att.
-								else if (ligne==3&&h[j][2][3]!=''){datas = h[j][2][3];tdClass = "defHit BWELogTD2";} // PV Déf.
+								else if (ligne==2&&h[j][2][2]!=''){datas = h[j][2][2];tdClass = ' atkHit';} // PV Att.
+								else if (ligne==3&&h[j][2][3]!=''){datas = h[j][2][3];tdClass = ' defHit';} // PV Déf.
 								else if (ligne==4&&h[j][2][10].length>0){h[j][2][10].forEach(function(e){datas+=L._Get('sObjet')[e]+' ';});} // Objet Att.
 								else if (ligne==5&&h[j][2][11].length>0){h[j][2][11].forEach(function(e){datas+=L._Get('sObjet')[e]+' ';});} // Objet Def.
-								if (datas!='') IU._CreateElements({'tr':['tr',,,,table],'td1':['td',{'class':'BWEbold'},[L._Get('sColTitle')[div[y][0]]],,'tr'],'td2':['td',{'class':tdClass},[datas],,'tr']});
+								if (datas!='') IU._CreateElements({'tr':['tr',,,,table],
+									'td1':['td',{'class':'BWEbold'},[L._Get('sColTitle')[div[y][0]]],,'tr'],
+									'td2':['td',{'class':'BWERight BWELogTD2'+tdClass},[datas],,'tr']});
 								}
 							}
 						}
@@ -798,9 +845,10 @@ function CreateHistory(att,def,node){
 							for (var y=0;y<arcA.length;y++){arc[arcA[y][0]] = []; arc[arcA[y][0]][0] = arcA[y][1];}
 							for (var y=0;y<arcB.length;y++){arc[arcB[y][0]] = _Exist(arc[arcB[y][0]])?arc[arcB[y][0]]:[]; arc[arcB[y][0]][1] = arcB[y][1];}
 							for (var key in arc){
-								IU._CreateElements({'tr':['tr',,,,table],'td1':['td',{'class':'BWEbold'},[L._Get('sArc')[key]],,'tr'],
-									'td2':['td',{'class':'atkHit BWELogTD2'},[_Exist(arc[key][0])?arc[key][0]:''],,'tr'],
-									'td3':['td',{'class':'defHit BWELogTD2'},[_Exist(arc[key][1])?arc[key][1]:''],,'tr']});
+								IU._CreateElements({'tr':['tr',,,,table],
+									'td1':['td',{'class':'BWEbold'},[L._Get('sArc')[key]],,'tr'],
+									'td2':['td',{'class':'atkHit BWERight BWELogTD2'},[_Exist(arc[key][0])?arc[key][0]:''],,'tr'],
+									'td3':['td',{'class':'defHit BWERight BWELogTD2'},[_Exist(arc[key][1])?arc[key][1]:''],,'tr']});
 								}
 						}
 					else if (col==3){ // Evolutions
@@ -809,9 +857,10 @@ function CreateHistory(att,def,node){
 							for (var y=0;y<evoA.length;y++){evo[evoA[y][0]] = []; evo[evoA[y][0]][0] = evoA[y][1];}
 							for (var y=0;y<evoB.length;y++){evo[evoB[y][0]] = _Exist(evo[evoB[y][0]])?evo[evoB[y][0]]:[]; evo[evoB[y][0]][1] = evoB[y][1];}
 							for (var key in evo){
-								IU._CreateElements({'tr':['tr',,,,table],'td1':['td',{'class':'BWEbold'},[L._Get('sEvo')[key]],,'tr'],
-									'td2':['td',{'class':'atkHit BWELogTD2'},[_Exist(evo[key][0])?evo[key][0]:''],,'tr'],
-									'td3':['td',{'class':'defHit BWELogTD2'},[_Exist(evo[key][1])?evo[key][1]:''],,'tr']});
+								IU._CreateElements({'tr':['tr',,,,table],
+									'td1':['td',{'class':'BWEbold'},[L._Get('sEvo')[key]],,'tr'],
+									'td2':['td',{'class':'atkHit BWERight BWELogTD2'},[_Exist(evo[key][0])?evo[key][0]:''],,'tr'],
+									'td3':['td',{'class':'defHit BWERight BWELogTD2'},[_Exist(evo[key][1])?evo[key][1]:''],,'tr']});
 								}
 						}
 					else if (col==4){ // Caractéristiques
@@ -823,9 +872,10 @@ function CreateHistory(att,def,node){
 								cA = _Exist(chA[index])&&chA[index]!=null?chA[index]:'',
 								cB = _Exist(chB[index])&&chB[index]!=null?chB[index]:'';
 							if (ch[y][1]==1&&(cA!=''||cB!='')){
-								IU._CreateElements({'tr':['tr',,,,table],'td1':['td',{'class':'BWEbold'},[L._Get('sColTitle')[ch[y][0]]],,'tr'],
-									'td2':['td',{'class':'atkHit BWELogTD2'},[_Exist(chA[index])?chA[index]:''],,'tr'],
-									'td3':['td',{'class':'defHit BWELogTD2'},[_Exist(chB[index])?chB[index]:''],,'tr']});
+								IU._CreateElements({'tr':['tr',,,,table],
+									'td1':['td',{'class':'BWEbold'},[L._Get('sColTitle')[ch[y][0]]],,'tr'],
+									'td2':['td',{'class':'atkHit BWERight BWELogTD2'},[_Exist(chA[index])?chA[index]:''],,'tr'],
+									'td3':['td',{'class':'defHit BWERight BWELogTD2'},[_Exist(chB[index])?chB[index]:''],,'tr']});
 								}
 							}
 						}
@@ -836,7 +886,9 @@ function CreateHistory(att,def,node){
 						for (var y=0;y<Ga.length;y++){
 							var datas = _Exist(res[Ga[y][0]-56])?res[Ga[y][0]-56]:null;
 							if (Ga[y][1]==1&&datas!=null){
-								IU._CreateElements({'tr':['tr',,,,table],'td1':['td',{'class':'BWEbold'},[L._Get('sColTitle')[Ga[y][0]]],,'tr'],'td2':['td',{'class':'BWELogTD2'},[datas],,'tr']});
+								IU._CreateElements({'tr':['tr',,,,table],
+									'td1':['td',{'class':'BWEbold'},[L._Get('sColTitle')[Ga[y][0]]],,'tr'],
+									'td2':['td',{'class':'BWERight BWELogTD2'},[datas],,'tr']});
 								}
 							}
 						}
@@ -864,10 +916,10 @@ function CreateHistory(att,def,node){
 			:delayABS<86400?L._Get('sLogTime3',Math.floor(delay/(3600)))
 			:delayABS<31536000?L._Get('sLogTime4',Math.floor(delay/(86400)))
 			:L._Get('sLogTime5');
-		var resultIU = {
+		var rIU = {
 			'span':['span',{'id':'BWElog','class':'BWEbold'},[delay],,node],
 			'span2':['span',{'class':'BWELog2'},,,node]},
-			result = IU._CreateElements(resultIU);
+			r = IU._CreateElements(rIU);
 		node.setAttribute('onmouseout','nd();');
 		IU._addEvent(node,'mouseover',CreateOverlib,[att,def,node]);
 		while (_Exist(h[j])&&_Exist(h[j][1])&&j<nbLog){
@@ -876,23 +928,23 @@ function CreateHistory(att,def,node){
 					:h[j][2][1]=='v'?att==ID?'#2A9F2A':'#DB0B32'
 					:h[j][2][1]=='d'?att==ID?'#DB0B32':'#2A9F2A'
 					:'white':'white';
-			if (j==0) result['span'].setAttribute('style','color:'+bgcolor+';');
-			IU._CreateElement('div',{'class':'BWELog3','style':'background-color:'+bgcolor+';'},[],{},result['span2']);
+			if (j==0) r['span'].setAttribute('style','color:'+bgcolor+';');
+			IU._CreateElement('div',{'class':'BWELog3','style':'background-color:'+bgcolor+';'},[],{},r['span2']);
 			if (new Date(h[j][1]).toDateString()==actuTime.toDateString()) actuH++;
 			j++;
 			}
-		if (actuH>=2) result['span'].textContent = '*'+result['span'].textContent;
+		if (actuH>=2) r['span'].textContent = '*'+r['span'].textContent;
 		}
 	else{IU._CreateElement('span',{'id':'BWElog'},['-'],{},node);}
 	}
 // Gestion des groupes
 // Pages Clan et Profil
-function createGrpTable(grId){
+function GroupTable(grId){
 	function clickRaz(e,i){
 		var	list = DOM._GetNodes("//tbody[@id='BWEgrp"+i[0]+"body']/tr");
 		if (list!=null){
 			for (var j=0;j<list.snapshotLength;j++){
-				var name = unescape(list.snapshotItem(j).getAttribute('id'));
+				var name = decodeURIComponent(list.snapshotItem(j).getAttribute('id'));
 				name = name.substring(10,name.length);
 				checkGrp(null,[name,i[0]]);
 				}
@@ -918,35 +970,36 @@ function createGrpTable(grId){
 			oldColB.parentNode.removeChild(oldColB);
 			IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},newColA);
 			IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},newColB);
-			if (listA!=null) FctTriA(tri[0],tri[1],tbodyA,listA);
-			if (listB!=null) FctTriA(tri[0],tri[1],tbodyB,listB);
+			if (listA!=null) FctTriA(tri[0],tri[1],'grpA',tbodyA,listA);
+			if (listB!=null) FctTriA(tri[0],tri[1],'grpB',tbodyB,listB);
 			}
 		}
-	var result = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"']");
-	if (result!=null){
+	var r = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"']");
+	if (r!=null){
 		var grpIU = {
-			'table':['table',{'class':'profile-stats','style':'width:100%','id':'BWEgrp'+grId+'table'},,,result],
+			'table':['table',{'class':'profile-stats BWEGrp','style':'width:100%','id':'BWEgrp'+grId+'table'},,,r],
 			'thead':['thead',,,,'table'],
 			'th00':['tr',,,,'thead'],
-			'td001':['th',{'class':'BWEbold BWELeft','colspan':'3'},[L._Get('BWEgrp'+grId)],,'th00'],
-			'td002':['th',{'class':'BWEGrpDel','colspan':'2'},[L._Get('sRAZ')],{'click':[clickRaz,[grId]]},'th00'],
+			'td001':['th',{'class':'BWEbold BWELeft','style':'width:79%','colspan':'3'},[L._Get('sGrp'+grId)],,'th00'],
+			'td002':['th',{'style':'width:21%','colspan':'2'},,,'th00'],
+			'div002':['div',{'class':'BWEGrpDel'},[L._Get('sRAZ')],{'click':[clickRaz,[grId]]},'td002'],
 			'th01':['tr',{'class':'tblheader','id':'BWEgrp'+grId+'header'},,,'thead'],
-			'tdh011':['th',{'class':'BWEbold BWELeftHeader','style':'width:33%'},[L._Get('sColTitle')[27]],{'click':[clickCol,[1]]},'th01'],
-			'tdh012':['th',{'class':'BWEbold BWELeftHeader','style':'width:33%'},[L._Get('sColTitle')[0]],{'click':[clickCol,[2]]},'th01'],
-			'tdh013':['th',{'class':'BWEbold BWELeftHeader','style':'width:13%'},[L._Get('sColTitle')[7]],{'click':[clickCol,[3]]},'th01'],
-			'tdh015':['th',{'class':'BWEbold BWERight','style':'width:21%','colspan':'2'},[L._Get('BWEgrpAct')],,'th01'],
+			'tdh011':['th',{'id':'BWEgrp'+grId+'col27','class':'BWEbold BWELeftHeader','style':'width:33%'},[L._Get('sColTitle')[27]],{'click':[clickCol,[1]]},'th01'],
+			'tdh012':['th',{'id':'BWEgrp'+grId+'col0','class':'BWEbold BWELeftHeader','style':'width:33%'},[L._Get('sColTitle')[0]],{'click':[clickCol,[2]]},'th01'],
+			'tdh013':['th',{'id':'BWEgrp'+grId+'col7','class':'BWEbold BWELeftHeader','style':'width:13%'},[L._Get('sColTitle')[7]],{'click':[clickCol,[3]]},'th01'],
+			'tdh015':['th',{'class':'BWEbold BWERight','style':'width:21%','colspan':'2'},[L._Get('sGrpAct')],,'th01'],
 			'tbody':['tbody',{'id':'BWEgrp'+grId+'body'},,,'table'],
 			'tfoot':['tfoot',,,,'table'],
 			'trf00':['tr',,,,'tfoot'],
 			'tdf000':['td',{'style':'height: 10px;','colspan':'5'},,,'trf00'],
 			'trf01':['tr',,,,'tfoot'],
 			'tdf010':['td',{'class':'BWEbold BWELeft','id':'BWEgrp'+grId+'_foot10'},,,'trf01'],
-			'tdf011':['td',{'class':'BWERight'},[L._Get('BWEgrpTt')],,'trf01'],
+			'tdf011':['td',{'class':'BWERight'},[L._Get('sGrpTt')],,'trf01'],
 			'tdf012':['td',{'class':'BWEbold BWELeft','id':'BWEgrp'+grId+'_foot12'},,,'trf01'],
 			'tdf013':['td',{'class':'BWEbold BWELeft','id':'BWEgrp'+grId+'_foot13','colspan':'2'},,,'trf01'],
 			'trf02':['tr',,,,'tfoot'],
 			'tdf020':['td',{'class':'BWELeft','id':'BWEgrp'+grId+'_foot20'},,,'trf02'],
-			'tdf021':['td',{'class':'BWERight'},[L._Get('BWEgrpMoy')],,'trf02'],
+			'tdf021':['td',{'class':'BWERight'},[L._Get('sGrpMoy')],,'trf02'],
 			'tdf022':['td',{'class':'BWEbold BWELeft','id':'BWEgrp'+grId+'_foot22'},,,'trf02'],
 			'tdf023':['td',{'class':'BWEbold BWELeft','id':'BWEgrp'+grId+'_foot23','colspan':'2'},,,'trf02']
 			},
@@ -957,7 +1010,8 @@ function createGrpTable(grId){
 			}
 		var tri = PREF._Get('grp','tri');
 		IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},grpNode['tdh01'+tri[0]]);
-		FctTriA(tri[0],tri[1],grpNode['tbody'],DOM._GetNodes("./tr",grpNode['tbody']));
+		var list = DOM._GetNodes("./tr",grpNode['tbody']);
+		if (list!=null) FctTriA(tri[0],tri[1],'grp'+grId,grpNode['tbody'],list);
 		updateGrpFoot(grId);
 		}
 	}
@@ -966,10 +1020,11 @@ function checkGrp(e,i){// i[0] = name, i[1] = id
 		grId = grp['A'].indexOf(i[0])>-1?'A':grp['B'].indexOf(i[0])>-1?'B':'',
 		tri = PREF._Get('grp','tri');
 	if (grId!=''){
-		var	grpRow = DOM._GetFirstNode("//tr[@id='"+escape('BWEgrp'+grId+'tr_'+i[0])+"']");
+		var	grpRow = DOM._GetFirstNode("//tr[@id='"+encodeURIComponent('BWEgrp'+grId+'tr_'+i[0])+"']");
 		if (grpRow!=null) grpRow.parentNode.removeChild(grpRow);
-		var	tbody = DOM._GetFirstNode("//tbody[@id='BWEgrp"+grId+"body']");
-		if (tbody!=null) FctTriA(tri[0],tri[1],tbody,DOM._GetNodes("./tr",tbody));
+		var	tbody = DOM._GetFirstNode("//tbody[@id='BWEgrp"+grId+"body']"),
+			list = DOM._GetNodes("./tr",tbody);
+		if (tbody!=null&&list!=null) FctTriA(tri[0],tri[1],'grp'+grId,tbody,list);
 		updateGrpFoot(grId);
 		grp[grId].splice(grp[grId].indexOf(i[0]),1);
 		}
@@ -978,30 +1033,33 @@ function checkGrp(e,i){// i[0] = name, i[1] = id
 		var	tbody = DOM._GetFirstNode("//tbody[@id='BWEgrp"+i[1]+"body']");
 		if (tbody!=null){
 			appendGrpRow(tbody,i[0],i[1]);
-			FctTriA(tri[0],tri[1],tbody,DOM._GetNodes("./tr",tbody));
+			var list = DOM._GetNodes("./tr",tbody);
+			if (list!=null) FctTriA(tri[0],tri[1],'grp'+i[1],tbody,list);
 			}
 		updateGrpFoot(i[1]);
 		grp[i[1]].push(i[0]);
 		grId = i[1];
 		}
 	LS._SetVar('BWE:G:'+ID,grp);
-	var checkA = DOM._GetFirstNode("//input[@id='"+escape('BWEcheckA_'+i[0])+"']"),
-		checkB = DOM._GetFirstNode("//input[@id='"+escape('BWEcheckB_'+i[0])+"']");
+	var checkA = DOM._GetFirstNode("//input[@id='"+encodeURIComponent('BWEcheckA_'+i[0])+"']"),
+		checkB = DOM._GetFirstNode("//input[@id='"+encodeURIComponent('BWEcheckB_'+i[0])+"']");
 	if (checkA!=null) checkA.checked = grId=='A'?true:false;
 	if (checkB!=null) checkB.checked = grId=='B'?true:false;
 	}
 function appendGrpRow(tbody,name,grId){
-	var value = LS._GetVar('BWE:P:'+name,{}),
+	var v = LS._GetVar('BWE:P:'+name,{}),
 		races = L._Get('sRaces'),
-		race = _Exist(value['R']&&_Exist(races[value['R']]))?(races[value['R']].length>13?races[value['R']].substr(0,10)+'...':races[value['R']]):'-';
+		race = _Exist(v['R'])&&_Exist(races[v['R']])?races[v['R']]:'-';
 	var trIU = {
-		'tr01':['tr',{'id':escape('BWEgrp'+grId+'tr_'+name)},,,tbody],
+		'tr01':['tr',{'id':encodeURIComponent('BWEgrp'+grId+'tr_'+name)},,,tbody],
 		'td010':['td',{'class':'BWELeft'},,,'tr01'],
-		'a0100':['a',(_Exist(value['U'])?{'href':'?a=profile&uid='+value['U']}:{}),[(name.length>13?name.substr(0,10)+'...':name)],,'td010'],
+		'a0100':['a',(_Exist(v['U'])?{'href':'?a=profile&uid='+v['U']}:{}),[name],,'td010'],
 		'td011':['td',{'class':'BWELeft'},[race],,'tr01'],
-		'td012':['td',{'class':'BWELeft'},[(_Exist(value['N'])&&_Exist(value['P']))?value['N']+' ('+value['P']+')':'-'],,'tr01'],
-		'td013':['td',{'class':'BWEGrpChg'},[('->'+(grId=='A'?'B':'A'))],{'click':[checkGrp,[name,(grId=='A'?'B':'A')]]},'tr01'],
-		'td014':['td',{'class':'BWEGrpDel'},['X'],{'click':[checkGrp,[name,grId]]},'tr01']
+		'td012':['td',{'class':'BWELeft'},[(_Exist(v['N'])&&_Exist(v['P']))?v['N']+' ('+v['P']+')':'-'],,'tr01'],
+		'td013':['td',,,,'tr01'],
+		'div013':['div',{'class':'BWEGrpChg'},[('->'+(grId=='A'?'B':'A'))],{'click':[checkGrp,[name,(grId=='A'?'B':'A')]]},'td013'],
+		'td014':['td',,,,'tr01'],
+		'div014':['div',{'class':'BWEGrpDel'},['X'],{'click':[checkGrp,[name,grId]]},'td014']
 		};
 	IU._CreateElements(trIU);
 	}
@@ -1010,10 +1068,10 @@ function updateGrpFoot(grId){
 		lvlsum = 0,	ptssum = 0;
 	if (list!=null){
 		for (var i=0;i<list.snapshotLength;i++){
-			var result = new RegExp(L._Get('sTriPtsTest')).exec(DOM._GetFirstNodeTextContent("./td[3]",null,list.snapshotItem(i)));
-			if (result!=null){
-				lvlsum+=Number(parseInt(result[1]));
-				ptssum+=Number(parseInt(result[2]));
+			var r = new RegExp(L._Get('sTriPtsTest')).exec(DOM._GetFirstNodeTextContent("./td[3]",null,list.snapshotItem(i)));
+			if (r!=null){
+				lvlsum+=Number(parseInt(r[1]));
+				ptssum+=Number(parseInt(r[2]));
 				}
 			}
 		var nb = list.snapshotLength,
@@ -1022,7 +1080,7 @@ function updateGrpFoot(grId){
 			fptssum = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot13']"),
 			flvlaverage = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot22']"),
 			fptsaverage = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot23']");
-		if (fnb!=null) fnb.textContent = (nb>1?L._Get('BWEgrpPls',nb):L._Get('BWEgrpPl',nb));
+		if (fnb!=null) fnb.textContent = (nb>1?L._Get('sGrpPls',nb):L._Get('sGrpPl',nb));
 		if (flvlsum!=null) flvlsum.textContent = lvlsum;
 		if (fptssum!=null) fptssum.textContent = ptssum;
 		if (flvlaverage!=null) flvlaverage.textContent = nb>0?Math.floor(lvlsum/nb):0;
@@ -1036,12 +1094,102 @@ function showHideGr(e,i){//i[0]= node title,i[1]= node trA,i[2]= node trB
 	i['2'].setAttribute('style','display:'+(show==1?'table-row;':'none;'));
 	i[0].setAttribute('style','color:'+(show==1?'lime;':'red;')+';cursor: pointer;');
 	}
+function BuildTable(table,list){
+	function clickCol(e,i){ // i[0] = col
+		var header = DOM._GetFirstNode("//tr[@id='BWE"+p+"header']"),
+			tbody =  DOM._GetFirstNode("//tbody[@id='BWE"+p+"body']");
+		if (header!=null&&tbody!=null){
+			var tri = PREF._Get(p,'tri'),
+				oldCol = DOM._GetFirstNode("./th["+tri[0]+"]/span",header),
+				newCol = DOM._GetFirstNode("./th["+i[0]+"]",header);
+			tri[1] = (i[0]==tri[0]&&tri[1]==1)?0:1;
+			tri[0] = i[0];
+			PREF._Set(p,'tri',tri);
+			if (oldCol!=null&&newCol!=null){
+				oldCol.parentNode.removeChild(oldCol);
+				IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},newCol);
+				}
+			var list = DOM._GetNodes("./tr",tbody);
+			if (list!=null) FctTriA(tri[0],tri[1],p,tbody,list);
+			}
+		}
+	var	headIU = {'tr2':['tr',{'class':'tblheader','id':'BWE'+p+'header'},,,table['thead']],
+			'th21':['th',{'id':'BWE'+p+'col73','class':'BWEMiddleHeader','style':'width:7%;'},[L._Get('sColTitle')[73]],{'click':[clickCol,[1]]},'tr2'],
+			'th22':['th',{'id':'BWE'+p+'col74','class':'BWELeftHeader','style':'width:26%;'},[L._Get('sColTitle')[74]],{'click':[clickCol,[2]]},'tr2'],
+			'th23':['th',{'id':'BWE'+p+'col75','class':'BWEMiddleHeader','style':'width:8%;'},[L._Get('sColTitle')[75]],{'click':[clickCol,[3]]},'tr2'],
+			'th24':['th',{'id':'BWE'+p+'col76','class':'BWERightHeader','style':'width:12%;'},[L._Get('sColTitle')[76]],{'click':[clickCol,[4]]},'tr2'],
+			'th25':['th',{'id':'BWE'+p+'col77','class':'BWERightHeader','style':'width:12%;'},[L._Get('sColTitle')[77]],{'click':[clickCol,[5]]},'tr2'],
+			'th26':['th',{'id':'BWE'+p+'col78','class':'BWERightHeader','style':'width:12%;'},[L._Get('sColTitle')[78]],{'click':[clickCol,[6]]},'tr2'],
+			'th27':['th',{'id':'BWE'+p+'col79','class':'BWERightHeader','style':'width:13%;'},[L._Get('sColTitle')[79]],{'click':[clickCol,[7]]},'tr2'],
+			'th28':['th',{'id':'BWE'+p+'col80','style':'width:10%;','colspan':'2'},[L._Get('sColTitle')[80]],,'tr2']},
+		head = IU._CreateElements(headIU),
+		bldPgr = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='bldprogress']"),
+		bldNameUp = DOM._GetFirstNodeTextContent("./self::div[contains(.,'"+L._Get('sBuildPrgUp')+"')]/b","",bldPgr),
+		bldNameDown = DOM._GetFirstNodeTextContent("./span[contains(.,'"+L._Get('sBuildPrgDown')+"')]/b","",bldPgr),
+		bldPgrStop = DOM._GetFirstNode("./span[@id='bld_action_a']/a",bldPgr);
+	for (var i=0;i<list.snapshotLength;i++){
+		var nodeZone = DOM._GetFirstNode("./preceding-sibling::div[@class='strefaheader'][1]",list.snapshotItem(i)),
+			content = DOM._GetFirstNode("(.//table)[last()]//td[2]",list.snapshotItem(i)),
+			title = DOM._GetFirstNode(".//span[@class='bldheader']",list.snapshotItem(i));
+		if (title!=null&&content!=null&&nodeZone!=null){
+			var zone = nodeZone!=null?(new RegExp(L._Get('sBuildZone')).exec(nodeZone.textContent)):null,
+				nodeLvl = DOM._GetFirstNode("./following-sibling::b",title),
+				lvl = nodeLvl!=null?(new RegExp(L._Get('sBuildNiv')).exec(nodeLvl.textContent)):null,
+				lvl = lvl!=null?lvl[1]:0,
+				inUp = bldNameUp.replace(new RegExp('[\'"`]','g'),'')==title.textContent.replace(new RegExp('[\'"`]','g'),''),
+				inDown = bldNameDown.replace(new RegExp('[\'"`]','g'),'')==title.textContent.replace(new RegExp('[\'"`]','g'),''),
+				upOk = DOM._GetFirstNode(".//a[(contains(.,'"+L._Get('sBuildNewOk')+"') or contains(.,'"+L._Get('sBuildUpOk')+"')) and @class='enabled']",content),
+				upNo = DOM._GetFirstNode(".//span[(contains(.,'"+L._Get('sBuildNewOk')+"') or contains(.,'"+L._Get('sBuildUpOk')+"')) and @class='disabled']",content),
+				downOk = DOM._GetFirstNode(".//a[contains(.,'"+L._Get('sBuildDownOk')+"')]",list.snapshotItem(i)),
+				nodeLol = DOM._GetFirstNode(".//span[contains(.,'"+L._Get('sBuildlol')+"')]",content),
+				lol = nodeLol!=null?new RegExp("([0-9 ]+) "+L._Get('sBuildlol')).exec(nodeLol.textContent):null,
+				nodeMdo = DOM._GetFirstNode(".//span[contains(.,'"+L._Get('sBuildMdo')+"')]",content),
+				mdo = nodeMdo!=null?new RegExp("([0-9 ]+) "+L._Get('sBuildMdo')).exec(nodeMdo.textContent):null,
+				nodeSang = DOM._GetFirstNode(".//span[contains(.,'"+L._Get('sBuildSang')+"')]",content),
+				sang = nodeSang!=null?(new RegExp("([0-9 ]+) "+L._Get('sBuildSang')).exec(nodeSang.textContent)):null,
+				t = new RegExp(L._Get('sBuildTime')+L._Get('sTriOLTest')).exec(content.innerHTML),
+				time = t!=null?(t[1]?L._Get('sLogTime4',t[1])+' ':'')+(t[2]?('0'+t[2]).slice(-2):'00')+':'+(t[3]?('0'+t[3]).slice(-2):'00')+':'+(t[4]?('0'+t[4]).slice(-2):'00'):'?',
+				overT = content.innerHTML.replace(new RegExp('[\x00-\x1F]','g'),'').replace(new RegExp('([\'"])','g'),'\\\$1'),
+				ligneIU = {'tr':['tr',{'onmouseout':'nd();','onmouseover':'return overlib(\'<table><tbody><tr><td style=\"text-align: justify; vertical-align: top; width: 400px;\">'+overT+'</td></tr></tbody></table>\',CAPTION,\''+title.textContent+'\',CAPTIONFONTCLASS,\'action-caption\',HAUTO,WRAP);'},,,table['tbody']],
+					'td1':['td',{'class':'BWEMiddle'},[(zone!=null?zone[1]:"?")],,'tr'],
+					'td2':['td',{'class':((inUp||upOk!=null)?'enabled':(inDown?'disabled':''))},[title.textContent],,'tr'],
+					'td3':['td',{'class':'BWEMiddle'+(inUp?' enabled':(inDown?' disabled':''))},[lvl+((inUp||inDown)?('->'+(Number(lvl)+(inUp?1:-1))):'')],,'tr'],
+					'td4':['td',{'class':'BWERight'+(nodeSang!=null?' '+nodeSang.className:'')},[(sang!=null?sang[1]:"")],,'tr'],
+					'td5':['td',{'class':'BWERight'+(nodeLol!=null?' '+nodeLol.className:'')},[(lol!=null?lol[1]:"")],,'tr'],
+					'td6':['td',{'class':'BWERight'+(nodeMdo!=null?' '+nodeMdo.className:'')},[(mdo!=null?mdo[1]:"")],,'tr'],
+					'td7':['td',{'class':'BWERight'+(upOk==null&&upNo==null?' disabled':'')},[(upOk==null&&upNo==null?L._Get('sBuildMaxLvl'):time)],,'tr'],
+					'td8':['td',{'class':'BWEMiddle'},,,'tr'],
+					'td9':['td',{'class':'BWEMiddle'},,,'tr']},
+				ligne = IU._CreateElements(ligneIU);
+			if (upOk!=null) IU._CreateElement('div',{'class':'BWEBldOk'},['->'+(Number(lvl)+1)],{'click':[function(e,link){window.location.href=link;},upOk.href]},ligne['td8']);
+			else if (inUp&&bldPgrStop!=null) IU._CreateElement('div',{'class':'BWEBldChg'},['X'],{'click':[function(){window.location.href=bldPgrStop.href;}]},ligne['td8']);
+			else IU._CreateElement('div',{'class':'BWEMiddle'},['-'],{},ligne['td8']);
+			if (downOk!=null) IU._CreateElement('div',{'class':'BWEBldDel'},['->'+(Number(lvl)-1)],{'click':[function(e,link){window.location.href=link;},downOk.href]},ligne['td9']);
+			else if (inDown&&bldPgrStop!=null) IU._CreateElement('div',{'class':'BWEBldChg'},['X'],{'click':[function(){window.location.href=bldPgrStop.href;}]},ligne['td9']);
+			else IU._CreateElement('div',{'class':'BWEMiddle'},['-'],{},ligne['td9']);
+			if (inUp||inDown){
+				ligne['td7'].setAttribute('id','BWEBuildTime');
+				ligne['td7'].classList.add('BWEbold',(inUp?'enabled':'disabled'));
+				var observer = new MutationObserver(function(mutations){
+					var tTime = DOM._GetFirstNode("//td[@id='BWEBuildTime']"),
+						bldPgrTime = DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='bldprogress']/span[@id='bld_action']","");
+					if (tTime!=null) tTime.textContent = bldPgrTime;
+					});
+				observer.observe(bldPgr,{childList:true,subtree:true,characterData:true});
+				}
+			}
+		}
+	var tri = PREF._Get(p,'tri');
+	IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},head['th2'+tri[0]]);
+	var list = DOM._GetNodes("./tr",table['tbody']);
+	if (list!=null) FctTriA(tri[0],tri[1],p,table['tbody'],list);
+	}
 // Alimente un tableau déjà créé au format suivant :
 // - table ('id':'BWE'+index+'table')
 // - head (child de table) -> tr ('id':'BWE'+index+'header')
 // - tbody (child de table,'id':'BWE'+index+'body')
 // header = ancien en-tête, list = liste des TR du tableau à copier
-function CreateTable(header,list,index){
+function MixteTable(header,list,index){
 	function clickCol(e,i){ // i[0] = col, i[1] = index
 		var header = DOM._GetFirstNode("//tr[@id='BWE"+i[1]+"header']"),
 			tbody =  DOM._GetFirstNode("//tbody[@id='BWE"+i[1]+"body']"),
@@ -1055,13 +1203,13 @@ function CreateTable(header,list,index){
 			PREF._Set(i[1],'tri',tri);
 			oldCol.parentNode.removeChild(oldCol);
 			IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},newCol);
-			if (list!=null) FctTriA(tri[0],tri[1],tbody,list);
+			if (list!=null) FctTriA(tri[0],tri[1], i[1],tbody,list);
 			}
 		}
-	function GetLvl(value){
-		if (!isNaN(value)&&parseInt(value)==Number(value)){
-			var lvl = Math.floor(Math.log(1.1*value)/Math.log(1.1)),
-				lvlSup = Math.floor(Math.log(0.0011*(value*1000+999))/Math.log(1.1));
+	function GetLvl(v){
+		if (!isNaN(v)&&parseInt(v)==Number(v)){
+			var lvl = Math.floor(Math.log(1.1*v)/Math.log(1.1)),
+				lvlSup = Math.floor(Math.log(0.0011*(v*1000+999))/Math.log(1.1));
 			return new Array(lvl,lvlSup,(lvl!=lvlSup?lvl+"-"+lvlSup:lvl));
 			}
 		else return new Array('-','-','-');
@@ -1071,72 +1219,74 @@ function CreateTable(header,list,index){
 	if (newHead!=null&&newBody!=null){
 		var newCol = clone(PREF._Get(index,'list')),
 			tri = PREF._Get(index,'tri');
-		// création et suppression des en-têtes inutiles
+		// en-têtes et suppression des colonnes inutiles
 		for (var i=0; i<newCol.length; i++){
 			if (newCol[i][1]!=1){newCol.splice(i,1);i--;}
 			else{
-				var newTD = IU._CreateElement('td',{},[],{}),
-					col = newCol[i][0];
-				if (newCol[i][2]!=-1){ // en-tête existante
-					var td = DOM._GetFirstNode("./td["+newCol[i][2]+"]",header);
-					if (td!=null){
-						newTD = td.cloneNode(true);
-						if ([62,65].indexOf(col)==-1) newTD.removeAttribute('width');
-						newTD.removeAttribute('style'); 
+				var col = newCol[i][0];
+				if (col!=-1){
+					var	newTD = IU._CreateElement('td',{},[],{});
+					if (newCol[i][2]!=-1){ // en-tête existante
+						var td = DOM._GetFirstNode("./td["+newCol[i][2]+"]",header);
+						if (td!=null){
+							newTD = td.cloneNode(true);
+							if ([62,65].indexOf(col)==-1) newTD.removeAttribute('width');
+							newTD.removeAttribute('style');
+							}
 						}
+					else{ // en-tête
+						// récupère le titre sauf pr quelques exceptions
+						if ([17,18,19,22].indexOf(col)==-1) newTD.textContent = L._Get("sColTitle")[col];
+	//					if (col==21) newTD.setAttribute('id','BWEgrpcol');
+						if (col==22) IU._CreateElement('img',{'style':"width:16px; height:16px; vertical-align:middle;",'src':"data:image/png,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%10%00%00%00%10%08%06%00%00%00%1F%F3%FFa%00%00%02%1FIDATx%DAcd%20%12%9C%3CyB%FF%F2%E5%CB5%3F%7F%FE%D2%FA%F7%FF%9F%D6%E9S%A7%E7-Z%B4(%99%91X%03v%ED%DA%C1%EF%E6%E6%F1q%CA%94I%FF%BF%7D%FF%CE%B0w%EF%DE%AE%9D%3Bv%95%E34%E0%DA%B5%AB%F6%BF%7F%FDb%F8%F9%EB%D7%0333%F3%87%13%26%F4%E9%0B%89%08%1Dx%FB%E6%9D%C0%D7%AF_%18%0E%1E8%5C%BB%7B%F7%EE%16%0C%03v%ED%DC%11%FF%EF%DF%FFI%CF%9E%3D%E1%FB%F9%E3%17%03%03P%C5%DF%7F%7FO%B0%B1%B1i%BC%FF%F0%9E%E9%E3%C7%8F~m%AD%1D%07%DD%DD%DD3w%EE%DC9%1D%C5%80%E3%C7%0F%FB%3F%7C%F8d%C3%B3%A7O.%FC%FC%F9%A3%E1%DB%B7o%1F~%FC%FC%E5%A0%A8%A8X%F0%FD%FBw%81%5B%B7n9%CC%9C9%FB%20%B2%1E%14%03%E6%CF%9B%F7%F8%DE%FD%BBo%9A%9B%5B%0D%91%C5%17%2C%9Co%FF%EB%D7%AF%03%87%0E%1FnZ%B2hI%3DV%03f%CC%9C%AE%FF%E3%DB%F7%0B%17%2F_J%98%3Fo%C1Bt%AF%B5%B4%B6%9C%BF%7F%FF%DE%87%B9s%E69b5%A0%B5%AD%D5%FE%FB%D7%AF%07._%BD%E2%B0q%C3%A6%83%E8%06%14%97%14%ED%7F%F7%F6%1D%C3%FC%F9%0B%B0%1B%60hl%C8ook%FF%E1%E6%AD%9B%0B%B6o%DB%9E%88%AC%C8%DB%CF%9B_%5DU%ED%C1%B3%E7%CF7%ACX%B6%22%11%AB%01%20%10%9F%10%3F%FF%DB%D7o%09%2C%AC%2C%05%CB%97-%9F%08%12%B3s%B0%E3WQV9%C0%CE%CEnp%FD%C6u%87%03%FB%0E%E0%0ED%0F%2F%0F~nN%AE%03%9C%9C%9C%06%BF%FF%FCy%F0%EF%DF%BF%07%2C%CC%CC%0El%EC%EC%0C%EF%DE%BDI%D8%BCi%2BF%D8%60MH%F6%0E%F6%F1%26%C6%26%09%8F%1E%3Dr%F8%FA%ED%EB%84%E7%2F%9EO8%7F%F6%FCCljq%A6%C4%9E%DE%9E%FA%FD%07%F67l%DD%BC%15or%C7*%99%98%98x%FC%C7%8F%1F%16_%BF%7CaP%D7%D0%60%B8z%EDj%FF%B6%AD%DB%8AHr%01%08%B8%B9%B9%FD%DF%B5k%17%E9.%80%01%5B%3B%DB%FF%87%0F%1D%C6%AB%06%00%A2%EE%06%20%5B%F9%3D%19%00%00%00%00IEND%AEB%60%82"},[],{},newTD);
+						}
+					if (tri!=null){
+						IU._addEvent(newTD,'click',clickCol,[i+1,index]);
+						newTD.classList.add(_Exist(newCol[i][3])?['BWELeftHeader','BWEMiddleHeader','BWERightHeader'][newCol[i][3]]:'BWELeftHeader');
+						}
+					else newTD.classList.add(_Exist(newCol[i][3])?['BWELeft','BWEMiddle','BWERight'][newCol[i][3]]:'BWELeft');
+					newTD.setAttribute('id','BWE'+index+'col'+newCol[i][0]);
+					newHead.appendChild(newTD);
 					}
-				else{ // en-tête à créer
-					// récupère le titre sauf pr quelques exceptions
-					if ([-1,17,18,19,22].indexOf(col)==-1) newTD.textContent = L._Get("sColTitle")[col];
-					if (col==21) newTD.setAttribute('id','BWEgrpcol');
-					if (col==22) IU._CreateElement('img',{'style':"width:16px; height:16px; vertical-align:middle;",'src':"data:image/png,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%10%00%00%00%10%08%06%00%00%00%1F%F3%FFa%00%00%02%1FIDATx%DAcd%20%12%9C%3CyB%FF%F2%E5%CB5%3F%7F%FE%D2%FA%F7%FF%9F%D6%E9S%A7%E7-Z%B4(%99%91X%03v%ED%DA%C1%EF%E6%E6%F1q%CA%94I%FF%BF%7D%FF%CE%B0w%EF%DE%AE%9D%3Bv%95%E34%E0%DA%B5%AB%F6%BF%7F%FDb%F8%F9%EB%D7%0333%F3%87%13%26%F4%E9%0B%89%08%1Dx%FB%E6%9D%C0%D7%AF_%18%0E%1E8%5C%BB%7B%F7%EE%16%0C%03v%ED%DC%11%FF%EF%DF%FFI%CF%9E%3D%E1%FB%F9%E3%17%03%03P%C5%DF%7F%7FO%B0%B1%B1i%BC%FF%F0%9E%E9%E3%C7%8F~m%AD%1D%07%DD%DD%DD3w%EE%DC9%1D%C5%80%E3%C7%0F%FB%3F%7C%F8d%C3%B3%A7O.%FC%FC%F9%A3%E1%DB%B7o%1F~%FC%FC%E5%A0%A8%A8X%F0%FD%FBw%81%5B%B7n9%CC%9C9%FB%20%B2%1E%14%03%E6%CF%9B%F7%F8%DE%FD%BBo%9A%9B%5B%0D%91%C5%17%2C%9Co%FF%EB%D7%AF%03%87%0E%1FnZ%B2hI%3DV%03f%CC%9C%AE%FF%E3%DB%F7%0B%17%2F_J%98%3Fo%C1Bt%AF%B5%B4%B6%9C%BF%7F%FF%DE%87%B9s%E69b5%A0%B5%AD%D5%FE%FB%D7%AF%07._%BD%E2%B0q%C3%A6%83%E8%06%14%97%14%ED%7F%F7%F6%1D%C3%FC%F9%0B%B0%1B%60hl%C8ook%FF%E1%E6%AD%9B%0B%B6o%DB%9E%88%AC%C8%DB%CF%9B_%5DU%ED%C1%B3%E7%CF7%ACX%B6%22%11%AB%01%20%10%9F%10%3F%FF%DB%D7o%09%2C%AC%2C%05%CB%97-%9F%08%12%B3s%B0%E3WQV9%C0%CE%CEnp%FD%C6u%87%03%FB%0E%E0%0ED%0F%2F%0F~nN%AE%03%9C%9C%9C%06%BF%FF%FCy%F0%EF%DF%BF%07%2C%CC%CC%0El%EC%EC%0C%EF%DE%BDI%D8%BCi%2BF%D8%60MH%F6%0E%F6%F1%26%C6%26%09%8F%1E%3Dr%F8%FA%ED%EB%84%E7%2F%9EO8%7F%F6%FCCljq%A6%C4%9E%DE%9E%FA%FD%07%F67l%DD%BC%15or%C7*%99%98%98x%FC%C7%8F%1F%16_%BF%7CaP%D7%D0%60%B8z%EDj%FF%B6%AD%DB%8AHr%01%08%B8%B9%B9%FD%DF%B5k%17%E9.%80%01%5B%3B%DB%FF%87%0F%1D%C6%AB%06%00%A2%EE%06%20%5B%F9%3D%19%00%00%00%00IEND%AEB%60%82"},[],{},newTD);
-					}
-				if (tri!=null){
-					IU._addEvent(newTD,'click',clickCol,[i+1,index]);
-					newTD.className += (newTD.className?' ':'')+(_Exist(newCol[i][3])?['BWELeftHeader','BWEMiddleHeader','BWERightHeader'][newCol[i][3]]:'BWELeftHeader');
-					}
-				else newTD.className += (newTD.className?' ':'')+(_Exist(newCol[i][3])?['BWELeft','BWEMiddle','BWERight'][newCol[i][3]]:'BWELeft');
-				newHead.appendChild(newTD);
 				}
 			}
-		// création tbody
+		// body
 		for (var j=0; j<list.snapshotLength; j++){
-			// mise à jour des données
 			var oldTR = list.snapshotItem(j),
-				newTR = newBody.appendChild(oldTR.cloneNode(false)),
-				nameSearch = index=='pTownview'?".//td[2]/a":index=='pRank'?".//td[2]/a/b":(index=='pOAliance'||index=='pAliance')?".//td[1]/a":null,
+				newTR = IU._CreateElement('tr',{'class':'BWETR'+(j%2==0?'':' BWEeven')},[],{},newBody),
+				nameSearch = index=='pTownview'?"./td[2]/a":index=='pRank'?"./td[2]/a/b":(index=='pOAliance'||index=='pAliance')?"./td[1]/a":null,
 				name = (nameSearch!=null?DOM._GetFirstNodeTextContent(nameSearch+'/text()','',oldTR):'').trim();
 			if (name!=''){
-				var value = LS._GetVar('BWE:P:'+name,{});
+				var v = LS._GetVar('BWE:P:'+name,{});
 				if (index=='pTownview'||index=='pRank'){
-					var pts = DOM._GetFirstNodeTextContent(".//td["+(index=='pTownview'?4:8)+"]",null,oldTR),
-						race = DOM._GetFirstNodeTextContent(".//td["+(index=='pTownview'?6:3)+"]",null,oldTR),
-						sexe = DOM._GetFirstNodeTextContent(".//td["+(index=='pTownview'?7:4)+"]",null,oldTR);
+					var pts = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?4:8)+"]",null,oldTR),
+						race = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?6:3)+"]",null,oldTR),
+						sexe = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?7:4)+"]",null,oldTR);
 					if (pts!=null){
-						value['P'] = Number(pts);
-						if (!_Exist(value['N'])||(_Exist(value['N'])&&value['N']<GetLvl(value['P'])[0])) value['N']=GetLvl(value['P'])[2];
+						v['P'] = Number(pts);
+						if (!_Exist(v['N'])||(_Exist(v['N'])&&v['N']<GetLvl(v['P'])[0])) v['N']=GetLvl(v['P'])[2];
 						}
-					if (race!=null) value['R'] = L._Get('sRaces').indexOf(race);
-					if (sexe!=null) value['S'] = sexe;
+					if (race!=null) v['R'] = L._Get('sRaces').indexOf(race);
+					if (sexe!=null) v['S'] = sexe;
 					if (index=='pRank'&&name==player){
-						var rank = DOM._GetFirstNodeTextContent(".//td[1]",null,oldTR);
-						value['C'] = Number(rank);
+						var rank = DOM._GetFirstNodeTextContent("./td[1]",null,oldTR);
+						v['C'] = Number(rank);
 						}
 					}
 				else if (index=='pOAliance'||index=='pAliance'){
-					var niv = DOM._GetFirstNodeTextContent(".//td[5]",null,oldTR),
-						pts = DOM._GetFirstNodeTextContent(".//td[6]",null,oldTR);
-					if (niv!=null) value['N'] = niv;
-					if (pts!=null) value['P'] = Number(pts);
+					var niv = DOM._GetFirstNodeTextContent("./td[5]",null,oldTR),
+						pts = DOM._GetFirstNodeTextContent("./td[6]",null,oldTR);
+					if (niv!=null) v['N'] = niv;
+					if (pts!=null) v['P'] = Number(pts);
 					}
 				var uid = /^\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNode(nameSearch,oldTR).getAttribute('href'));
-				if (uid!=null) value['U'] = uid[1];
-				LS._SetVar('BWE:P:'+name,value);
+				if (uid!=null) v['U'] = uid[1];
+				LS._SetVar('BWE:P:'+name,v);
 				}
 			for (var i=0; i<newCol.length; i++){
 				var newTD, col = newCol[i][0];
 				if (newCol[i][2]!=-1){ // colonne existante
-					var td = DOM._GetFirstNode(".//td["+newCol[i][2]+"]",oldTR);
+					var td = DOM._GetFirstNode("./td["+newCol[i][2]+"]",oldTR);
 					if (td!=null){
 						newTD = newTR.appendChild(td.cloneNode(true));
 						newTD.removeAttribute('width');
@@ -1147,11 +1297,11 @@ function CreateTable(header,list,index){
 						if (j>=0&&name!=''&&PREF._Get('AE','sh')==1){
 							var	img = DOM._GetFirstNode(".//img",newTD);
 							if (img!=null&&img.src.indexOf('/0.gif')!=-1){
-								var value = LS._GetVar('BWE:P:'+name,{});
-								if (_Exist(value['P'])){
-									var lvl = GetLvl(value['P'])[0],
+								var v = LS._GetVar('BWE:P:'+name,{});
+								if (_Exist(v['P'])){
+									var lvl = GetLvl(v['P'])[0],
 										olvl = DATAS._PlayerLevel(),
-										cla = index=='pRank'?Number(DOM._GetFirstNodeTextContent(".//td[1]",0,oldTR)):null,
+										cla = index=='pRank'?Number(DOM._GetFirstNodeTextContent("./td[1]",0,oldTR)):null,
 										oCla = _Exist(plDatas['C'])?plDatas['C']:null,
 										checkNiv = (PREF._Get('AE','nMin')!=''?lvl>=Number(PREF._Get('AE','nMin')):true)&&(PREF._Get('AE','nMax')!=''?lvl<=Number(PREF._Get('AE','nMax')):true)&&(PREF._Get('AE','aMin')!=''?lvl>=(olvl-(olvl*Number(PREF._Get('AE','aMin'))/100)):true)&&(PREF._Get('AE','aMax')!=''?lvl<=(olvl+(olvl*Number(PREF._Get('AE','aMax'))/100)):true),
 										checkCla = index=='pRank'&&cla!=0&&oCla!=null&&(PREF._Get('AE','cMin')!=''?cla>=Number(PREF._Get('AE','cMin')):true)&&(PREF._Get('AE','cMax')!=''?cla<=Number(PREF._Get('AE','cMax')):true)&&(PREF._Get('AE','acMin')!=''?cla>=(oCla-Number(PREF._Get('AE','acMin'))):true)&&(PREF._Get('AE','acMax')!=''?cla<=(oCla+Number(PREF._Get('AE','acMax'))):true);
@@ -1169,26 +1319,26 @@ function CreateTable(header,list,index){
 					newTD = IU._CreateElement('td',{},[],{},newTR);
 					if (col==0){
 						var races = L._Get('sRaces');
-						newTD.textContent = _Exist(value)&&_Exist(value['R'])&&_Exist(races[value['R']])?races[value['R']]:'-';
+						newTD.textContent = _Exist(v)&&_Exist(v['R'])&&_Exist(races[v['R']])?races[v['R']]:'-';
 						}
 					else if (col==1){
-						newTD.textContent = _Exist(value)&&_Exist(value['S'])?value['S']:'-';
-						newTD.className = 'BWELeft '+(_Exist(value)&&_Exist(value['S'])?value['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF':'');
+						newTD.textContent = _Exist(v)&&_Exist(v['S'])?v['S']:'-';
+						newTD.className = 'BWELeft '+(_Exist(v)&&_Exist(v['S'])?v['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF':'');
 						}
 					else if (col==5){
-						var result = DOM._GetFirstNodeTextContent(".//td["+(index=='pTownview'?4:8)+"]",null,oldTR);
-						if (result!=null) newTD.textContent = GetLvl(result)[2];
+						var r = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?4:8)+"]",null,oldTR);
+						if (r!=null) newTD.textContent = GetLvl(r)[2];
 						}
 					else if (col==7){
 						if (index=='pTownview'||index=='pRank'){
-							var result = DOM._GetFirstNodeTextContent(".//td["+(index=='pTownview'?4:8)+"]",null,oldTR);
-							if (!isNaN(result)&&parseInt(result)==Number(result)) newTD.textContent = L._Get('sNivFormat',GetLvl(result)[2],result);
+							var r = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?4:8)+"]",null,oldTR);
+							if (!isNaN(r)&&parseInt(r)==Number(r)) newTD.textContent = L._Get('sNivFormat',GetLvl(r)[2],r);
 							else newTD.textContent = '-';
 						}
 						else if (index=='pOAliance'||index=='pAliance'){
-							var result = DOM._GetFirstNodeTextContent(".//td[5]",null,oldTR),
-								result2 = DOM._GetFirstNodeTextContent(".//td[6]",null,oldTR);
-							if (result!=null&&result2!=null) newTD.textContent = L._Get('sNivFormat',result,result2);
+							var r = DOM._GetFirstNodeTextContent("./td[5]",null,oldTR),
+								r2 = DOM._GetFirstNodeTextContent("./td[6]",null,oldTR);
+							if (r!=null&&r2!=null) newTD.textContent = L._Get('sNivFormat',r,r2);
 							}
 						}
 					if (col==17||col==18||col==19){
@@ -1202,15 +1352,13 @@ function CreateTable(header,list,index){
 						if (name==''){newTD.textContent = '-';}
 						else{
 							var grp = LS._GetVar('BWE:G:'+ID,{'A':[],'B':[]});
-							IU._CreateElements({'checkA':['input',{'type':'checkbox','id':escape('BWEcheckA_'+name),
-											'checked':(grp['A'].indexOf(name)>-1)},,{'change':[checkGrp,[name,'A']]},newTD],
-										'checkB':['input',{'type':'checkbox','id':escape('BWEcheckB_'+name),
-											'checked':(grp['B'].indexOf(name)>-1)},,{'change':[checkGrp,[name,'B']]},newTD]});
+							IU._CreateElements({'checkA':['input',{'class':'BWEInput','type':'checkbox','id':encodeURIComponent('BWEcheckA_'+name),'checked':(grp['A'].indexOf(name)>-1)},,{'change':[checkGrp,[name,'A']]},newTD],
+										'checkB':['input',{'class':'BWEInput','type':'checkbox','id':encodeURIComponent('BWEcheckB_'+name),'checked':(grp['B'].indexOf(name)>-1)},,{'change':[checkGrp,[name,'B']]},newTD]});
 							}
 						}
 					else if (col==22){
-						newTD.textContent = _Exist(value)&&_Exist(value['S'])?value['S']:'-';
-						newTD.className = (_Exist(value)&&_Exist(value['S']))?(value['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF'):'';
+						newTD.textContent = _Exist(v)&&_Exist(v['S'])?v['S']:'-';
+						newTD.className = (_Exist(v)&&_Exist(v['S']))?(v['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF'):'';
 						}
 					else if (col==23){
 						if (name=='') newTD.textContent = '-';
@@ -1221,7 +1369,7 @@ function CreateTable(header,list,index){
 						else CreateHistory(name,ID,newTD);
 						}
 					}
-				newTD.className += (newTD.className?' ':'')+(_Exist(newCol[i][3])?['BWELeft','BWEMiddle','BWERight'][newCol[i][3]]:'BWELeft');
+				newTD.classList.add(_Exist(newCol[i][3])?['BWELeft','BWEMiddle','BWERight'][newCol[i][3]]:'BWELeft');
 				}
 			}
 		// tri du nouveau tableau
@@ -1233,95 +1381,97 @@ function CreateTable(header,list,index){
 			var selectCol = DOM._GetFirstNode("./td["+tri[0]+"]",newHead),
 				newList = DOM._GetNodes("./tr",newBody);
 			IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},selectCol);
-			FctTriA(tri[0],tri[1],newBody,newList);
+			if (newList!=null) FctTriA(tri[0],tri[1],index,newBody,newList);
+			}
+		else {
 			}
 		}
 	}
 // Divers
-function FctTriA(key,order,tbody,list){
-	// créé un tableau des éléments pour tri ultérieur
-	var list2 = [];
+function FctTriA(key,order,index,tbody,list){
+	var list2 = [],
+		header = DOM._GetFirstNode("//tr[@id='BWE"+index+"header']/td["+key+"]|//tr[@id='BWE"+index+"header']/th["+key+"]"),
+		id = header!=null?parseInt(header.id.replace(new RegExp('BWE'+index+'col','g'),'')):0;
 	for (var i=0; i<list.snapshotLength; i++){
-		var col = DOM._GetFirstNode(".//td["+key+"]",list.snapshotItem(i));
+		var col = DOM._GetFirstNode("./td["+key+"]",list.snapshotItem(i));
 		if (col!=null){
-			var isInput = DOM._GetFirstNode(".//input[1]", col),
-				isInput2 = DOM._GetFirstNode(".//input[2]", col),
-				isLog = DOM._GetFirstNode("./span[@id='BWElog']", col),
-				isIMG = DOM._GetFirstNode(".//img", col),
-				isA = DOM._GetFirstNode(".//a", col),
-				value = col.textContent.trim().toLowerCase();// tri de base
-			if (isInput!=null&&isInput2!=null){// cases à cocher du Groupe
-				value = (isInput.checked?"0":"1")+(isInput2.checked?"0":"1");
+			var v = col.textContent.trim().toLowerCase(); // tri de base - texte
+			if ([3,15,27,29,64,67,69,72].indexOf(id)!=-1){ // texte avec lien
+				var isA = DOM._GetFirstNode("./a", col);
+				if (isA!=null) v = isA.textContent.toUpperCase();
 				}
-			else if (isLog!=null){ // log
-				var result = new RegExp("(^-*[0-9]+)").exec(value);
-				if (value=='-') value = 31708800; // 367jrs
-				else if (result!=null){
-					if (value==L._Get('sLogTime5')) value = 31622400; // 366jrs
-					else if (value==L._Get('sLogTime1',result[1])) value = result[1];
-					else if (value==L._Get('sLogTime2',result[1])) value = result[1]*60;
-					else if (value==L._Get('sLogTime3',result[1])) value = result[1]*3600;
-					else if (value==L._Get('sLogTime4',result[1])) value = result[1]*86400;
+			else if ([5,6,26,28,66,73,75,76,77,78].indexOf(id)!=-1){ // chiffre + quartier + classement
+				var r = new RegExp(L._Get('sTriNbTest')).exec(v);
+				if (r!=null) v = parseInt(r[1].replace(new RegExp('[ ]','g'),''));
+				else if (v=='∞') v = Number.POSITIVE_INFINITY;
+				else v = -1;
+				}
+			else if ([16,17].indexOf(id)!=-1){ // en ligne
+				var isIMG = DOM._GetFirstNode("./img", col),
+					r = new RegExp(L._Get('sTriOLTest')).exec(isIMG!=null?isIMG.alt:v);
+				if (r!=null) v = (r[1]?parseInt(r[1]):0)*86400+(r[2]?parseInt(r[2]):0)*3600+(r[3]?parseInt(r[3]):0)*60+(r[4]?parseInt(r[4]):0);
+				else v = 0;
+				}
+			else if ([18,19].indexOf(id)!=-1){ // Rdc + Expé
+				var isIMG = DOM._GetFirstNode(".//img", col);
+				if (isIMG!=null){
+					var r = new RegExp(L._Get('sTriImgTest')).exec(isIMG.src);
+					if (r!=null) v=(r[1]=='ok'?0:1);
+					else v = isIMG.src;
 					}
 				}
-			else if (isIMG==null&&isA==null){
-				// colonne de type nombre : "xx","x.x","x."
-				var result = new RegExp(L._Get('sTriNbTest')).exec(value);
-				if (result!=null) value = parseFloat(result[1]);
-				// colonne de type "yy (xx)", "yy-zz (xx)"
-				var result = new RegExp(L._Get('sTriPtsTest')).exec(value);
-				if (result!=null) value = parseInt(result[2]);
-				// colonne de type "xx(yy%)"
-				var result = new RegExp(L._Get('sTriPrcTest')).exec(value);
-				if (result!=null) value = parseInt(result[1]);
-				if (value=='∞') value = Number.POSITIVE_INFINITY;
-				if (value=='-') value = '';
-				}
-			else if (isA!=null){
-				var result = new RegExp("\\?a(=([^&$]+)|)(&|$)").exec(isA.href);
-				if (result!=null){
-					if (result[2]=='ambush') value = isIMG.src; // colonne embuscade
-					else if (result[2]=='townview'){// colonne "adresse"
-						result = new RegExp(L._Get('sTriAdrTest')).exec(isA.textContent);
-						if (result!=null) value = parseInt(result[1])*100000+parseInt(result[2])*100+parseInt(result[3]);
-						}
-					else value = isA.textContent.toUpperCase();// colonne "Nom"
+			else if ([8,21].indexOf(id)!=-1){ // Groupe
+			var isInput = DOM._GetFirstNode("./input[1]", col),
+				isInput2 = DOM._GetFirstNode("./input[2]", col);
+				if (isInput!=null&&isInput2!=null){
+					v = (isInput.checked?"0":"1")+(isInput2.checked?"0":"1");
 					}
 				}
-			else if (isIMG!=null){
-				var result = new RegExp(L._Get('sTriOLTest')).exec(isIMG.alt);
-				if (result!=null){// tri pour la colonne "En ligne"
-					var j = _Exist(result[2])?parseInt(result[2]):0,
-						h = _Exist(result[4])?parseInt(result[4]):0,
-						m = _Exist(result[6])?parseInt(result[6]):0,
-						s = _Exist(result[8])?parseInt(result[8]):0;
-					value = j*24*60*60+h*60*60+m*60+s;
-					}
-				else{// tri pour k et expé
-					var result = new RegExp(L._Get('sTriImgTest')).exec(isIMG.src);
-					if (result!=null) value=(result[1]=='ok'?0:1);
-					else value = isIMG.src;
+			else if ([23,25].indexOf(id)!=-1){ //ATT - DEF
+				var temp = v.replace('*',''),
+					r = new RegExp("^(-?[0-9]+)").exec(temp);
+				if (v=='-') v = 31708800; // 367jrs
+				else if (r!=null){
+					if (temp==L._Get('sLogTime5')) v = 31622400; // 366jrs
+					else if (temp==L._Get('sLogTime1',r[1])) v = r[1];
+					else if (temp==L._Get('sLogTime2',r[1])) v = r[1]*60;
+					else if (temp==L._Get('sLogTime3',r[1])) v = r[1]*3600;
+					else if (temp==L._Get('sLogTime4',r[1])) v = r[1]*86400;
 					}
 				}
-			list2[i]=[value,i];
+			else if (id==24){ // <ATTAQUER>
+				var isIMG = DOM._GetFirstNode("./a/img", col);
+				if (isIMG!=null) v = isIMG.alt;
+				}
+			else if (id==2){ // adresse
+				var isA = DOM._GetFirstNode("./a", col);
+				if (isA!=null){
+					var r = new RegExp(L._Get('sTriAdrTest')).exec(isA.textContent);
+					if (r!=null) v = parseInt(r[1])*100000+parseInt(r[2])*100+parseInt(r[3]);
+					}
+				}
+			else if (id==7){ // NIV (PTS)
+				var r = new RegExp(L._Get('sTriPtsTest')).exec(v);
+				if (r!=null) v = parseInt(r[2]);
+				}
+			list2[i]=[v,i];
 			}
 		}
-	// tri de la liste suivant la colonne sélectionnée
 	list2.sort(function(a,b){return a[0]<b[0]?-1:a[0]==b[0]?0:1;});
 	if (order==0) list2.reverse();
 	// mise en forme
-	tbody.innerHTML = "";
 	for(var i=0; i<list2.length; i++){
-		var ligne = list.snapshotItem(list2[i][1]);
-		ligne.setAttribute('class',(i%2==0)?'':'even');
-		ligne.setAttribute('onmouseout',(i%2==0)?"this.className='';":"this.className='even';");
-		tbody.appendChild(ligne);
+		var r = list.snapshotItem(list2[i][1]);
+		r.classList.add('BWETR');
+		if (i%2==0) r.classList.remove('BWEeven');
+		else r.classList.add('BWEeven');
+		tbody.appendChild(r);
 		}
 	}
 // Pages 'pOAliance','pAliance'
 function show_hide(e,i){
-	var show = PREF._Get(page,i[2])==1?0:1;
-	PREF._Set(page,i[2],show);
+	var show = PREF._Get(p,i[2])==1?0:1;
+	PREF._Set(p,i[2],show);
 	i[0].setAttribute('style','display:'+(show==1?'block;':'none;'));
 	i[1].setAttribute('style','color:'+(show==1?'lime;':'red;')+';cursor: pointer;');
 	}
@@ -1331,13 +1481,13 @@ function setMenuOptions(e){
 		PREF._Set(i[0],i[1],e.target.checked?1:0);
 		}
 	function inputNumber(e,i){ // i[0] = ensemble ,i[1] = key
-		var value = e.target.value,
-			result = new RegExp("^(|(?:[0-9]+|[0-9]*[.]?[0-9]+))$").exec(value);
-		if (result!=null){
-			e.target.setAttribute('class','BWEAEBut');
-			PREF._Set(i[0],i[1],value);
+		var v = e.target.value,
+			r = new RegExp("^(|(?:[0-9]+|[0-9]*[.]?[0-9]+))$").exec(v);
+		if (r!=null){
+			e.target.setAttribute('class','BWEInput');
+			PREF._Set(i[0],i[1],v);
 			}
-		else e.target.setAttribute('class','BWEAEButError');
+		else e.target.setAttribute('class','BWEInput BWEAEButError');
 		}
 	function changeCol(e,i){// i[0]= liste, i[1]= ligne, i[2]= ligne + ou -
 		var col = PREF._Get(i[0],'list'),
@@ -1374,7 +1524,7 @@ function setMenuOptions(e){
 			'td2':['td',,[],,'tr'],
 			'label':['label',{'for':'BWElabel'},[L._Get("sActive")],,'td2'],
 			'td3':['td',{'colspan':'4'},[],,'tr'],
-			'check':['input',{'type':'checkbox','id':'BWElabel','checked':PREF._Get(liste,'sh')==1},,{'change':[check,[liste,'sh']]},'td3']});
+			'check':['input',{'class':'BWEInput','type':'checkbox','id':'BWElabel','checked':PREF._Get(liste,'sh')==1},,{'change':[check,[liste,'sh']]},'td3']});
 			}
 		for (var j=0;j<col.length;j++){
 			var cellIU = {'tr':['tr',{'class':(j%2==1?'even':''),'onmouseout':"this.className="+(j%2==1?"'even';":"'';"),'onmouseover':"this.className='selectedItem';"},,,nodeMenu['tbody1']],
@@ -1402,9 +1552,10 @@ function setMenuOptions(e){
 			else IU._CreateElement('option',{'value':list[j][1]},[L._Get("sTitresList")[list[j][0]]],{},newNode);
 			}
 		}
-	var result = DOM._GetNodes(".//a", nodeOptions);
-	for (var i=0; i<result.snapshotLength; i++) result.snapshotItem(i).className = '';
+	var r = DOM._GetNodes("./a", nodeOptions);
+	for (var i=0; i<r.snapshotLength; i++) r.snapshotItem(i).className = '';
 	nodeTitle['2'].className = 'active';
+	nodeTitle['4'].className = '';
 	var menuIU = {
 		'menudiv':['div',{'align':'center','style':'margin-top: 15px;'}],
 		'div1':['div',,['BWE : '],,'menudiv'],
@@ -1438,7 +1589,8 @@ function setMenuOptions(e){
 		// Array:[type,n°titre,array:['ensemble','key']] 
 		menuDiv = [["check",0,['div','chDe']],["check",1,['pMsgFriendList','sh']],["check",2,['div','chSt']],["inputN",3,['div','nbLo']],["check",4,['div','chLo']],["check",5,['AE','sh']],
 				["",6],["inputN",8,['AE','nMin']],["inputN",9,['AE','nMax']],["inputN",10,['AE','aMin']],["inputN",11,['AE','aMax']],
-				["",7],["inputN",8,['AE','cMin']],["inputN",9,['AE','cMax']],["inputN",10,['AE','acMin']],["inputN",11,['AE','acMax']]];
+				["",7],["inputN",8,['AE','cMin']],["inputN",9,['AE','cMax']],["inputN",10,['AE','acMin']],["inputN",11,['AE','acMax']],
+				["check",12,['pBuild','sh']]];
 	// Partie Liste
 	createList(menuList,nodeMenu['select1']);
 	createColList();
@@ -1449,8 +1601,8 @@ function setMenuOptions(e){
 			'td2':['td',{'class':'BWERight'},,,'tr']},
 			cell = IU._CreateElements(cellIU);
 		cell['td1'].textContent = L._Get("sTitresDiv")[menuDiv[j][1]];
-		if (menuDiv[j][0]=="check") IU._CreateElement('input',{'type':'checkbox','checked':PREF._Get(menuDiv[j][2][0],menuDiv[j][2][1])==1},[],{'change':[check,[menuDiv[j][2][0],menuDiv[j][2][1]]]},cell['td2']);
-		else if (menuDiv[j][0]=="inputN") IU._CreateElement('input',{'type':'text','class':'BWEAEBut','value':PREF._Get(menuDiv[j][2][0],menuDiv[j][2][1]),'size':'5','maxlength':'5'},[],{'change':[inputNumber,[menuDiv[j][2][0],menuDiv[j][2][1]]],'keyup':[inputNumber,[menuDiv[j][2][0],menuDiv[j][2][1]]]},cell['td2']);
+		if (menuDiv[j][0]=="check") IU._CreateElement('input',{'class':'BWEInput','type':'checkbox','checked':PREF._Get(menuDiv[j][2][0],menuDiv[j][2][1])==1},[],{'change':[check,[menuDiv[j][2][0],menuDiv[j][2][1]]]},cell['td2']);
+		else if (menuDiv[j][0]=="inputN") IU._CreateElement('input',{'class':'BWEInput','type':'text','value':PREF._Get(menuDiv[j][2][0],menuDiv[j][2][1]),'size':'5','maxlength':'5'},[],{'change':[inputNumber,[menuDiv[j][2][0],menuDiv[j][2][1]]],'keyup':[inputNumber,[menuDiv[j][2][0],menuDiv[j][2][1]]]},cell['td2']);
 		}
 	var oldDiv = DOM._GetNodes("//div[@id='content-mid']/*[preceding-sibling::div[@class='top-options'] and following-sibling::script[last()]]");
 	for (var i=0;i<oldDiv.snapshotLength;i++){oldDiv.snapshotItem(i).parentNode.removeChild(oldDiv.snapshotItem(i));}
@@ -1461,18 +1613,18 @@ function setMenuOptions(e){
 function setMenuDB(e){
 	function selectLSChange(e){
 		if (nodeMenu['selectLS'].selectedIndex>=0)
-			nodeMenu['divLS'].textContent = JSONS._Encode(LS._GetVar(unescape(nodeMenu['selectLS'].options[nodeMenu['selectLS'].selectedIndex].value),""));
+			nodeMenu['divLS'].textContent = JSONS._Encode(LS._GetVar(decodeURIComponent(nodeMenu['selectLS'].options[nodeMenu['selectLS'].selectedIndex].value),""));
 		}
 	function delLS(e){
 		if (nodeMenu['selectLS'].selectedIndex>=0){
 			var index = nodeMenu['selectLS'].selectedIndex,
-				key = unescape(nodeMenu['selectLS'].options[index].value);
+				key = decodeURIComponent(nodeMenu['selectLS'].options[index].value);
 			LS._Delete(key);
-			result.splice(index,1);
+			r.splice(index,1);
 			LSList.splice(LSList.indexOf(key),1);
 			nodeMenu['selectLS'].remove(index);
 			nodeMenu['divLS'].textContent = "";
-			nodeMenu['td1_2_0'].textContent = L._Get('sResult',result.length,LSList.length);
+			nodeMenu['td1_2_0'].textContent = L._Get('sResult',r.length,LSList.length);
 			nodeMenu['divIE'].textContent = '';
 			}
 		}
@@ -1481,7 +1633,7 @@ function setMenuDB(e){
 			nodeMenu['divLS'].textContent = "";
 			nodeMenu['td1_2_0'].textContent = L._Get('sResult',0,0);
 			LSList = [],
-			result = [];
+			r = [];
 			while (nodeMenu['selectLS'].length>0) nodeMenu['selectLS'].remove(0);
 			for (var i=LS._Length()-1;i>=0;i--) if(LS._Key(i).indexOf('BWE:')==0) LS._Delete(LS._Key(i));
 			nodeMenu['divIE'].textContent = '';
@@ -1491,16 +1643,16 @@ function setMenuDB(e){
 	function triLSList(e){
 		while (nodeMenu['selectLS'].length>0) nodeMenu['selectLS'].remove(0);
 		nodeMenu['divLS'].textContent = "";
-		result = [];
+		r = [];
 		for (var i=0;i<LSList.length;i++)
-			if(LSList[i].toLowerCase().indexOf(nodeMenu['LSsearch'].value.toLowerCase())!=-1) result.push(i);
-		result.sort(function(a,b){
+			if(LSList[i].toLowerCase().indexOf(nodeMenu['LSsearch'].value.toLowerCase())!=-1) r.push(i);
+		r.sort(function(a,b){
 			var x = LSList[a].toLowerCase(),
 				y = LSList[b].toLowerCase();
 			return x<y?-1:x==y?0:1;
 			});
-		nodeMenu['td1_2_0'].textContent = L._Get('sResult',result.length,LSList.length);
-		for (var i=0;i<result.length;i++)IU._CreateElement('option',{'value':escape(LSList[result[i]])},[LSList[result[i]]],{},nodeMenu['selectLS']);
+		nodeMenu['td1_2_0'].textContent = L._Get('sResult',r.length,LSList.length);
+		for (var i=0;i<r.length;i++)IU._CreateElement('option',{'value':encodeURIComponent(LSList[r[i]])},[LSList[r[i]]],{},nodeMenu['selectLS']);
 		nodeMenu['selectLS'].selectedIndex = 0;
 		selectLSChange();
 		}
@@ -1508,19 +1660,19 @@ function setMenuDB(e){
 		var output = '';
 		for (var i=0;i<LS._Length();i++){
 			var key = LS._Key(i),
-				result = new RegExp('^BWE:L:('+ID+'(:(?!'+ID+'$)(.+$))|(((?!'+ID+':)(.+:))'+ID+'$))').exec(key);
-			if (result!=null) output += key+'='+JSONS._Encode(LS._GetVar(key,[]));
+				r = new RegExp('^BWE:L:('+ID+'(:(?!'+ID+'$)(.+$))|(((?!'+ID+':)(.+:))'+ID+'$))').exec(key);
+			if (r!=null) output += key+'='+JSONS._Encode(LS._GetVar(key,[]));
 			}
-		nodeMenu['divIE'].textContent = escape(output);
+		nodeMenu['divIE'].textContent = encodeURIComponent(output);
 		}
 	function importLog(e){
-		var input = unescape(nodeMenu['textIE'].value),
+		var input = decodeURIComponent(nodeMenu['textIE'].value),
 			x = 0,i,reg = new RegExp('BWE:L:('+ID+'(?!:'+ID+'=)|(?!'+ID+':)[^:=]+(?=:'+ID+'=)):([^:=]+)=(\\[.*?\\])(?=BWE|$)','g');
 		while ((i=reg.exec(input))!=null){
 			var att = i[1],def = i[2],log = i[3],
-				result = JSONS._Decode(log);
-			for (var j=0;j<result.length;j++){
-				UpdateHistory(att,def,result[j][0],new Date(result[j][1]),result[j][2]);
+				r = JSONS._Decode(log);
+			for (var j=0;j<r.length;j++){
+				UpdateHistory(att,def,r[j][0],new Date(r[j][1]),r[j][2]);
 				if (LS._GetVar('BWE:L:'+att+':'+def,null)!=null&&LSList.indexOf('BWE:L:'+att+':'+def)==-1) LSList.push('BWE:L:'+att+':'+def);
 				x++;
 				nodeMenu['td3_2_1'].textContent = L._Get('sIEResult',x);
@@ -1529,8 +1681,9 @@ function setMenuDB(e){
 		nodeMenu['divIE'].textContent = '';
 		triLSList();
 		}
-	var result = DOM._GetNodes(".//a", nodeOptions);
-	for (var i=0; i<result.snapshotLength; i++) result.snapshotItem(i).className = '';
+	var r = DOM._GetNodes("./a", nodeOptions);
+	for (var i=0; i<r.snapshotLength; i++) r.snapshotItem(i).className = '';
+	nodeTitle['2'].className = '';
 	nodeTitle['4'].className = 'active';
 	var menuIU = {
 		'menudiv':['div',{'align':'center','style':'margin-top: 15px;'}],
@@ -1599,7 +1752,7 @@ function setMenuDB(e){
 	nodeOptions.parentNode.insertBefore(IU._CreateElement('div',{'class':'hr720'}),nodeOptions.nextSibling);
 	// LS
 	var LSList = [],
-		result = [];
+		r = [];
 	for (var i=0;i<LS._Length();i++){
 		var key = LS._Key(i);
 		LSList.push(key); //if(key.indexOf('BWE:')==0)
@@ -1612,21 +1765,23 @@ function setMenuDB(e){
 *
 ******************************************************/
 // vérification des services
+var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
 if (!JSON) throw new Error("Erreur : le service JSON n\'est pas disponible.");
+else if (!MutationObserver) throw new Error("Erreur : le service MutationObserver n\'est pas disponible.");
 else if (!window.localStorage) throw new Error("Erreur : le service localStorage n\'est pas disponible.");
 else{
-	var page = DATAS._GetPage(),
+	var p = DATAS._GetPage(),
 		player = DATAS._PlayerName(),
 		IDs = LS._GetVar('BWE:IDS',{});
-console.debug('BWEpage :',page);
+console.debug('BWEpage :',p);
 	// Pages gérées par le script
-	if (['null','pServerDeco','pServerUpdate','pServerOther'].indexOf(page)==-1&&player!=null){
+	if (['null','pServerDeco','pServerUpdate','pServerOther'].indexOf(p)==-1&&player!=null){
 console.debug('BWEstart: %o %o',player,IDs);
-		if (page=='pMain'){
-			var result = DOM._GetFirstNodeTextContent("//div[@class='throne-maindiv']/div/span[@class='reflink']",null);
-			if (result!=null){
-				var result2 = /r\.php\?r=([0-9]+)/.exec(result),
-					ID = _Exist(result2[1])?result2[1]:null;
+		if (p=='pMain'){
+			var r = DOM._GetFirstNodeTextContent("//div[@class='throne-maindiv']/div/span[@class='reflink']",null);
+			if (r!=null){
+				var r2 = /r\.php\?r=([0-9]+)/.exec(r),
+					ID = _Exist(r2[1])?r2[1]:null;
 				if (ID!=null){
 					for (var i in IDs) if (IDs[i]==ID) delete IDs[i]; // en cas de changement de nom
 					IDs[player] = ID;
@@ -1644,32 +1799,32 @@ console.debug('BWEstart: %o %o',player,IDs);
 			plDatas['N'] = DATAS._PlayerLevel();
 			plDatas['P'] = Number(DATAS._PlayerPdP());
 			LS._SetVar('BWE:P:'+player,plDatas);
-			if  ((page=='pOProfile'||page=='pProfile')&&PREF._Get(page,'sh')==1){
+			if  ((p=='pOProfile'||p=='pProfile')&&PREF._Get(p,'sh')==1){
 				var name = new RegExp(L._Get('sNameTest')).exec(DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='profile-hdr']",null)),
 					ttable = DOM._GetFirstNode("//div[@id='content-mid']/div[@style='float: left; width: 49%;']/fieldset[1]/table"),
 					trList = DOM._GetNodes("./tbody/tr",ttable);
 				if (name!=null&&ttable!=null&&trList!=null&&trList.snapshotLength==14){
 					// récupère les données
-					var value = LS._GetVar('BWE:P:'+name[1],{}),
+					var v = LS._GetVar('BWE:P:'+name[1],{}),
 						uid = /.*\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div/a[@target='_blank']",null)),
 						race = DOM._GetFirstNodeTextContent("./td[2]",null,trList.snapshotItem(0)),
 						sexe = DOM._GetFirstNodeTextContent("./td[2]",null,trList.snapshotItem(1)),
 						niv = DOM._GetFirstNodeTextContent("./td[2]",null,trList.snapshotItem(5)),
 						pts = DOM._GetFirstNodeTextContent("./td[2]",null,trList.snapshotItem(6));
-					if (uid!=null) value['U'] = uid[1];
-					if (race!=null) value['R'] = L._Get('sRaces').indexOf(race);
-					if (sexe!=null) value['S'] = sexe==L._Get("sSexeHomme")?L._Get("sSexeH"):L._Get("sSexeF");
-					if (niv!=null) value['N'] = niv;
-					if (pts!=null) value['P'] = Number(pts);
-					LS._SetVar('BWE:P:'+name[1],value);
+					if (uid!=null) v['U'] = uid[1];
+					if (race!=null) v['R'] = L._Get('sRaces').indexOf(race);
+					if (sexe!=null) v['S'] = sexe==L._Get("sSexeHomme")?L._Get("sSexeH"):L._Get("sSexeF");
+					if (niv!=null) v['N'] = niv;
+					if (pts!=null) v['P'] = Number(pts);
+					LS._SetVar('BWE:P:'+name[1],v);
 					// nouveau tableau
 					var newTableIU = {
-						'table':['table',{'id':'BWE'+page+'table','style':'margin: 10px;','cellspacing':'0'}],
-						'tbody':['tbody',{'id':'BWE'+page+'body'},,,'table']},
+						'table':['table',{'id':'BWE'+p+'table','style':'margin: 10px;','cellspacing':'0'}],
+						'tbody':['tbody',{'id':'BWE'+p+'body'},,,'table']},
 						newTable = IU._CreateElements(newTableIU);
 					ttable.parentNode.insertBefore(newTable['table'],ttable.nextSibling);
 					// garde uniquement les lignes sélectionnées
-					var newLig = PREF._Get(page,'list');
+					var newLig = PREF._Get(p,'list');
 					for (var j=0;j<newLig.length;j++){
 						if (newLig[j][1]==1){
 							var ligne;
@@ -1693,17 +1848,17 @@ console.debug('BWEstart: %o %o',player,IDs);
 										grpTR = IU._CreateElements(grpIU);
 									newTR['td1'].setAttribute('style','color:'+(show?'lime;':'red;')+';cursor: pointer;');
 									IU._addEvent(newTR['td1'],'click',showHideGr,[newTR['td1'],grpTR['tr0'],grpTR['tr1']]);
-									var grTDIU = {'labelA':['label',{'for':escape('BWEcheckA_'+name[1])},['A'],,newTR['td2']],
-												'checkA':['input',{'type':'checkbox','id':escape('BWEcheckA_'+name[1]),
+									var grTDIU = {'labelA':['label',{'for':encodeURIComponent('BWEcheckA_'+name[1])},['A'],,newTR['td2']],
+												'checkA':['input',{'class':'BWEInput','type':'checkbox','id':encodeURIComponent('BWEcheckA_'+name[1]),
 													'checked':(grp['A'].indexOf(name[1])>-1)},,
 													{'change':[checkGrp,[name[1],'A']]},newTR['td2']],
-												'labelB':['label',{'for':escape('BWEcheckB_'+name[1])},['B'],,newTR['td2']],
-												'checkB':['input',{'type':'checkbox','id':escape('BWEcheckB_'+name[1]),
+												'labelB':['label',{'for':encodeURIComponent('BWEcheckB_'+name[1])},['B'],,newTR['td2']],
+												'checkB':['input',{'class':'BWEInput','type':'checkbox','id':encodeURIComponent('BWEcheckB_'+name[1]),
 													'checked':(grp['B'].indexOf(name[1])>-1)},,
 													{'change':[checkGrp,[name[1],'B']]},newTR['td2']]},
 										grTD = IU._CreateElements(grTDIU);
-									createGrpTable('A');
-									createGrpTable('B');
+									GroupTable('A');
+									GroupTable('B');
 									}
 								else if (line==14){
 									var trIU = {'table':['table',{'style':'width:90%;'},,,newTR['td2']],
@@ -1717,38 +1872,53 @@ console.debug('BWEstart: %o %o',player,IDs);
 									CreateHistory(name[1],ID,embTR['td14']);
 									}
 								}
-							ligne.className += (ligne.className?' ':'')+(_Exist(newLig[j][3])?['BWELeft','BWEMiddle','BWERight'][newLig[j][3]]:'BWELeft');
+							ligne.classList.add(_Exist(newLig[j][3])?['BWELeft','BWEMiddle','BWERight'][newLig[j][3]]:'BWELeft');
 							}
 						}
 					ttable.setAttribute('style','display:none');
 					}
 				}
-/*			else if (page=='pBuild'&&PREF._Get(page,'sh')==1){
+			else if (p=='pBuild'&&PREF._Get(p,'sh')==1){
+				var target = DOM._GetFirstNode("//div[@id='content-mid']"),
+					builds = DOM._GetNodes("./div[@class='building']",target),
+					allnode = DOM._GetNodes("./div[(@class='bldprogress' or @class='strefaheader' or @class='building' or @class='hr720' or @class='hr620')]",target);
+				if (target!=null&&builds!=null&&allnode!=null){
+					var newTableIU = {
+						'div':['div',{'id':'BWE'+p+'div','align':'center'}],
+						'hr1':['div',{'class':'hr720'},,,'div'],
+						'table':['table',{'id':'BWE'+p+'table','class':'BWEBuild','style':'width:100%;'},,,'div'],
+						'thead':['thead',,,,'table'],
+						'tbody':['tbody',{'id':'BWE'+p+'body'},,,'table'],
+						'hr2':['div',{'class':'hr720'},,,'div']},
+						newTable = IU._CreateElements(newTableIU);
+					target.insertBefore(newTable['div'],target.childNodes[0]);
+					BuildTable(newTable,builds);
+					for (var i=0;i<allnode.snapshotLength;i++){allnode.snapshotItem(i).setAttribute('style','display:none');}
+					}
 				}
-*/			else if (page=='pTownview'&&PREF._Get(page,'sh')==1){
+			else if (p=='pTownview'&&PREF._Get(p,'sh')==1){
 				var target = DOM._GetFirstNode("//div[@id='content-mid']//div[@id='tw_table']"),
 					theader = DOM._GetFirstNode(".//tr[@class='tblheader']",target),
-					ttable = DOM._GetFirstNode("./ancestor::table[last()]",theader);
+					ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader);
 				if (target!=null&&theader!=null&&ttable!=null){
 					// recréé le tableau en cas de changement
-					var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver,
-						observer = new MutationObserver(function(mutations){
+					var observer = new MutationObserver(function(mutations){
 							var theader = DOM._GetFirstNode("//div[@id='content-mid']//div[@id='tw_table']//tr[@class='tblheader']"),
-								ttable = DOM._GetFirstNode("./ancestor::table[last()]",theader),
+								ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader),
 								tlist = DOM._GetNodes("./following-sibling::tr",theader);
 							if (ttable!=null&&tlist!=null){
 								observer.disconnect();
-								var oldTable = DOM._GetFirstNode("//div[@id='BWE"+page+"div']");
+								var oldTable = DOM._GetFirstNode("//div[@id='BWE"+p+"div']");
 								if (oldTable!=null) oldTable.parentNode.removeChild(oldTable);
 								var newTableIU = {
-									'div':['div',{'id':'BWE'+page+'div','align':'center'},],
-									'table':['table',{'id':'BWE'+page+'table','style':'width:95%;'},,,'div'],
+									'div':['div',{'id':'BWE'+p+'div','align':'center'},],
+									'table':['table',{'id':'BWE'+p+'table','style':'width:95%;'},,,'div'],
 									'thead':['thead',,,,'table'],
-									'tr':['tr',{'id':'BWE'+page+'header','class':'tblheader'},,,'thead'],
-									'tbody':['tbody',{'id':'BWE'+page+'body'},,,'table']},
+									'tr':['tr',{'id':'BWE'+p+'header','class':'tblheader'},,,'thead'],
+									'tbody':['tbody',{'id':'BWE'+p+'body'},,,'table']},
 									newTable = IU._CreateElements(newTableIU);
 								target.parentNode.insertBefore(newTable['div'],target.nextSibling);
-								CreateTable(theader,tlist,page);
+								MixteTable(theader,tlist,p);
 								ttable.setAttribute('style','display:none');
 								observer.observe(target,{childList: true});
 								}
@@ -1757,14 +1927,14 @@ console.debug('BWEstart: %o %o',player,IDs);
 					ttable.setAttribute('style','display:none'); // provoque observer
 					}
 				}
-			else if (page=='pOAliance'||page=='pAliance'){
+			else if (p=='pOAliance'||p=='pAliance'){
 				// options pour afficher/masquer
 				var td = DOM._GetNodes("//div[@id='content-mid']//div[@class='clan-desc']");
 				if (td!=null&&PREF._Get('div','chDe')==1){
 					if (_Exist(td.snapshotItem(0))){
-						var td1prev = DOM._GetFirstNode(".//parent::td/preceding-sibling::td/b",td.snapshotItem(0));
+						var td1prev = DOM._GetFirstNode("./parent::td/preceding-sibling::td/b",td.snapshotItem(0));
 						if (td1prev!=null){
-							var show = PREF._Get(page,'sh1')==1;
+							var show = PREF._Get(p,'sh1')==1;
 							td.snapshotItem(0).setAttribute('style','display:'+(show?'block;':'none;'));
 							td1prev.setAttribute('style','color:'+(show?'lime;':'red;')+';cursor: pointer;');
 							IU._addEvent(td1prev,'click',show_hide,[td.snapshotItem(0),td1prev,'sh1']);
@@ -1773,7 +1943,7 @@ console.debug('BWEstart: %o %o',player,IDs);
 					if (_Exist(td.snapshotItem(1))){
 						var td2prev = DOM._GetFirstNode("//div[@id='content-mid']//td[@style='padding-top: 10px; padding-bottom: 4px; vertical-align: top;']/b");
 						if (td2prev!=null){
-							var show = PREF._Get(page,'sh2')==1;
+							var show = PREF._Get(p,'sh2')==1;
 							td.snapshotItem(1).setAttribute('style','display:'+(show?'block;':'none;'));
 							td2prev.setAttribute('style','color:'+(show?'lime;':'red;')+';cursor: pointer;');
 							IU._addEvent(td2prev,'click',show_hide,[td.snapshotItem(1),td2prev,'sh2']);
@@ -1781,103 +1951,103 @@ console.debug('BWEstart: %o %o',player,IDs);
 						}
 					}
 				// liste des vampires
-				if (PREF._Get(page,'sh')==1){
+				if (PREF._Get(p,'sh')==1){
 					var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='sortable']"),
 						theader = DOM._GetFirstNode("./thead/tr[@class='tblheader']",ttable),
 						tlist = DOM._GetNodes("./tbody/tr",ttable);
 					if (ttable!=null&&theader!=null&&tlist!=null){
 						var newTableIU = {
-							'div':['div',{'id':'BWE'+page+'div','align':'center'},],
-							'table':['table',{'id':'BWE'+page+'table','style':'width:95%;'},,,'div'],
+							'div':['div',{'id':'BWE'+p+'div','align':'center'},],
+							'table':['table',{'id':'BWE'+p+'table','style':'width:95%;'},,,'div'],
 							'thead':['thead',,,,'table'],
-							'tr':['tr',{'id':'BWE'+page+'header','class':'tblheader'},,,'thead'],
-							'tbody':['tbody',{'id':'BWE'+page+'body'},,,'table']},
+							'tr':['tr',{'id':'BWE'+p+'header','class':'tblheader'},,,'thead'],
+							'tbody':['tbody',{'id':'BWE'+p+'body'},,,'table']},
 							newTable = IU._CreateElements(newTableIU);
 						ttable.parentNode.insertBefore(newTable['div'],ttable.nextSibling);
-						CreateTable(theader,tlist,page);
+						MixteTable(theader,tlist,p);
 						ttable.setAttribute('style','display:none');
-						if (DOM._GetFirstNode("//td[@id='BWEgrpcol']")!=null){
+						if (DOM._GetFirstNode("//td[@id='BWE"+p+"col21']")!=null){
 							var newGrpIU = {
 								'tableGrp':['table',{'id':'BWEGrp','style':'width:95%;'},,,newTable['div']],
 								'tr0':['tr',,,,'tableGrp'],
 								'td00':['td',{'id':'BWEgrpA','class':'BWEMiddle','style':'width:45%;','valign':'top'},,,'tr0'],
 								'td01':['td',{'id':'BWEgrpB','class':'BWEMiddle','style':'width:45%;','valign':'top'},,,'tr0']},
 								newGrp = IU._CreateElements(newGrpIU);
-							createGrpTable('A');
-							createGrpTable('B');
+							GroupTable('A');
+							GroupTable('B');
 							}
 						}
 					}
 				}
-			else if (page=='pAlianceList'&&PREF._Get(page,'sh')==1){
+			else if (p=='pAlianceList'&&PREF._Get(p,'sh')==1){
 				var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
-					ttable = DOM._GetFirstNode("./ancestor::table[last()]",theader),
+					ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader),
 					tlist = DOM._GetNodes("./following-sibling::tr",theader);
 				if (ttable!=null&&theader!=null&&tlist!=null){
 					var newTableIU = {
-						'div':['div',{'id':'BWE'+page+'div','align':'center'},],
-						'table':['table',{'id':'BWE'+page+'table','style':'width:100%;'},,,'div'],
+						'div':['div',{'id':'BWE'+p+'div','align':'center'},],
+						'table':['table',{'id':'BWE'+p+'table','style':'width:100%;'},,,'div'],
 						'thead':['thead',,,,'table'],
-						'tr':['tr',{'id':'BWE'+page+'header','class':'tblheader'},,,'thead'],
-						'tbody':['tbody',{'id':'BWE'+page+'body'},,,'table']},
+						'tr':['tr',{'id':'BWE'+p+'header','class':'tblheader'},,,'thead'],
+						'tbody':['tbody',{'id':'BWE'+p+'body'},,,'table']},
 						newTable = IU._CreateElements(newTableIU);
 					ttable.parentNode.insertBefore(newTable['div'],ttable.nextSibling);
-					CreateTable(theader,tlist,page);
+					MixteTable(theader,tlist,p);
 					ttable.setAttribute('style','display:none');
 					}
 				}
-			else if (page=='pMkstone'||page=='pUpgitem'||page=='pMixitem'||page=='pDestitem'||page=='pTatoo'){
+			else if (p=='pMkstone'||p=='pUpgitem'||p=='pMixitem'||p=='pDestitem'||p=='pTatoo'){
 				if (PREF._Get('div','chSt')==1){
 					var cost = new Array(['disp_stone_blood',1],['disp_stone_heart',10],['disp_stone_life',50],['disp_stone_change',150],['disp_stone_soul',500]),
 						sum = 0;
 					for (var i=0;i<cost.length;i++){
-						var result = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//span[@id='"+cost[i][0]+"']",null);
-						if (result!=null) sum = sum + (cost[i][1]*parseInt(result));
+						var r = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//span[@id='"+cost[i][0]+"']",null);
+						if (r!=null) sum = sum + (cost[i][1]*parseInt(r));
 						}
-					var result = DOM._GetFirstNode("//div[@id='content-mid']//fieldset[@class='profile mixer']");
-					if (result!=null){
+					var r = DOM._GetFirstNode("//div[@id='content-mid']//fieldset[@class='profile mixer']");
+					if (r!=null){
 						var totalIU = {'div1':['div',{'align':'center'}],
 										'div2':['div',{'style':'padding:2px;'},[L._Get("sTotal")],,'div1'],
 										'b':['b',,[sum],,'div2']},
 							total = IU._CreateElements(totalIU);
-						result.parentNode.insertBefore(total['div1'],result.nextSibling);
+						r.parentNode.insertBefore(total['div1'],r.nextSibling);
 						}
 					}
-/*				if (page=='pMixitem'&&PREF._Get('div','chSt')==1){
+/*				if (p=='pMixitem'&&PREF._Get('div','chSt')==1){
 					
 					}
 */				}
-			else if (page=='pAmbushRoot'&&PREF._Get('div','chLo')==1){
+			else if (p=='pAmbushRoot'&&PREF._Get('div','chLo')==1){
 				var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
 				if (atkaction!=null){
 					var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script",null);
 					if (ambushScript!=null){
-						var result = new RegExp(L._Get('sAtkTime')).exec(ambushScript);
-						if (result!=null){
+						var r = new RegExp(L._Get('sAtkTime')).exec(ambushScript);
+						if (r!=null){
 							var msgDate = DATAS._Time(),
-								result2 = new RegExp(L._Get('sMidMsg')).exec(ambushScript),
+								r2 = new RegExp(L._Get('sMidMsg')).exec(ambushScript),
 								playerVS = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']",null);
-							if (msgDate!=null&&result2!=null&&playerVS!=null){
-								msgDate.setTime(msgDate.getTime()+result[1]*1000);
-								UpdateHistory(ID,playerVS,result2[1],msgDate,null);
+							if (msgDate!=null&&r2!=null&&playerVS!=null){
+								msgDate.setTime(msgDate.getTime()+r[1]*1000);
+								UpdateHistory(ID,playerVS,r2[1],msgDate,null);
 								}
 							}
 						}
 					}
 				}
-			else if (page=='pMsgList'||page=='pMsgSaveList'||page=='pMsgSendList'){
+			else if (p=='pMsgList'||p=='pMsgSaveList'||p=='pMsgSendList'){
 				var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
-					ttable = DOM._GetFirstNode("./ancestor::table[last()]",theader),
+					ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader),
 					tlist = DOM._GetNodes("./following-sibling::tr",theader);
 				if (tlist!=null&&PREF._Get('div','chLo')==1){
 					for (var i=0;i<tlist.snapshotLength;i++){
 						var node = tlist.snapshotItem(i),
-							msg = DOM._GetFirstNodeTextContent(".//td[2]/a[@class='msg-link']",null,node),
-							msgDate = DOM._GetFirstNodeTextContent(".//td[4]",null,node),
-							msgId = DOM._GetFirstNode(".//td[1]/input",node);
+							msg = DOM._GetFirstNodeTextContent("./td[2]/a[@class='msg-link']",null,node),
+							msgDate = DOM._GetFirstNodeTextContent("./td[4]",null,node),
+							msgId = DOM._GetFirstNode("./td[1]/input",node);
 						// conversion au format Date
-						var value = new RegExp("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})").exec(msgDate);
-						msgDate = (value!=null)?new Date(value[1],value[2]-1,value[3],value[4],value[5],value[6]):null;
+						var v = new RegExp("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})").exec(msgDate);
+						msgDate = (v!=null)?new Date(v[1],v[2]-1,v[3],v[4],v[5],v[6]):null;
 						if (msg!=null&&msgDate!=null&&msgId!=null){
 							var msgId = msgId.getAttribute('id').replace('msgid_', ''),
 								m1 = new RegExp(L._Get('sAmbushMsg1')).exec(msg),
@@ -1888,28 +2058,28 @@ console.debug('BWEstart: %o %o',player,IDs);
 							}
 						}
 					}
-				if (ttable!=null&&theader!=null&&tlist!=null&&PREF._Get(page,'sh')==1){
+				if (ttable!=null&&theader!=null&&tlist!=null&&PREF._Get(p,'sh')==1){
 					var newTableIU = {
-						'div':['div',{'id':'BWE'+page+'div','align':'center'},],
-						'table':['table',{'id':'BWE'+page+'table','class':'BWETabMsg','style':'width:100%;'},,,'div'],
+						'div':['div',{'id':'BWE'+p+'div','align':'center'},],
+						'table':['table',{'id':'BWE'+p+'table','class':'BWETabMsg','style':'width:100%;'},,,'div'],
 						'thead':['thead',,,,'table'],
-						'tr':['tr',{'id':'BWE'+page+'header','class':'tblheader'},,,'thead'],
-						'tbody':['tbody',{'id':'BWE'+page+'body'},,,'table']},
+						'tr':['tr',{'id':'BWE'+p+'header','class':'tblheader'},,,'thead'],
+						'tbody':['tbody',{'id':'BWE'+p+'body'},,,'table']},
 						newTable = IU._CreateElements(newTableIU);
 					ttable.parentNode.insertBefore(newTable['div'],ttable.nextSibling);
-					CreateTable(theader,tlist,page);
+					MixteTable(theader,tlist,p);
 					ttable.setAttribute('style','display:none');
 					}
 				}
-			else if (page=='pMsg'||page=='pMsgSave'){
+			else if (p=='pMsg'||p=='pMsgSave'){
 				// Analyse le message d'embuscade
 				var msgContent = DOM._GetFirstNodeInnerHTML("//div[@class='msg-content ']", null);
 				if (msgContent!=null&&PREF._Get('div','chLo')==1){
 					// embuscade
-					var result = new RegExp(L._Get('sAmbushTest1')).exec(msgContent);
-					if (result!=null){
-						var att = result[1],
-							def = result[2],
+					var r = new RegExp(L._Get('sAmbushTest1')).exec(msgContent);
+					if (r!=null){
+						var att = r[1],
+							def = r[2],
 							emb = ['','','','',[],[],[],[],[],[],[],[],[]], //[%,réussite,PV att,PV def,aa,ad,ea,ed,ca,cd,pa,pd,ressources]
 							qsMid = DOM._QueryString("mid");
 						// liste des éléments à récupérer suivant les options
@@ -1921,58 +2091,58 @@ console.debug('BWEstart: %o %o',player,IDs);
 						for (var i=0;i<div.length;i++){divShow[div[i][0]-37]=div[i][1];}
 						for (var i=0;i<Ga.length;i++){GaShow[Ga[i][0]-56]=Ga[i][1];}
 						// Chance de réussite
-						var result = new RegExp(L._Get('sAmbushTest2')).exec(msgContent);
-						if (result!=null&&divShow[1]==1) emb[0] = result[1];
+						var r = new RegExp(L._Get('sAmbushTest2')).exec(msgContent);
+						if (r!=null&&divShow[1]==1) emb[0] = r[1];
 						// embuscade réussie
-						var result = new RegExp(L._Get('sAmbushTest3',att)).exec(msgContent);
-						if (result!=null){
+						var r = new RegExp(L._Get('sAmbushTest3',att)).exec(msgContent);
+						if (r!=null){
 							// résultat
-							var result1 = new RegExp(L._Get('sAmbushTest4')).exec(msgContent),
-								result2 = new RegExp(L._Get('sAmbushTest5',def)).exec(msgContent),
-								result3 = new RegExp(L._Get('sAmbushTest6')).exec(msgContent);
-							if (result1!=null){
+							var r1 = new RegExp(L._Get('sAmbushTest4')).exec(msgContent),
+								r2 = new RegExp(L._Get('sAmbushTest5',def)).exec(msgContent),
+								r3 = new RegExp(L._Get('sAmbushTest6')).exec(msgContent);
+							if (r1!=null){
 								emb[1] = 'v';
 								if (logShow[5]==1){
 									// ressources (pdp,pdh,lol,sang,pop,évo)
-									var result = new RegExp(L._Get('sAmbushTest13',att)).exec(msgContent);
-									if (result!=null&&GaShow[0]==1) emb[12][0] = Number(result[1]);
-									var result = new RegExp(L._Get('sAmbushTest14',att)).exec(msgContent);
-									if (result!=null){
-										if (GaShow[0]==1) emb[12][0] = Number(result[1]);
-										if (GaShow[1]==1) emb[12][1] = Number(result[2]);
+									var r = new RegExp(L._Get('sAmbushTest13',att)).exec(msgContent);
+									if (r!=null&&GaShow[0]==1) emb[12][0] = Number(r[1]);
+									var r = new RegExp(L._Get('sAmbushTest14',att)).exec(msgContent);
+									if (r!=null){
+										if (GaShow[0]==1) emb[12][0] = Number(r[1]);
+										if (GaShow[1]==1) emb[12][1] = Number(r[2]);
 										}
-									var result = new RegExp(L._Get('sAmbushTest15',def)).exec(msgContent);
-									if (result!=null){
-										if (GaShow[3]==1) emb[12][3] = Number(result[1]);
-										if (GaShow[4]==1) emb[12][4] = Number(result[2]);
-										if (GaShow[5]==1) emb[12][5] = Number(result[3]);
+									var r = new RegExp(L._Get('sAmbushTest15',def)).exec(msgContent);
+									if (r!=null){
+										if (GaShow[3]==1) emb[12][3] = Number(r[1]);
+										if (GaShow[4]==1) emb[12][4] = Number(r[2]);
+										if (GaShow[5]==1) emb[12][5] = Number(r[3]);
 										}
-									var result = new RegExp(L._Get('sAmbushTest16',att)).exec(msgContent);
-									if (result!=null&&GaShow[2]==1) emb[12][2] = Number(result[1]);
+									var r = new RegExp(L._Get('sAmbushTest16',att)).exec(msgContent);
+									if (r!=null&&GaShow[2]==1) emb[12][2] = Number(r[1]);
 									}
 								}
-							else if (result2!=null){
+							else if (r2!=null){
 								emb[1] = 'd';
 								if (logShow[5]==1){
 									// ressources (pdp,lol,sang,pop)
-									var result = new RegExp(L._Get('sAmbushTest13',def)).exec(msgContent);
-									if (result!=null&&GaShow[0]==1) emb[12][0] = Number(result[1]);
-									var result = new RegExp(L._Get('sAmbushTest15',att)).exec(msgContent);
-									if (result!=null){
-										if (GaShow[3]==1) emb[12][3] = Number(result[1]);
-										if (GaShow[4]==1) emb[12][4] = Number(result[2]);
-										if (GaShow[5]==1) emb[12][5] = Number(result[3]);
+									var r = new RegExp(L._Get('sAmbushTest13',def)).exec(msgContent);
+									if (r!=null&&GaShow[0]==1) emb[12][0] = Number(r[1]);
+									var r = new RegExp(L._Get('sAmbushTest15',att)).exec(msgContent);
+									if (r!=null){
+										if (GaShow[3]==1) emb[12][3] = Number(r[1]);
+										if (GaShow[4]==1) emb[12][4] = Number(r[2]);
+										if (GaShow[5]==1) emb[12][5] = Number(r[3]);
 										}
 									}
 								}
-							else if (result3!=null) emb[1] = 'n';
+							else if (r3!=null) emb[1] = 'n';
 							// PV en fin de combat
 							var sommaire = DOM._GetLastNodeInnerHTML("//div[@class='sum2']",null);
 							if (sommaire!=null){
-								var result = new RegExp(L._Get('sAmbushTest7')).exec(sommaire);
-								if (result!=null){
-									if (logShow[1]==1&&divShow[2]==1) emb[2] = L._Get('sPVFormat',result[1],result[2]);
-									if (logShow[1]==1&&divShow[3]==1) emb[3] = L._Get('sPVFormat',result[3],result[4]);
+								var r = new RegExp(L._Get('sAmbushTest7')).exec(sommaire);
+								if (r!=null){
+									if (logShow[1]==1&&divShow[2]==1) emb[2] = L._Get('sPVFormat',r[1],r[2]);
+									if (logShow[1]==1&&divShow[3]==1) emb[3] = L._Get('sPVFormat',r[3],r[4]);
 									}
 								}
 							}
@@ -2004,10 +2174,10 @@ console.debug('BWEstart: %o %o',player,IDs);
 							var table = DOM._GetFirstNodeInnerHTML("//table[@class='fight']");
 							if (table!=null){
 								for (var i=0;i<13; i++){
-								var result = new RegExp(L._Get('sAmbushTest11',L._Get('sColTitle')[i+43])).exec(table);
-									if (result!=null){
-										emb[8][i] = i==1?result[1]:Number(result[1]);
-										emb[9][i] = i==1?result[2]:Number(result[2]);
+								var r = new RegExp(L._Get('sAmbushTest11',L._Get('sColTitle')[i+43])).exec(table);
+									if (r!=null){
+										emb[8][i] = i==1?r[1]:Number(r[1]);
+										emb[9][i] = i==1?r[2]:Number(r[2]);
 										}
 									}
 								}
@@ -2025,41 +2195,41 @@ console.debug('BWEstart: %o %o',player,IDs);
 						}
 					}
 				}
-			else if (page=='pMsgFriendList'&&PREF._Get(page,'sh')==1){
+			else if (p=='pMsgFriendList'&&PREF._Get(p,'sh')==1){
 				var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
-					ttable = DOM._GetFirstNode("./ancestor::table[last()]",theader),
+					ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader),
 					tlist = DOM._GetNodes("./following-sibling::tr",theader);
 				if (ttable!=null&&theader!=null&&tlist!=null){
 					var newTableIU = {
-						'div':['div',{'id':'BWE'+page+'div','align':'center'},],
-						'table':['table',{'id':'BWE'+page+'table','style':'width:300px;'},,,'div'],
+						'div':['div',{'id':'BWE'+p+'div','align':'center'},],
+						'table':['table',{'id':'BWE'+p+'table','style':'width: 300px; margin-top: 20px;'},,,'div'],
 						'thead':['thead',,,,'table'],
-						'tr':['tr',{'id':'BWE'+page+'header','class':'tblheader'},,,'thead'],
-						'tbody':['tbody',{'id':'BWE'+page+'body'},,,'table'],},
+						'tr':['tr',{'id':'BWE'+p+'header','class':'tblheader'},,,'thead'],
+						'tbody':['tbody',{'id':'BWE'+p+'body'},,,'table'],},
 						newTable = IU._CreateElements(newTableIU);
 					ttable.parentNode.insertBefore(newTable['div'],ttable.nextSibling);
-					CreateTable(theader,tlist,page);
+					MixteTable(theader,tlist,p);
 					ttable.setAttribute('style','display:none');
 					}
 				}
-			else if (page=='pRank'&&PREF._Get(page,'sh')==1){
+			else if (p=='pRank'&&PREF._Get(p,'sh')==1){
 				var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='rank']"),
 					theader = DOM._GetFirstNode("./tbody/tr[@class='tblheader']",ttable),
 					tlist = DOM._GetNodes("./following-sibling::tr",theader);
 				if (ttable!=null&&theader!=null&&tlist!=null){
 					var newTableIU = {
-						'div':['div',{'id':'BWE'+page+'div','align':'center'},],
-						'table':['table',{'id':'BWE'+page+'table','style':'width:95%;'},,,'div'],
+						'div':['div',{'id':'BWE'+p+'div','align':'center'},],
+						'table':['table',{'id':'BWE'+p+'table','style':'width:95%;'},,,'div'],
 						'thead':['thead',,,,'table'],
-						'tr':['tr',{'id':'BWE'+page+'header','class':'tblheader'},,,'thead'],
-						'tbody':['tbody',{'id':'BWE'+page+'body'},,,'table'],},
+						'tr':['tr',{'id':'BWE'+p+'header','class':'tblheader'},,,'thead'],
+						'tbody':['tbody',{'id':'BWE'+p+'body'},,,'table'],},
 						newTable = IU._CreateElements(newTableIU);
 					ttable.parentNode.insertBefore(newTable['div'],ttable.nextSibling);
-					CreateTable(theader,tlist,page);
+					MixteTable(theader,tlist,p);
 					ttable.setAttribute('style','display:none');
 					}
 				}
-			else if (page=='pRootSettings'||page=='pSettingsAi'||page=='pSettingsAcc'||page=='pSettingsVac'||page=='pSettingsDelchar'){
+			else if (p=='pRootSettings'||p=='pSettingsAi'||p=='pSettingsAcc'||p=='pSettingsVac'||p=='pSettingsDelchar'){
 				var nodeOptions = DOM._GetFirstNode("//div[@id='content-mid']//div[@class='top-options']");
 				if (nodeOptions!=null){
 					var titleMenuIU = {
