@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2014.09.13
+// @version		2014.09.14a
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2014, Ecilam
@@ -22,19 +22,15 @@ function _Type(v){
 	var type = Object.prototype.toString.call(v);
 	return type.slice(8,type.length-1);
 	}
-
 function _Exist(v){
 	return _Type(v)!='Undefined';
 	}
-
-// passe l'objet par valeur et non par référence
-function clone(objet){
-	if(typeof objet!='object'||objet==null) return objet;
-	var newObjet = objet.constructor();
-	for(var i in objet)	newObjet[i] = clone(objet[i]);
+function clone(o){
+	if(typeof o!='object'||o==null) return o;
+	var newObjet = o.constructor();
+	for(var i in o)	newObjet[i] = clone(o[i]);
 	return newObjet;
 	}
-
 /******************************************************
 * OBJET JSONS - JSON
 * - stringification des données
@@ -756,7 +752,6 @@ function SetCSS(){
 		if (even!=null&&selectedItem!=null) css.push('.BWEeven{'+even.cssText+'}','.BWETR:hover{'+selectedItem.cssText+'}');
 		IU._CreateElement('style',{'type':'text/css'},[css.join('')],{},head);
 		}
-console.debug('css',even,selectedItem,css);
 	}
 	
 /******************************************************
@@ -1440,7 +1435,7 @@ function FctTriA(key,order,index,tbody,list){
 					}
 				}
 			else if (id==24){ // <ATTAQUER>
-				var isIMG = DOM._GetFirstNode("./a/img", col);
+				var isIMG = DOM._GetFirstNode("./a/img|./img", col);
 				if (isIMG!=null) v = isIMG.alt;
 				}
 			else if (id==2){ // adresse
@@ -1773,10 +1768,10 @@ else{
 	var p = DATAS._GetPage(),
 		player = DATAS._PlayerName(),
 		IDs = LS._GetVar('BWE:IDS',{});
-console.debug('BWEpage :',p);
+//console.debug('BWEpage :',p);
 	// Pages gérées par le script
 	if (['null','pServerDeco','pServerUpdate','pServerOther'].indexOf(p)==-1&&player!=null){
-console.debug('BWEstart: %o %o',player,IDs);
+//console.debug('BWEstart: %o %o',player,IDs);
 		if (p=='pMain'){
 			var r = DOM._GetFirstNodeTextContent("//div[@class='throne-maindiv']/div/span[@class='reflink']",null);
 			if (r!=null){
@@ -2245,5 +2240,5 @@ console.debug('BWEstart: %o %o',player,IDs);
 		else alert(L._Get("sUnknowID"));
 		}
 	}
-console.debug('BWEEnd');
+//console.debug('BWEEnd');
 })();
