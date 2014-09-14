@@ -6,7 +6,7 @@ Ensemble de Userscripts améliorant le jeu [Blood Wars](http://www.fr.bloodwars.
 * [BloodWarsToolBox](https://github.com/Ecilam/BloodWarsToolBox)
 * [BloodWarsItemTest](https://github.com/Ecilam/BloodWarsItemTest)
 
-Ce script est compatible avec les serveurs Anglais/Français/Polonais 1.5.5 et les navigateurs Firefox, Chrome et Opera (à confirmer pour les 2 derniers).
+Ce script est compatible avec les serveurs Anglais/Français/Polonais 1.5.6 et les navigateurs Firefox, Chrome et Opera (à confirmer pour les 2 derniers).
 Testé principalement avec Firefox 30.0 sur serveur R3FR.
 
 Pour tout contact passer par mon [topic](http://forum.fr.bloodwars.net/index.php?page=Thread&threadID=204323/) sur le forum BloodWars.
@@ -21,6 +21,7 @@ Pour les bugs, GitHub propose une section [Issues](https://github.com/Ecilam/Blo
 ###FONCTIONS
 * Listes/Tableaux modulables et triables (Profiles, Clans, Classement, Vue sur la cité, Amis).
 * **Historique des combats** aussi bien en attaque qu'en défense.
+* Affichage du "Site de construction" sous forme de tableau.
 * Mécanisme d'aide aux embuscades (désactivé par défaut).
 * Mécanisme d'aide à la création de groupe (désactivé par défaut).
 * Afficher/masquer les zones d'informations des clans en cliquant sur leur titre.
@@ -40,7 +41,7 @@ Les Préférences du jeu vous proposent 2 menus supplémentaires :
 	- au passage de la souris, affiche une info bulle avec les éléments de la rencontre (modulable via les Préférences).
 * **Aide aux embuscades :**
 	- fait clignoter l'icône de combat suivant les critères choisis (voir les Préférences). 
-	- Ex : pour la version 1.5.5 du jeu, mettre 100 dans la partie "Classement"/"Ecart supérieur" pour obtenir les cibles rapportant 2 points d'évolution. Laisser les autres cases vides.
+	- Ex : pour la version 1.5.6 du jeu, mettre 100 dans la partie "Classement"/"Ecart supérieur" pour obtenir les cibles rapportant 2 points d'évolution. Laisser les autres cases vides.
 * **Aide à la création de Groupe :**
 	- permet de constituer 2 groupes pour une confrontation à venir de type siège organisé ou autres.
 	- sur le Profil, 'Groupe' est cliquable pour permettre d'afficher/masquer les listes.
