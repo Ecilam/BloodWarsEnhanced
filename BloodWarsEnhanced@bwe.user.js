@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2014.09.14a
+// @version		2014.12.15
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2014, Ecilam
@@ -367,9 +367,9 @@ var L = (function(){
 		"sArc":[["Silence du Sang","Absorption de la Force","Le pouvoir du Sang","Masque d`Adonis","Masque de Caligula","La Majesté","Sang de la Vie","Voies Félines","L`Ardeur du Sang","Le Chasseur de la Nuit","Le Souffle Mortel","L`Horreur","Frénésie Sauvage","Peau de Bête","L`Ombre de la Bête"],
 			["Silence of Blood","Power absorption","Power of Blood","Mask of Adonis","Mask of Caligula","Majesty","Blood of Life","Cat`s Paths","Searing Blood","Night Hunter","Breath of Death","Horror","Bloodfrenzy","Beast`s Hide","Shadow of the Beast"],
 			["Cisza Krwi","Wyssanie mocy","Moc Krwi","Maska Adonisa","Maska Kaliguli","Majestat","Krew Życia","Kocie Ścieżki","Żar Krwi","Nocny Łowca","Tchnienie Śmierci","Groza","Dziki Szał","Skóra Bestii","Cień Bestii"]],
-		"sEvo":[["Les Ailes","Carapace","Canines/Griffes/Pointes","Glandes à venin","Tendons renforcés","Chambre supplémentaire","Le sang du démon","Mutation ADN","Eclairé","Sixième sens","Absorption","Développement Harmonieux","Mana Purifiée","Mémoire Ancestrale","Puissance"],
-			["Wings","Carapace","Claws/Fangs/Quills","Venom glands","Hardened tendons","Additional cavity","Daemon blood","Mutated DNA","Enlightened","Sixth sense","Absorption","Harmonious development","Mana contamination","Memory of the ancestors","Might"],
-			["Skrzydla","Pancerz","Kly/Pazury/Kolce","Gruczoly jadowe","Wzmocnione sciegna","Dodatkowa komora","Krew demona","Mutacja DNA","Oswiecony","Szósty zmysl","Absorpcja","Harmonijny rozwój","Skażenie Maną","Pamięć przodków","Potęga"]],
+		"sEvo":[["Les Ailes","Carapace","Canines/Griffes/Pointes","Glandes à venin","Tendons renforcés","Chambre supplémentaire","Le sang du démon","Mutation ADN","Eclairé","Sixième sens","Absorption","Développement Harmonieux","Mana Purifiée","Mémoire Ancestrale","Puissance","Légèreté de l`être"],
+			["Wings","Carapace","Claws/Fangs/Quills","Venom glands","Hardened tendons","Additional cavity","Daemon blood","Mutated DNA","Enlightened","Sixth sense","Absorption","Harmonious development","Mana contamination","Memory of the ancestors","Might","Lightness of being"],
+			["Skrzydla","Pancerz","Kly/Pazury/Kolce","Gruczoly jadowe","Wzmocnione sciegna","Dodatkowa komora","Krew demona","Mutacja DNA","Oswiecony","Szósty zmysl","Absorpcja","Harmonijny rozwój","Skażenie Maną","Pamięć przodków","Potęga","Lekkość bytu"]],
 		"sObjet":[["Sang de loup","Pomme de l`Arbre Ferreux","Nageoire de requin","Élixir des sens","Eau bénite","Larme de phénix","Cachet magique","Coeur de chauve-souris","Fleur de lotus","Venin de puce géante","Sérum d`illumination","Bouillon de chat noir","Charbon","Fourrure de taupe","Salpêtre",
 			"Essence de jouvence","Ongle de troll","Belladones","Oeil de chat","Absinthe","Écaille de salamandre","Eau de source","Os de martyre","Élixir d`amour","Venin de scorpion","Racine de mandragore","Poussière d`étoile","Fiole d`acide","Soufre","Diamant noir",
 			"Larme divine","Dent de ghoule","Bouillon de corail","Coeur de prophète","Griffe du basilic","Ecailles de démon","Ailes du scarabée","Masque de gargouille","Jus de mante religieuse","Souffle du dragon","Dent de sorcière","Grimoire","Appendice noire","Doigt de forgeron","Fleur de lila"],
