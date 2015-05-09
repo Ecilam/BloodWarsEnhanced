@@ -3,10 +3,10 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2014.12.15
+// @version		2015.05.08
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
-// @copyright   2011-2014, Ecilam
+// @copyright   2011-2015, Ecilam
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
 // @homepageURL https://github.com/Ecilam/BloodWarsEnhanced
 // @supportURL  https://github.com/Ecilam/BloodWarsEnhanced/issues
@@ -214,10 +214,10 @@ var L = (function(){
 	var locStr = {// key:[français,anglais,polonais]
 		//DATAS
 		"sNiveau":["NIVEAU ([0-9]+)","LEVEL ([0-9]+)","POZIOM ([0-9]+)"],
-		"sPdP":
-			["PTS DE PROGRÈS: <strong>([0-9 ]+)<\\/strong>",
-			"PTS OF PROGRESS: <strong>([0-9 ]+)<\\/strong>",
-			"PKT ROZWOJU: <strong>([0-9 ]+)<\\/strong>"],
+		"sXP":
+			["EXPÉRIENCE: <strong>([0-9 ]+)<\\/strong> \\/ ([0-9 ]+)",
+			"EXPERIENCE: <strong>([0-9 ]+)<\\/strong> \\/ ([0-9 ]+)",
+			"DOŚWIADCZENIE: <strong>([0-9 ]+)<\\/strong> \\/ ([0-9 ]+)"],
 		"sDeconnecte":
 			["Vous avez été déconnecté en raison d`une longue inactivité.",
 			"You have been logged out because of inactivity.",
@@ -263,6 +263,7 @@ var L = (function(){
 		"sBuildMaxLvl":["Niveau max","Max level","Max poziom"],
 		// Divers
 		"sNivFormat":["$1 ($2)"],
+		"sNivFormat2":["$1 ($2)($3)"],
 		// Race
 		"sRaces":[["ABSORBEUR","CAPTEUR D`ESPRIT","CULTISTE","DAMNÉ","SEIGNEUR DES BÊTES"],
 			["ABSORBER","THOUGHTCATCHER","CULTIST","CURSED ONE","BEASTMASTER"],
@@ -276,7 +277,7 @@ var L = (function(){
 			"(?:([0-9]+) d\\.? ?|)(?:([0-9]+) g(?:odz\\.)? ?|)(?:([0-9]+) m(?:in\\.)? ?|)(?:([0-9]+) s(?:ek\\.)? ?|)"],
 		"sTriImgTest":[".*/._(ok|not)\\.gif"],
 		"sTriAdrTest":["([0-9]+)\\/([0-9]+)\\/([0-9]+)"],
-		"sTriNbTest":["^([0-9 ]+)(?:\\.?|->[0-9]+)$"],
+		"sTriNbTest":["^([+-]?[0-9 ]+)(?:\\.?|->[0-9]+)$"],
 		"sTriPtsTest":["^([0-9]+)(?:\\-[0-9]+)? \\(([0-9 ]+)\\)$"],
 		// pMsgList/pMsgSaveList
 		"sTitleIndex":["Titre du message","Message title","Tytuł wiadomości"],
@@ -391,7 +392,8 @@ var L = (function(){
 			"<Checkbox>","Titre du message","Expéditeur","Date d`envoi", // 62-65
 			"<Place au classement>","Nom du clan","Tag du clan","Chef","Date de la fondation","Membres", // 66-71
 			"LISTE D`AMIS", //72
-			"Zone","Bâtiment","Niveau","Sang","Argent","Population","Temps","Actions"], // 73-80
+			"Zone","Bâtiment","Niveau","Sang","Argent","Population","Temps","Actions", // 73-80
+			"Ecart"], // 81
 			["RACE","SEX","ADDRESS","CLAN","<empty>","LEVEL","POINTS","LVL (PTS)","GROUP","STATUS","Standing","Date of entry","Last logged","Provenance","HISTORY",
 			"Name","On-line","<On-line>","<Expedition>","King Of the hill","Rank","A-B","SEX - icon","ATT","<ATTACK>","DEF",
 			"STANDING","NAME","<N° of square>","SQUARE OWNER","ACTIONS",
@@ -402,7 +404,8 @@ var L = (function(){
 			"<Checkbox>","Message title","Sender","Send date",
 			"<Place ranking>","Clan name","Clan tag","Leader","Creation date","Members",
 			"FRIENDLIST",
-			"Zone","Building","Level","Blood","Money","People","Time","Action"],
+			"Zone","Building","Level","Blood","Money","People","Time","Action",
+			"Gap"],
 			["RASA","PŁEĆ","ADRES","KLAN","<pusty>","POZIOM","PUNKTY","POZ (PKT)","GRUPA","STATUS","Miejsce w rankingu","Data dołączenia","Ostatnie logowanie","Pochodzenie","HISTORY",
 			"Imię","On-line","<On-line>","<Ekspedycja>","Król Wzgórza","Ranga","A-B","PŁEĆ - ikona","ATA","<NAPADNIJ>","OBR",
 			"MIEJSCE","IMIĘ","<N° kwadratu>","WŁADCA KWADRATU","DZIAŁANIA",
@@ -413,7 +416,8 @@ var L = (function(){
 			"<Checkbox>","Tytuł wiadomości","Nadawca","Data wysłania",
 			"<Ranking umieszczać>","Nazwa klanu","Tag klanu","Przywódca","Data powstania","Członków",
 			"LISTA PRZYJACIÓŁ",
-			"Strefa","Budowy","Poziom","Krew","Pieniądze","Ludzie","Czas","Akcja"]],
+			"Strefa","Budowy","Poziom","Krew","Pieniądze","Ludzie","Czas","Akcja",
+			"Luka"]],
 		// Menus
 		"sTitleMenu1":["BWE - OPTIONS","BWE - OPTIONS","BWE - OPCJE"],
 		"sTitleMenu2":["BWE - BASE DE DONNÉES","BWE - DATABASE","BWE - BAZY DANYCH"],
@@ -524,15 +528,15 @@ var DATAS = (function(){
 			var playerName = DOM._GetFirstNodeTextContent("//div[@class='stats-player']/a[@class='me']", null);
 			return playerName;
 			},
-		_PlayerLevel: function(){ // Niveau => /NIVEAU ([0-9]+)/
+		_PlayerLevel: function(){
 			var playerLevel = new RegExp(L._Get('sNiveau')).exec(_PlayerExpBar());
 			if (playerLevel!=null) playerLevel=parseInt((playerLevel[1]).replace(new RegExp(' ','g'),''));
 			return playerLevel;
 			},
-		_PlayerPdP: function(){// PdP => /PTS DE PROGRÈS: <strong>([0-9 ]+)<\/strong>/
-			var playerPdP=new RegExp(L._Get('sPdP')).exec(_PlayerExpBar());
-			if (playerPdP!=null) playerPdP=parseInt((playerPdP[1]).replace(new RegExp(' ','g'),''));
-			return playerPdP;
+		_PlayerXP: function(){
+			var playerXP=new RegExp(L._Get('sXP')).exec(_PlayerExpBar());
+			if (playerXP!=null) playerXP = parseInt((playerXP[1]).replace(/ /g,""));
+			return playerXP;
 			},
 	/* Données diverses	*/
 		_GetPage: function(){
@@ -633,15 +637,15 @@ var PREF = (function(){
 		// pages existantes
 		'pOProfile':{'sh':1,'list':[[0,1,0,0],[1,1,1,0],[2,1,2,0],[3,1,3,0],[4,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[8,0,-1,0],[10,1,7,0],[9,1,8,0],[4,1,9,0],[11,1,10,0],[12,1,11,0],[4,1,12,0],[13,1,13,0]]},
 		'pProfile':{'sh':1,'list':[[0,1,0,0],[1,1,1,0],[2,1,2,0],[3,1,3,0],[4,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[8,0,-1,0],[14,1,-1,0],[10,1,7,0],[9,1,8,0],[4,1,9,0],[11,1,10,0],[12,1,11,0],[4,1,12,0],[13,1,13,0]]},
-		'pTownview':{'sh':1,'tri':[1,1],'list':[[28,1,1,2],[29,1,2,0],[9,1,3,0],[6,0,4,0],[5,0,-1,0],[7,1,-1,0],[23,1,-1,2],[24,1,5,1],[25,1,-1,0],[0,1,6,0],[1,0,7,0],[22,1,-1,1],[3,1,8,0],[30,1,9,0]]},
-		'pOAliance':{'sh':1,'sh1':1,'sh2':1,'tri':[1,1],'list':[[15,1,1,0],[16,0,2,1],[17,1,-1,1],[18,1,-1,1],[19,1,-1,1],[2,1,3,0],[20,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[21,0,-1,1],[22,1,-1,1],[0,1,-1,0],[1,0,-1,0],[11,0,7,0]]},
-		'pAliance':{'sh':1,'sh1':1,'tri':[1,1],'list':[[15,1,1,0],[23,1,-1,2],[24,1,2,1],[25,1,-1,0],[2,1,3,0],[20,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[21,0,-1,1],[22,1,-1,1],[0,1,-1,0],[1,0,-1,0],[11,0,7,0]]},
+		'pTownview':{'sh':1,'tri':[1,1],'list':[[28,1,1,2],[29,1,2,0],[9,1,3,0],[6,0,4,0],[5,0,-1,0],[7,1,-1,0],[23,1,-1,2],[24,1,5,1],[25,1,-1,0],[0,1,6,0],[1,0,7,0],[22,1,-1,1],[3,1,8,0],[30,1,9,0],[81,0,-1,0]]},
+		'pOAliance':{'sh':1,'sh1':1,'sh2':1,'tri':[1,1],'list':[[15,1,1,0],[16,0,2,1],[17,1,-1,1],[18,1,-1,1],[19,1,-1,1],[2,1,3,0],[20,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[21,0,-1,1],[22,1,-1,1],[0,1,-1,0],[1,0,-1,0],[11,0,7,0],[81,0,-1,0]]},
+		'pAliance':{'sh':1,'sh1':1,'tri':[1,1],'list':[[15,1,1,0],[23,1,-1,2],[24,1,2,1],[25,1,-1,0],[2,1,3,0],[20,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[21,0,-1,1],[22,1,-1,1],[0,1,-1,0],[1,0,-1,0],[11,0,7,0],[81,0,-1,0]]},
 		'pAlianceList':{'sh':1,'list':[[66,1,1,2],[67,1,2,0],[68,1,3,0],[69,1,4,0],[70,1,5,0],[71,1,6,0],[6,1,7,0]]},
 		'pMsgList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
 		'pMsgSaveList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
 		'pMsgSendList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
 		'pMsgFriendList':{'sh':1,'tri':[1,1],'list':[[72,1,1,1],[-1,1,2,1]]},
-		'pRank':{'sh':1,'tri':[1,1],'list':[[26,1,1,2],[27,1,2,0],[0,1,3,0],[1,0,4,0],[22,1,-1,1],[23,1,-1,2],[24,1,5,1],[25,1,-1,0],[2,1,6,0],[3,1,7,0],[5,0,-1,0],[6,0,8,0],[7,1,-1,0]]},
+		'pRank':{'sh':1,'tri':[1,1],'list':[[26,1,1,2],[27,1,2,0],[0,1,3,0],[1,0,4,0],[22,1,-1,1],[23,1,-1,2],[24,1,5,1],[25,1,-1,0],[2,1,6,0],[3,1,7,0],[5,0,-1,0],[6,0,8,0],[7,1,-1,0],[81,0,-1,0]]},
 		'pBuild':{'sh':1,'tri':[1,0]},
 		// tableaux à créer
 		'grp':{'sh':1,'tri':[1,1]},
@@ -659,6 +663,21 @@ var PREF = (function(){
 		_Init: function(id){
 			ID = id;
 			prefs = LS._GetVar(index+ID,{});
+			// mise à jour des listes si nécessaire
+			for (var i in prefs){
+				if (_Exist(prefs[i]['list'])&&prefs[i]['list'].length!=defPrefs[i]['list'].length){
+					for (var j=0;j<defPrefs[i]['list'].length;j++){
+						var y = false;
+						for (var x=0;x<prefs[i]['list'].length;x++){
+							if (defPrefs[i]['list'][j][0]==prefs[i]['list'][x][0]){
+								y = true; break;
+								}
+							}
+						if (y==false) prefs[i]['list'].push(defPrefs[i]['list'][j]);
+						}
+					LS._SetVar(index+ID,prefs);
+					}
+				}
 			},
 		_Get: function(grp,key){
 			if (_Exist(prefs[grp])&&_Exist(prefs[grp][key])) return prefs[grp][key];
@@ -690,7 +709,13 @@ function getCssRules(selector,sheet){
     var sheets = _Exist(sheet)?[sheet]:document.styleSheets;
     for (var i = 0; i<sheets.length; i++){
         var sheet = sheets[i];
-        if(!sheet.cssRules) continue;
+		try {
+			if(!sheet.cssRules) return null;
+			}
+		catch(e) {
+			if(e.name !== 'SecurityError') throw e;
+			return null;
+			}
         for (var j=0;j<sheet.cssRules.length;j++){
             var rule = sheet.cssRules[j];
             if (rule.selectorText&&rule.selectorText.split(',').indexOf(selector)!==-1) return rule.style;
@@ -1180,12 +1205,12 @@ function BuildTable(table,list){
 	if (list!=null) FctTriA(tri[0],tri[1],p,table['tbody'],list);
 	}
 // Alimente un tableau déjà créé au format suivant :
-// - table ('id':'BWE'+index+'table')
-// - head (child de table) -> tr ('id':'BWE'+index+'header')
-// - tbody (child de table,'id':'BWE'+index+'body')
+// - table ('id':'BWE'+p+'table')
+// - head (child de table) -> tr ('id':'BWE'+p+'header')
+// - tbody (child de table,'id':'BWE'+p+'body')
 // header = ancien en-tête, list = liste des TR du tableau à copier
-function MixteTable(header,list,index){
-	function clickCol(e,i){ // i[0] = col, i[1] = index
+function MixteTable(header,list,p){
+	function clickCol(e,i){ // i[0] = col, i[1] = p
 		var header = DOM._GetFirstNode("//tr[@id='BWE"+i[1]+"header']"),
 			tbody =  DOM._GetFirstNode("//tbody[@id='BWE"+i[1]+"body']"),
 			list = DOM._GetNodes("./tr",tbody),
@@ -1209,11 +1234,16 @@ function MixteTable(header,list,index){
 			}
 		else return new Array('-','-','-');
 		}
-	var newHead = DOM._GetFirstNode("//tr[@id='BWE"+index+"header']"),
-		newBody = DOM._GetFirstNode("//tbody[@id='BWE"+index+"body']");
+	var newHead = DOM._GetFirstNode("//tr[@id='BWE"+p+"header']"),
+		newBody = DOM._GetFirstNode("//tbody[@id='BWE"+p+"body']");
 	if (newHead!=null&&newBody!=null){
-		var newCol = clone(PREF._Get(index,'list')),
-			tri = PREF._Get(index,'tri');
+		var newCol = clone(PREF._Get(p,'list')),
+			tri = PREF._Get(p,'tri'),
+			id = ['pTownview','pRank','pOAliance','pAliance'].indexOf(p)==-1?null:p,
+			idx = {'pTownview':["./td[2]/a",null,4,6,7],// name,niv,pts,race,sexe
+				'pRank':["./td[2]/a/b",null,8,3,4],
+				'pOAliance':["./td[1]/a",5,6,null,null],
+				'pAliance':["./td[1]/a",5,6,null,null]};
 		// en-têtes et suppression des colonnes inutiles
 		for (var i=0; i<newCol.length; i++){
 			if (newCol[i][1]!=1){newCol.splice(i,1);i--;}
@@ -1229,18 +1259,16 @@ function MixteTable(header,list,index){
 							newTD.removeAttribute('style');
 							}
 						}
-					else{ // en-tête
-						// récupère le titre sauf pr quelques exceptions
+					else{ // en-tête à créer
 						if ([17,18,19,22].indexOf(col)==-1) newTD.textContent = L._Get("sColTitle")[col];
-	//					if (col==21) newTD.setAttribute('id','BWEgrpcol');
 						if (col==22) IU._CreateElement('img',{'style':"width:16px; height:16px; vertical-align:middle;",'src':"data:image/png,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%10%00%00%00%10%08%06%00%00%00%1F%F3%FFa%00%00%02%1FIDATx%DAcd%20%12%9C%3CyB%FF%F2%E5%CB5%3F%7F%FE%D2%FA%F7%FF%9F%D6%E9S%A7%E7-Z%B4(%99%91X%03v%ED%DA%C1%EF%E6%E6%F1q%CA%94I%FF%BF%7D%FF%CE%B0w%EF%DE%AE%9D%3Bv%95%E34%E0%DA%B5%AB%F6%BF%7F%FDb%F8%F9%EB%D7%0333%F3%87%13%26%F4%E9%0B%89%08%1Dx%FB%E6%9D%C0%D7%AF_%18%0E%1E8%5C%BB%7B%F7%EE%16%0C%03v%ED%DC%11%FF%EF%DF%FFI%CF%9E%3D%E1%FB%F9%E3%17%03%03P%C5%DF%7F%7FO%B0%B1%B1i%BC%FF%F0%9E%E9%E3%C7%8F~m%AD%1D%07%DD%DD%DD3w%EE%DC9%1D%C5%80%E3%C7%0F%FB%3F%7C%F8d%C3%B3%A7O.%FC%FC%F9%A3%E1%DB%B7o%1F~%FC%FC%E5%A0%A8%A8X%F0%FD%FBw%81%5B%B7n9%CC%9C9%FB%20%B2%1E%14%03%E6%CF%9B%F7%F8%DE%FD%BBo%9A%9B%5B%0D%91%C5%17%2C%9Co%FF%EB%D7%AF%03%87%0E%1FnZ%B2hI%3DV%03f%CC%9C%AE%FF%E3%DB%F7%0B%17%2F_J%98%3Fo%C1Bt%AF%B5%B4%B6%9C%BF%7F%FF%DE%87%B9s%E69b5%A0%B5%AD%D5%FE%FB%D7%AF%07._%BD%E2%B0q%C3%A6%83%E8%06%14%97%14%ED%7F%F7%F6%1D%C3%FC%F9%0B%B0%1B%60hl%C8ook%FF%E1%E6%AD%9B%0B%B6o%DB%9E%88%AC%C8%DB%CF%9B_%5DU%ED%C1%B3%E7%CF7%ACX%B6%22%11%AB%01%20%10%9F%10%3F%FF%DB%D7o%09%2C%AC%2C%05%CB%97-%9F%08%12%B3s%B0%E3WQV9%C0%CE%CEnp%FD%C6u%87%03%FB%0E%E0%0ED%0F%2F%0F~nN%AE%03%9C%9C%9C%06%BF%FF%FCy%F0%EF%DF%BF%07%2C%CC%CC%0El%EC%EC%0C%EF%DE%BDI%D8%BCi%2BF%D8%60MH%F6%0E%F6%F1%26%C6%26%09%8F%1E%3Dr%F8%FA%ED%EB%84%E7%2F%9EO8%7F%F6%FCCljq%A6%C4%9E%DE%9E%FA%FD%07%F67l%DD%BC%15or%C7*%99%98%98x%FC%C7%8F%1F%16_%BF%7CaP%D7%D0%60%B8z%EDj%FF%B6%AD%DB%8AHr%01%08%B8%B9%B9%FD%DF%B5k%17%E9.%80%01%5B%3B%DB%FF%87%0F%1D%C6%AB%06%00%A2%EE%06%20%5B%F9%3D%19%00%00%00%00IEND%AEB%60%82"},[],{},newTD);
 						}
 					if (tri!=null){
-						IU._addEvent(newTD,'click',clickCol,[i+1,index]);
+						IU._addEvent(newTD,'click',clickCol,[i+1,p]);
 						newTD.classList.add(_Exist(newCol[i][3])?['BWELeftHeader','BWEMiddleHeader','BWERightHeader'][newCol[i][3]]:'BWELeftHeader');
 						}
 					else newTD.classList.add(_Exist(newCol[i][3])?['BWELeft','BWEMiddle','BWERight'][newCol[i][3]]:'BWELeft');
-					newTD.setAttribute('id','BWE'+index+'col'+newCol[i][0]);
+					newTD.setAttribute('id','BWE'+p+'col'+newCol[i][0]);
 					newHead.appendChild(newTD);
 					}
 				}
@@ -1249,32 +1277,26 @@ function MixteTable(header,list,index){
 		for (var j=0; j<list.snapshotLength; j++){
 			var oldTR = list.snapshotItem(j),
 				newTR = IU._CreateElement('tr',{'class':'BWETR'+(j%2==0?'':' BWEeven')},[],{},newBody),
-				nameSearch = index=='pTownview'?"./td[2]/a":index=='pRank'?"./td[2]/a/b":(index=='pOAliance'||index=='pAliance')?"./td[1]/a":null,
-				name = (nameSearch!=null?DOM._GetFirstNodeTextContent(nameSearch+'/text()','',oldTR):'').trim();
+				name = id!=null?DOM._GetFirstNodeTextContent(idx[p][0]+'/text()','',oldTR).trim():'',
+				v = {}; 
 			if (name!=''){
-				var v = LS._GetVar('BWE:P:'+name,{});
-				if (index=='pTownview'||index=='pRank'){
-					var pts = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?4:8)+"]",null,oldTR),
-						race = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?6:3)+"]",null,oldTR),
-						sexe = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?7:4)+"]",null,oldTR);
-					if (pts!=null){
-						v['P'] = Number(pts);
-						if (!_Exist(v['N'])||(_Exist(v['N'])&&v['N']<GetLvl(v['P'])[0])) v['N']=GetLvl(v['P'])[2];
-						}
-					if (race!=null) v['R'] = L._Get('sRaces').indexOf(race);
-					if (sexe!=null) v['S'] = sexe;
-					if (index=='pRank'&&name==player){
-						var rank = DOM._GetFirstNodeTextContent("./td[1]",null,oldTR);
-						v['C'] = Number(rank);
-						}
+				v = LS._GetVar('BWE:P:'+name,{});
+				var niv = idx[p][1]!=null?DOM._GetFirstNodeTextContent("./td["+idx[p][1]+"]",null,oldTR):null,
+					pts = idx[p][2]!=null?DOM._GetFirstNodeTextContent("./td["+idx[p][2]+"]",null,oldTR):null,
+					race = idx[p][3]!=null?DOM._GetFirstNodeTextContent("./td["+idx[p][3]+"]",null,oldTR):null,
+					sexe = idx[p][4]!=null?DOM._GetFirstNodeTextContent("./td["+idx[p][4]+"]",null,oldTR):null;
+				if (niv!=null) v['N'] = niv;
+				if (pts!=null){
+					v['P'] = Number(pts);
+					if (!_Exist(v['N'])||(_Exist(v['N'])&&v['N']<GetLvl(v['P'])[0])) v['N']=GetLvl(v['P'])[2];
 					}
-				else if (index=='pOAliance'||index=='pAliance'){
-					var niv = DOM._GetFirstNodeTextContent("./td[5]",null,oldTR),
-						pts = DOM._GetFirstNodeTextContent("./td[6]",null,oldTR);
-					if (niv!=null) v['N'] = niv;
-					if (pts!=null) v['P'] = Number(pts);
+				if (race!=null) v['R'] = L._Get('sRaces').indexOf(race);
+				if (sexe!=null) v['S'] = sexe;
+				if (p=='pRank'&&name==player){
+					var rank = DOM._GetFirstNodeTextContent("./td[1]",null,oldTR);
+					if (rank!=null) v['C'] = Number(rank);
 					}
-				var uid = /^\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNode(nameSearch,oldTR).getAttribute('href'));
+				var uid = /^\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNode(idx[p][0],oldTR).getAttribute('href'));
 				if (uid!=null) v['U'] = uid[1];
 				LS._SetVar('BWE:P:'+name,v);
 				}
@@ -1289,18 +1311,17 @@ function MixteTable(header,list,index){
 						}
 					if (col==24){
 						newTD.setAttribute('width','18px');
-						if (j>=0&&name!=''&&PREF._Get('AE','sh')==1){
+						if (name!=''&&PREF._Get('AE','sh')==1){
 							var	img = DOM._GetFirstNode(".//img",newTD);
 							if (img!=null&&img.src.indexOf('/0.gif')!=-1){
-								var v = LS._GetVar('BWE:P:'+name,{});
 								if (_Exist(v['P'])){
 									var lvl = GetLvl(v['P'])[0],
 										olvl = DATAS._PlayerLevel(),
-										cla = index=='pRank'?Number(DOM._GetFirstNodeTextContent("./td[1]",0,oldTR)):null,
+										cla = p=='pRank'?Number(DOM._GetFirstNodeTextContent("./td[1]",0,oldTR)):null,
 										oCla = _Exist(plDatas['C'])?plDatas['C']:null,
 										checkNiv = (PREF._Get('AE','nMin')!=''?lvl>=Number(PREF._Get('AE','nMin')):true)&&(PREF._Get('AE','nMax')!=''?lvl<=Number(PREF._Get('AE','nMax')):true)&&(PREF._Get('AE','aMin')!=''?lvl>=(olvl-(olvl*Number(PREF._Get('AE','aMin'))/100)):true)&&(PREF._Get('AE','aMax')!=''?lvl<=(olvl+(olvl*Number(PREF._Get('AE','aMax'))/100)):true),
-										checkCla = index=='pRank'&&cla!=0&&oCla!=null&&(PREF._Get('AE','cMin')!=''?cla>=Number(PREF._Get('AE','cMin')):true)&&(PREF._Get('AE','cMax')!=''?cla<=Number(PREF._Get('AE','cMax')):true)&&(PREF._Get('AE','acMin')!=''?cla>=(oCla-Number(PREF._Get('AE','acMin'))):true)&&(PREF._Get('AE','acMax')!=''?cla<=(oCla+Number(PREF._Get('AE','acMax'))):true);
-									if (checkNiv&&(index!='pRank'||checkCla)) img.className = 'BWEblink';
+										checkCla = p=='pRank'&&cla!=0&&oCla!=null&&(PREF._Get('AE','cMin')!=''?cla>=Number(PREF._Get('AE','cMin')):true)&&(PREF._Get('AE','cMax')!=''?cla<=Number(PREF._Get('AE','cMax')):true)&&(PREF._Get('AE','acMin')!=''?cla>=(oCla-Number(PREF._Get('AE','acMin'))):true)&&(PREF._Get('AE','acMax')!=''?cla<=(oCla+Number(PREF._Get('AE','acMax'))):true);
+									if (checkNiv&&(p!='pRank'||checkCla)) img.className = 'BWEblink';
 									}
 								}
 							}
@@ -1314,27 +1335,17 @@ function MixteTable(header,list,index){
 					newTD = IU._CreateElement('td',{},[],{},newTR);
 					if (col==0){
 						var races = L._Get('sRaces');
-						newTD.textContent = _Exist(v)&&_Exist(v['R'])&&_Exist(races[v['R']])?races[v['R']]:'-';
+						newTD.textContent = _Exist(v['R'])&&_Exist(races[v['R']])?races[v['R']]:'-';
 						}
 					else if (col==1){
-						newTD.textContent = _Exist(v)&&_Exist(v['S'])?v['S']:'-';
-						newTD.className = 'BWELeft '+(_Exist(v)&&_Exist(v['S'])?v['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF':'');
+						newTD.textContent = _Exist(v['S'])?v['S']:'-';
+						newTD.className = 'BWELeft '+(_Exist(v['S'])?v['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF':'');
 						}
 					else if (col==5){
-						var r = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?4:8)+"]",null,oldTR);
-						if (r!=null) newTD.textContent = GetLvl(r)[2];
+						newTD.textContent = _Exist(v['P'])?GetLvl(v['P'])[2]:'-';
 						}
 					else if (col==7){
-						if (index=='pTownview'||index=='pRank'){
-							var r = DOM._GetFirstNodeTextContent("./td["+(index=='pTownview'?4:8)+"]",null,oldTR);
-							if (!isNaN(r)&&parseInt(r)==Number(r)) newTD.textContent = L._Get('sNivFormat',GetLvl(r)[2],r);
-							else newTD.textContent = '-';
-						}
-						else if (index=='pOAliance'||index=='pAliance'){
-							var r = DOM._GetFirstNodeTextContent("./td[5]",null,oldTR),
-								r2 = DOM._GetFirstNodeTextContent("./td[6]",null,oldTR);
-							if (r!=null&&r2!=null) newTD.textContent = L._Get('sNivFormat',r,r2);
-							}
+						newTD.textContent = _Exist(v['P'])?L._Get('sNivFormat',(_Exist(v['N'])?v['N']:GetLvl(v['P'])[2]),v['P']):'-';
 						}
 					if (col==17||col==18||col==19){
 						var img = DOM._GetFirstNode("./td[2]/img["+(col==17?1:(col==18?2:3))+"]",oldTR);
@@ -1352,8 +1363,8 @@ function MixteTable(header,list,index){
 							}
 						}
 					else if (col==22){
-						newTD.textContent = _Exist(v)&&_Exist(v['S'])?v['S']:'-';
-						newTD.className = (_Exist(v)&&_Exist(v['S']))?(v['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF'):'';
+						newTD.textContent = _Exist(v['S'])?v['S']:'-';
+						newTD.className = _Exist(v['S'])?(v['S']==L._Get('sSexeH')?'BWEsexH':'BWEsexF'):'';
 						}
 					else if (col==23){
 						if (name=='') newTD.textContent = '-';
@@ -1363,6 +1374,10 @@ function MixteTable(header,list,index){
 						if (name=='') newTD.textContent = '-';
 						else CreateHistory(name,ID,newTD);
 						}
+					else if (col==81){
+						var r = _Exist(v['P'])?v['P']-Math.floor(plDatas['P']/1000):null;
+						newTD.textContent = r!=null?(r>0?'+':'')+r:'-';
+						}
 					}
 				newTD.classList.add(_Exist(newCol[i][3])?['BWELeft','BWEMiddle','BWERight'][newCol[i][3]]:'BWELeft');
 				}
@@ -1371,22 +1386,22 @@ function MixteTable(header,list,index){
 		if (tri!=null){
 			if (tri[0]>newCol.length){
 				tri = [1,1];
-				PREF._Set(index,'tri',tri);
+				PREF._Set(p,'tri',tri);
 				}
 			var selectCol = DOM._GetFirstNode("./td["+tri[0]+"]",newHead),
 				newList = DOM._GetNodes("./tr",newBody);
 			IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},selectCol);
-			if (newList!=null) FctTriA(tri[0],tri[1],index,newBody,newList);
+			if (newList!=null) FctTriA(tri[0],tri[1],p,newBody,newList);
 			}
 		else {
 			}
 		}
 	}
 // Divers
-function FctTriA(key,order,index,tbody,list){
+function FctTriA(key,order,p,tbody,list){
 	var list2 = [],
-		header = DOM._GetFirstNode("//tr[@id='BWE"+index+"header']/td["+key+"]|//tr[@id='BWE"+index+"header']/th["+key+"]"),
-		id = header!=null?parseInt(header.id.replace(new RegExp('BWE'+index+'col','g'),'')):0;
+		header = DOM._GetFirstNode("//tr[@id='BWE"+p+"header']/td["+key+"]|//tr[@id='BWE"+p+"header']/th["+key+"]"),
+		id = header!=null?parseInt(header.id.replace(new RegExp('BWE'+p+'col','g'),'')):0;
 	for (var i=0; i<list.snapshotLength; i++){
 		var col = DOM._GetFirstNode("./td["+key+"]",list.snapshotItem(i));
 		if (col!=null){
@@ -1395,7 +1410,7 @@ function FctTriA(key,order,index,tbody,list){
 				var isA = DOM._GetFirstNode("./a", col);
 				if (isA!=null) v = isA.textContent.toUpperCase();
 				}
-			else if ([5,6,26,28,66,73,75,76,77,78].indexOf(id)!=-1){ // chiffre + quartier + classement
+			else if ([5,6,26,28,66,73,75,76,77,78,81].indexOf(id)!=-1){ // chiffre + quartier + classement
 				var r = new RegExp(L._Get('sTriNbTest')).exec(v);
 				if (r!=null) v = parseInt(r[1].replace(new RegExp('[ ]','g'),''));
 				else if (v=='∞') v = Number.POSITIVE_INFINITY;
@@ -1526,7 +1541,7 @@ function setMenuOptions(e){
 				'td1':['td',{'class':'BWEPrefTD1'},[j],,'tr'],
 				'td2':['td',{'class':'BWEPrefTD2 '+(col[j][1]==1?'defHit':'atkHit'),'style':'text-decoration:'+(col[j][1]==1?'none':'line-through')},[L._Get('sColTitle')[col[j][0]]],{'click':[clickCol,[liste,j]]},'tr']},
 				cell = IU._CreateElements(cellIU);
-			if (_Exist(colDef[0][3])){// alignement ? - suite MAJ 2014-07-28
+			if (_Exist(colDef[0][3])){
 				if (!_Exist(col[j][3])) col[j][3] = 0;
 				IU._CreateElements({'td3':['td',{'class':'BWEPrefTD2'+(col[j][3]==0?' heal':'')},[L._Get('sLeft')],{'click':[clickA,[liste,j,0]]},cell['tr']],
 				'td4':['td',{'class':'BWEPrefTD2'+(col[j][3]==1?' heal':'')},[L._Get('sMiddle')],{'click':[clickA,[liste,j,1]]},cell['tr']],
@@ -1553,7 +1568,7 @@ function setMenuOptions(e){
 	nodeTitle['4'].className = '';
 	var menuIU = {
 		'menudiv':['div',{'align':'center','style':'margin-top: 15px;'}],
-		'div1':['div',,['BWE : '],,'menudiv'],
+		'div1':['div',,[((typeof(GM_info)=='object')?GM_info.script.name:'?')+' : '],,'menudiv'],
 		'a1':['a',{'href':'https://github.com/Ecilam/BloodWarsEnhanced','TARGET':'_blank'},[((typeof(GM_info)=='object')?GM_info.script.version:'?')],,'div1'],
 		'br2':['br',,,,'menudiv'],
 		'table0':['table',{'style':'width:100%;','class':'BWEMenu'},,,'menudiv'],
@@ -1792,7 +1807,7 @@ else{
 			//Update player datas
 			var plDatas = LS._GetVar('BWE:P:'+player,{});
 			plDatas['N'] = DATAS._PlayerLevel();
-			plDatas['P'] = Number(DATAS._PlayerPdP());
+			plDatas['P'] = Number(DATAS._PlayerXP());
 			LS._SetVar('BWE:P:'+player,plDatas);
 			if  ((p=='pOProfile'||p=='pProfile')&&PREF._Get(p,'sh')==1){
 				var name = new RegExp(L._Get('sNameTest')).exec(DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='profile-hdr']",null)),
@@ -2008,10 +2023,7 @@ else{
 						r.parentNode.insertBefore(total['div1'],r.nextSibling);
 						}
 					}
-/*				if (p=='pMixitem'&&PREF._Get('div','chSt')==1){
-					
-					}
-*/				}
+				}
 			else if (p=='pAmbushRoot'&&PREF._Get('div','chLo')==1){
 				var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
 				if (atkaction!=null){
