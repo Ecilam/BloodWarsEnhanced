@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2015.05.08
+// @version		2015.05.25
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -1783,10 +1783,10 @@ else{
 	var p = DATAS._GetPage(),
 		player = DATAS._PlayerName(),
 		IDs = LS._GetVar('BWE:IDS',{});
-//console.debug('BWEpage :',p);
+console.debug('BWEpage :',p);
 	// Pages gérées par le script
 	if (['null','pServerDeco','pServerUpdate','pServerOther'].indexOf(p)==-1&&player!=null){
-//console.debug('BWEstart: %o %o',player,IDs);
+console.debug('BWEstart: %o %o',player,IDs);
 		if (p=='pMain'){
 			var r = DOM._GetFirstNodeTextContent("//div[@class='throne-maindiv']/div/span[@class='reflink']",null);
 			if (r!=null){
@@ -2049,17 +2049,15 @@ else{
 				if (tlist!=null&&PREF._Get('div','chLo')==1){
 					for (var i=0;i<tlist.snapshotLength;i++){
 						var node = tlist.snapshotItem(i),
-							msg = DOM._GetFirstNodeTextContent("./td[2]/a[@class='msg-link']",null,node),
+							msg = DOM._GetFirstNodeTextContent("./td[2]/a",null,node),
 							msgDate = DOM._GetFirstNodeTextContent("./td[4]",null,node),
 							msgId = DOM._GetFirstNode("./td[1]/input",node);
-						// conversion au format Date
 						var v = new RegExp("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})").exec(msgDate);
 						msgDate = (v!=null)?new Date(v[1],v[2]-1,v[3],v[4],v[5],v[6]):null;
 						if (msg!=null&&msgDate!=null&&msgId!=null){
 							var msgId = msgId.getAttribute('id').replace('msgid_', ''),
 								m1 = new RegExp(L._Get('sAmbushMsg1')).exec(msg),
 								m2 = new RegExp(L._Get('sAmbushMsg2')).exec(msg);
-							// messages d'embuscade ?
 							if (m1!=null) UpdateHistory(m1[1],ID,msgId,msgDate,null);
 							else if (m2!=null) UpdateHistory(ID,m2[1],msgId,msgDate,null);
 							}
@@ -2252,5 +2250,5 @@ else{
 		else alert(L._Get("sUnknowID"));
 		}
 	}
-//console.debug('BWEEnd');
+console.debug('BWEEnd');
 })();
