@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2015.05.25
+// @version		2015.08.03
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -772,8 +772,8 @@ function SetCSS(){
 		".BWEdivLS,.BWEdivIE{overflow:auto;word-wrap:break-word;white-space:normal;}"],
 		head = DOM._GetFirstNode("//head");
 	if (head!=null){
-		var even = getCssRules('.even',document.styleSheets[0]),
-			selectedItem = getCssRules('.selectedItem',document.styleSheets[0]);
+		var even = getCssRules('.even'),
+			selectedItem = getCssRules('.selectedItem');
 		if (even!=null&&selectedItem!=null) css.push('.BWEeven{'+even.cssText+'}','.BWETR:hover{'+selectedItem.cssText+'}');
 		IU._CreateElement('style',{'type':'text/css'},[css.join('')],{},head);
 		}
