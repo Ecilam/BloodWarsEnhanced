@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2015.09.03
+// @version		2015.09.03a
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -371,9 +371,9 @@ var L = (function(){
 		"sEvo":[["Les Ailes","Carapace","Canines/Griffes/Pointes","Glandes à venin","Tendons renforcés","Chambre supplémentaire","Le sang du démon","Mutation ADN","Eclairé","Sixième sens","Absorption","Développement Harmonieux","Mana Purifiée","Mémoire Ancestrale","Puissance","Légèreté de l`être","Piromancie","Lien avec Gaia","Hydromancie","Forme Astrale","L`empreinte du démon"],
 			["Wings","Carapace","Claws/Fangs/Quills","Venom glands","Hardened tendons","Additional cavity","Daemon blood","Mutated DNA","Enlightened","Sixth sense","Absorption","Harmonious development","Mana contamination","Memory of the ancestors","Might","Lightness of being","Pyromancy","Bond Gaea","Hydromancy","Astral form","Demonic mark"],
 			["Skrzydla","Pancerz","Kly/Pazury/Kolce","Gruczoly jadowe","Wzmocnione sciegna","Dodatkowa komora","Krew demona","Mutacja DNA","Oswiecony","Szósty zmysl","Absorpcja","Harmonijny rozwój","Skażenie Maną","Pamięć przodków","Potęga","Lekkość bytu","Piromancja","Więź z Gają","Hydromancja","Forma astralna","Piętno demona"]],
-		"sObjet":[["Sang de loup","Pomme de l`Arbre Ferreux","Nageoire de requin","Élixir des sens","Eau bénite","Larme de phénix","Cachet magique","Coeur de chauve-souris","Fleur de lotus","Venin de puce géante","Sérum d`illumination","Bouillon de chat noir","Charbon","Fourrure de taupe","Salpêtre","Jus de scarabé","Essence de jouvence","Ongle de troll","Belladones","Oeil de chat","Absinthe","Écaille de salamandre","Eau de source","Os de martyre","Élixir d`amour","Venin de scorpion","Racine de mandragore","Poussière d`étoile","Fiole d`acide","Soufre","Diamant noir","L’œil du noyé","Larme divine","Dent de ghoule","Bouillon de corail","Coeur de prophète","Griffe du basilic","Ecailles de démon","Ailes du scarabée","Masque de gargouille","Jus de mante religieuse","Souffle du dragon","Dent de sorcière","Grimoire","Appendice noire","Doigt de forgeron","Fleur de lila","Feu du centre de la terre"],
-			["Wolf Blood","Iron Tree Apple","Shark Fin","Elixir of Senses","Blessed Water","Phoenix Tear","Magic Seal","Bat Heart","Black Lotus","Gigaflea Venom","Serum of Enlightenment","Brew of the Black Cat","Coal","Mole Fur","Saltpetre","Beetlejuice","Essence of Youth","Troll Nail","Deadly Nightshade","Eye of the Cat","Absinthe","Salamander Scales","Spring Water","Bone of the Martyr","Love Beverage","Scorpid Venom","Mandrake Root","Star Dust","Vial of Acid","Sulphur","Black Diamond","Drowner`s eye","Divine Tear","Ghoul`s Tooth","Coral Concoction","Heart of a Prophet","Basilisk`s Claw","Demon`s Scales","Beetle Wings","Gargoyle`s Mask","Mantis Juice","Dragon`s Breath","Tooth of a Witch","Grimoire","Black Bile","Blacksmith`s Finger","Elderberry Flower","Fire from the heart of the earth"],
-			["Krew wilka","Jablko Zelaznego drzewa","Pletwa rekina","Eliksir zmyslów","Swiecona woda","Lza feniksa","Magiczna pieczec","Serce nietoperza","Kwiat lotosu","Jad Wielkopchly","Serum oswiecenia","Wywar z czarnego kota","Wegiel","Siersc kreta","Saletra","Sok z żuka","Esencja mlodosci","Paznokiec trolla","Wilcza jagoda","Oko kota","Absynt","Luski salamandry","Woda zródlana","Kosc meczennika","Napój milosny","Jad Skorpiona","Korzen Mandragory","Gwiezdny pyl","Fiolka kwasu","Siarka","Czarny diament","Oko topielca","Boska łza","Ząb ghula","Wywar z koralowca","Serce proroka","Pazur bazyliszka","Łuski demona","Skrzydła chrząszcza","Maska gargulca","Sok z modliszki","Oddech smoka","Ząb wiedźmy","Grimoire","Czarna żółć","Palec kowala","Kwiat bzu","Ogień z serca ziemi"]],
+		"sObjet":[["Sang de loup","Pomme de l`Arbre Ferreux","Nageoire de requin","Élixir des sens","Eau bénite","Larme de phénix","Cachet magique","Coeur de chauve-souris","Fleur de lotus","Venin de puce géante","Sérum d`illumination","Bouillon de chat noir","Charbon","Fourrure de taupe","Salpêtre","Essence de jouvence","Ongle de troll","Belladones","Oeil de chat","Absinthe","Écaille de salamandre","Eau de source","Os de martyre","Élixir d`amour","Venin de scorpion","Racine de mandragore","Poussière d`étoile","Fiole d`acide","Soufre","Diamant noir","Larme divine","Dent de ghoule","Bouillon de corail","Coeur de prophète","Griffe du basilic","Ecailles de démon","Ailes du scarabée","Masque de gargouille","Jus de mante religieuse","Souffle du dragon","Dent de sorcière","Grimoire","Appendice noire","Doigt de forgeron","Fleur de lila","Jus de scarabé","L’œil du noyé","Feu du centre de la terre"],
+			["Wolf Blood","Iron Tree Apple","Shark Fin","Elixir of Senses","Blessed Water","Phoenix Tear","Magic Seal","Bat Heart","Black Lotus","Gigaflea Venom","Serum of Enlightenment","Brew of the Black Cat","Coal","Mole Fur","Saltpetre","Essence of Youth","Troll Nail","Deadly Nightshade","Eye of the Cat","Absinthe","Salamander Scales","Spring Water","Bone of the Martyr","Love Beverage","Scorpid Venom","Mandrake Root","Star Dust","Vial of Acid","Sulphur","Black Diamond","Divine Tear","Ghoul`s Tooth","Coral Concoction","Heart of a Prophet","Basilisk`s Claw","Demon`s Scales","Beetle Wings","Gargoyle`s Mask","Mantis Juice","Dragon`s Breath","Tooth of a Witch","Grimoire","Black Bile","Blacksmith`s Finger","Elderberry Flower","Beetlejuice","Drowner`s eye","Fire from the heart of the earth"],
+			["Krew wilka","Jablko Zelaznego drzewa","Pletwa rekina","Eliksir zmyslów","Swiecona woda","Lza feniksa","Magiczna pieczec","Serce nietoperza","Kwiat lotosu","Jad Wielkopchly","Serum oswiecenia","Wywar z czarnego kota","Wegiel","Siersc kreta","Saletra","Esencja mlodosci","Paznokiec trolla","Wilcza jagoda","Oko kota","Absynt","Luski salamandry","Woda zródlana","Kosc meczennika","Napój milosny","Jad Skorpiona","Korzen Mandragory","Gwiezdny pyl","Fiolka kwasu","Siarka","Czarny diament","Boska łza","Ząb ghula","Wywar z koralowca","Serce proroka","Pazur bazyliszka","Łuski demona","Skrzydła chrząszcza","Maska gargulca","Sok z modliszki","Oddech smoka","Ząb wiedźmy","Grimoire","Czarna żółć","Palec kowala","Kwiat bzu","Sok z żuka","Oko topielca","Ogień z serca ziemi"]],
 		// Titres des colonnes
 		"sColTitle": //
 			[["RACE","SEXE","ADRESSE","CLAN","<vide>","NIVEAU","POINTS","NIV (PTS)","GROUPE","STATUT","Place au classement","Date d`inscription","Dernière connexion","Provenance","HISTORIQUE", // 0-14
@@ -498,37 +498,44 @@ var L = (function(){
 * Chaque fonction retourne 'null' en cas d'échec
 ******************************************************/
 var DATAS = (function(){
-	// pour _Time()
-	var timeDiff = null,
-		stTime = new Date(),
-		r = DOM._GetFirstNodeInnerHTML("/html/body/script",null),
-		r2 = /var timeDiff = ([0-9]+) - Math\.floor\(stTime\.getTime\(\)\/1000\) \+ ([0-9]+) \+ stTime\.getTimezoneOffset\(\)\*60;/.exec(r);
-	if (r2!=null) timeDiff = parseInt(r2[1]) - Math.floor(stTime.getTime()/1000) + parseInt(r2[2]) + stTime.getTimezoneOffset()*60;
-	var _PlayerExpBar = function(){
-		var stats = DOM._GetFirstNode("//div[@class='stats-player']/div[@class='expbar']"),
-			player_datas = stats?stats.getAttribute('onmouseover'):null;
-		return player_datas;
-		};
+	function GetTimeDiff(){
+		var stTime = new Date(),
+			r = document.getElementsByTagName('script');
+		for (var i=0;i<r.length;i++){
+			var r2 = /var timeDiff = ([0-9]+) - Math\.floor\(stTime\.getTime\(\)\/1000\) \+ ([0-9]+) \+ stTime\.getTimezoneOffset\(\)\*60;/.exec(r[i].textContent);
+			if (r2!=null) return (parseInt(r2[1])-Math.floor(stTime.getTime()/1000)+parseInt(r2[2])+stTime.getTimezoneOffset()*60);
+			}
+		return null;
+		}
+	function GetPlayerExpBar(){
+		var stats = DOM._GetFirstNode("//div[@class='stats-player']/div[@class='expbar']");
+		return stats!=null?stats.getAttribute('onmouseover'):null;
+		}
+	function GetPlayerName(){
+		return DOM._GetFirstNodeTextContent("//div[@class='stats-player']/a[@class='me']", null);
+		}
+	var timeDiff = GetTimeDiff(),
+		playerName = GetPlayerName(),
+		playerExpBar = GetPlayerExpBar();
 	return {
 	/* données du serveur */
 		_Time: function(){
-			var stTime = new Date();
-			if (timeDiff!=null)	stTime.setTime((timeDiff*1000)+stTime.getTime());
-			else stTime=null;
-			return stTime;
+			var d = new Date();
+			if (timeDiff!=null)	d.setTime(d.getTime()+timeDiff*1000);
+			else d = null;
+			return d;
 			},
 	/* données du joueur */
 		_PlayerName: function(){
-			var playerName = DOM._GetFirstNodeTextContent("//div[@class='stats-player']/a[@class='me']", null);
 			return playerName;
 			},
 		_PlayerLevel: function(){
-			var playerLevel = new RegExp(L._Get('sNiveau')).exec(_PlayerExpBar());
+			var playerLevel = new RegExp(L._Get('sNiveau')).exec(playerExpBar);
 			if (playerLevel!=null) playerLevel=parseInt((playerLevel[1]).replace(new RegExp(' ','g'),''));
 			return playerLevel;
 			},
 		_PlayerXP: function(){
-			var playerXP=new RegExp(L._Get('sXP')).exec(_PlayerExpBar());
+			var playerXP=new RegExp(L._Get('sXP')).exec(playerExpBar);
 			if (playerXP!=null) playerXP = parseInt((playerXP[1]).replace(/ /g,""));
 			return playerXP;
 			},
@@ -808,7 +815,7 @@ function UpdateHistory(att,def,msgId,msgDate,emb){
 	}
 function CreateHistory(att,def,node){
 	// créé l'historique à la volée
-	function CreateOverlib(e,i){ // i[0] = att, i[1] = def, i[2] = node, 
+	function CreateOverlib(e,i){ // i[0] = att, i[1] = def, i[2] = node,
 		var	histoIU = {'root':['div'],
 			'table':['table',{'style':'border-collapse:collapse;'},,,'root'],
 			'tr':['tr',{'class':'tblheader'},,,'table']},
