@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2015.09.08
+// @version		2016.01.27
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -31,6 +31,10 @@ function clone(o){
 	for(var i in o)	newObjet[i] = clone(o[i]);
 	return newObjet;
 	}
+/******************************************************
+* Debug
+******************************************************/
+var debug_time = Date.now();
 /******************************************************
 * OBJET JSONS - JSON
 * - stringification des données
@@ -96,6 +100,7 @@ var LS = (function(){
 ******************************************************/
 var DOM = (function(){
 	return {
+		// méthodes Xpath
 		_GetNodes: function(path,root){
 			return (_Exist(root)&&root==null)?null:document.evaluate(path,(_Exist(root)?root:document), null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
 			},
@@ -119,6 +124,12 @@ var DOM = (function(){
 			var r = this._GetLastNode(path,root);
 			return (r!=null&&r.innerHTML!=null?r.innerHTML:defaultValue);
 			},
+		// méthodes DOM
+		_CleanNode: function(node){
+			while (node.hasChildNodes()){
+				node.removeChild(node.firstChild);
+				}
+			},
 		// retourne la valeur de la clé "key" trouvé dans l'url
 		// null: n'existe pas, true: clé existe mais sans valeur, autres: valeur
 		_QueryString: function(key){
@@ -138,8 +149,6 @@ var DOM = (function(){
 ******************************************************/
 var IU = (function(){
 	return {
-		// reçoit une liste d'éléments pour créér l'interface
-		// ex: {'name':['input',{'type':'checkbox','checked':true},['coucou'],{'click':[funcname,5]},body]
 		_CreateElements: function(list){
 			var r = {};
 			for (var key in list){
@@ -175,10 +184,6 @@ var IU = (function(){
 				}
 			else return null;
 			},
-		// IU._addEvent(obj: objet,type: eventype,fn: function,par: parameter);
-		// function fn(e,par) {alert('r : ' + this.value+e.type+par);}
-		// this = obj, e = event
-		// ex : IU._addEvent(r,'click',test,"2");
 		_addEvent: function(obj,type,fn,par){
 			var funcName = function(event){return fn.call(obj,event,par);};
 			obj.addEventListener(type,funcName,false);
@@ -186,14 +191,12 @@ var IU = (function(){
 			if (!obj.BWEListeners[type]) obj.BWEListeners[type]={};
 			obj.BWEListeners[type][fn.name]=funcName;
 			},
-		// voir _addEvent pour les paramètres
 		_removeEvent: function(obj,type,fn){
 			if (obj.BWEListeners[type]&&obj.BWEListeners[type][fn.name]){
 				obj.removeEventListener(type,obj.BWEListeners[type][fn.name],false);
 				delete obj.BWEListeners[type][fn.name];
 				}
 			},
-		// voir _addEvent pour les paramètres
 		_removeEvents: function(obj){
 			if (obj.BWEListeners){
 				for (var key in obj.BWEListeners){
@@ -252,7 +255,6 @@ var L = (function(){
 		"sBuildZone":["ZONE ([0-9]+)","ZONE ([0-9]+)","STREFA ([0-9]+)"],
 		"sBuildPrgUp":["Actuellement en construction","Under construction","Aktualnie budowany"],  			 
 		"sBuildPrgDown":["Démolition","Demolition","wyburzanie"],
-		"sBuildNiv":["\\(NIVEAU ([0-9]+)\\)","\\(LEVEL ([0-9]+)\\)","\\(POZIOM ([0-9]+)\\)"],
 		"sBuildNewOk":["FAIRE CONSTRUIRE","BUILD","ZBUDUJ"],
 		"sBuildUpOk":["DÉVELOPPER JUSQU`AU NIVEAU","UPGRADE TO LEVEL","ROZBUDOWA DO POZIOMU"],
 		"sBuildDownOk":["DEMOLIR UN NIVEAU DE BATIMENT","DEMOLISH ONE LEVEL","WYBURZ JEDEN POZIOM"],
@@ -1155,8 +1157,7 @@ function BuildTable(table,list){
 		if (title!=null&&content!=null&&nodeZone!=null){
 			var zone = nodeZone!=null?(new RegExp(L._Get('sBuildZone')).exec(nodeZone.textContent)):null,
 				nodeLvl = DOM._GetFirstNode("./following-sibling::b",title),
-				lvl = nodeLvl!=null?(new RegExp(L._Get('sBuildNiv')).exec(nodeLvl.textContent)):null,
-				lvl = lvl!=null?lvl[1]:0,
+				lvl = nodeLvl.textContent,
 				inUp = bldNameUp.replace(new RegExp('[\'"`]','g'),'')==title.textContent.replace(new RegExp('[\'"`]','g'),''),
 				inDown = bldNameDown.replace(new RegExp('[\'"`]','g'),'')==title.textContent.replace(new RegExp('[\'"`]','g'),''),
 				upOk = DOM._GetFirstNode(".//a[(contains(.,'"+L._Get('sBuildNewOk')+"') or contains(.,'"+L._Get('sBuildUpOk')+"')) and @class='enabled']",content),
@@ -1526,7 +1527,7 @@ function setMenuOptions(e){
 		var liste = nodeMenu['select1'].options[nodeMenu['select1'].selectedIndex].value,
 			col = PREF._Get(liste,'list'),
 			colDef = PREF._GetDef(liste,'list');
-		nodeMenu['tbody1'].innerHTML = "";
+		DOM._CleanNode(nodeMenu['tbody1']);
 		if (PREF._Get(liste,'sh')!=null){
 			IU._CreateElements({'tr':['tr',,,,nodeMenu['tbody1']],
 			'td1':['td',,[],,'tr'],
@@ -2249,5 +2250,5 @@ console.debug('BWEstart: %o %o',player,IDs);
 		else alert(L._Get("sUnknowID"));
 		}
 	}
-console.debug('BWEEnd');
+console.debug('BWEEnd - time %oms',Date.now()-debug_time);
 })();
