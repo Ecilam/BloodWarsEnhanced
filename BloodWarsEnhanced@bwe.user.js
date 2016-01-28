@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.01.27
+// @version		2016.01.28
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -32,9 +32,11 @@ function clone(o){
 	return newObjet;
 	}
 /******************************************************
-* Debug
+* DEBUG
 ******************************************************/
-var debug_time = Date.now();
+var debug = false,
+	debug_time = Date.now();
+
 /******************************************************
 * OBJET JSONS - JSON
 * - stringification des données
@@ -1783,12 +1785,11 @@ else{
 	var p = DATAS._GetPage(),
 		player = DATAS._PlayerName(),
 		IDs = LS._GetVar('BWE:IDS',{});
-console.debug('BWEpage :',p);
+if (debug) console.debug('BWEstart: ',player,IDs,p);
 	// Pages gérées par le script
 	if (['null','pServerDeco','pServerUpdate','pServerOther'].indexOf(p)==-1&&player!=null){
-console.debug('BWEstart: %o %o',player,IDs);
 		if (p=='pMain'){
-			var r = DOM._GetFirstNodeTextContent("//div[@class='throne-maindiv']/div/span[@class='reflink']",null);
+			var r = DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@id='reflink']/span[@class='reflink']",null);
 			if (r!=null){
 				var r2 = /r\.php\?r=([0-9]+)/.exec(r),
 					ID = _Exist(r2[1])?r2[1]:null;
@@ -2250,5 +2251,5 @@ console.debug('BWEstart: %o %o',player,IDs);
 		else alert(L._Get("sUnknowID"));
 		}
 	}
-console.debug('BWEEnd - time %oms',Date.now()-debug_time);
+if (debug) console.debug('BWEend - time %oms',Date.now()-debug_time);
 })();
