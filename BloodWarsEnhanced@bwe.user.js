@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.01.28
+// @version		2016.01.28a
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -1119,6 +1119,7 @@ function showHideGr(e,i){//i[0]= node title,i[1]= node trA,i[2]= node trB
 	i['2'].setAttribute('style','display:'+(show==1?'table-row;':'none;'));
 	i[0].setAttribute('style','color:'+(show==1?'lime;':'red;')+';cursor: pointer;');
 	}
+// batiments
 function BuildTable(table,list){
 	function clickCol(e,i){ // i[0] = col
 		var header = DOM._GetFirstNode("//tr[@id='BWE"+p+"header']"),
@@ -1159,7 +1160,7 @@ function BuildTable(table,list){
 		if (title!=null&&content!=null&&nodeZone!=null){
 			var zone = nodeZone!=null?(new RegExp(L._Get('sBuildZone')).exec(nodeZone.textContent)):null,
 				nodeLvl = DOM._GetFirstNode("./following-sibling::b",title),
-				lvl = nodeLvl.textContent,
+				lvl = nodeLvl!==null?nodeLvl.textContent:'0',
 				inUp = bldNameUp.replace(new RegExp('[\'"`]','g'),'')==title.textContent.replace(new RegExp('[\'"`]','g'),''),
 				inDown = bldNameDown.replace(new RegExp('[\'"`]','g'),'')==title.textContent.replace(new RegExp('[\'"`]','g'),''),
 				upOk = DOM._GetFirstNode(".//a[(contains(.,'"+L._Get('sBuildNewOk')+"') or contains(.,'"+L._Get('sBuildUpOk')+"')) and @class='enabled']",content),
