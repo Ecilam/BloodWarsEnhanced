@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.01.28a
+// @version		2016.01.29
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -578,7 +578,7 @@ var DATAS = (function(){
 				// Clan
 				else if (qsA=="aliance"){
 					if (qsDo=="list") p="pAlianceList";
-					else if (qsDo==null||qsDo=="leave") p="pOAliance";
+					else if (qsDo==null||qsDo=="leave"||qsDo=="togrec") p="pOAliance";
 					else if (qsDo=="view"){
 						var r = DOM._GetFirstNode("//div[@class='top-options']/span[@class='lnk']");
 						if (r!=null) p="pOAliance";
@@ -967,12 +967,10 @@ function CreateHistory(att,def,node){
 function GroupTable(grId){
 	function clickRaz(e,i){
 		var	list = DOM._GetNodes("//tbody[@id='BWEgrp"+i[0]+"body']/tr");
-		if (list!=null){
-			for (var j=0;j<list.snapshotLength;j++){
-				var name = decodeURIComponent(list.snapshotItem(j).getAttribute('id'));
-				name = name.substring(10,name.length);
-				checkGrp(null,[name,i[0]]);
-				}
+		for (var j=0;j<list.snapshotLength;j++){
+			var name = decodeURIComponent(list.snapshotItem(j).getAttribute('id'));
+			name = name.substring(10,name.length);
+			checkGrp(null,[name,i[0]]);
 			}
 		}
 	function clickCol(e,i){ // i[0] = col
@@ -995,8 +993,8 @@ function GroupTable(grId){
 			oldColB.parentNode.removeChild(oldColB);
 			IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},newColA);
 			IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},newColB);
-			if (listA!=null) FctTriA(tri[0],tri[1],'grpA',tbodyA,listA);
-			if (listB!=null) FctTriA(tri[0],tri[1],'grpB',tbodyB,listB);
+			FctTriA(tri[0],tri[1],'grpA',tbodyA,listA);
+			FctTriA(tri[0],tri[1],'grpB',tbodyB,listB);
 			}
 		}
 	var r = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"']");
@@ -1036,7 +1034,7 @@ function GroupTable(grId){
 		var tri = PREF._Get('grp','tri');
 		IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},grpNode['tdh01'+tri[0]]);
 		var list = DOM._GetNodes("./tr",grpNode['tbody']);
-		if (list!=null) FctTriA(tri[0],tri[1],'grp'+grId,grpNode['tbody'],list);
+		FctTriA(tri[0],tri[1],'grp'+grId,grpNode['tbody'],list);
 		updateGrpFoot(grId);
 		}
 	}
@@ -1049,7 +1047,7 @@ function checkGrp(e,i){// i[0] = name, i[1] = id
 		if (grpRow!=null) grpRow.parentNode.removeChild(grpRow);
 		var	tbody = DOM._GetFirstNode("//tbody[@id='BWEgrp"+grId+"body']"),
 			list = DOM._GetNodes("./tr",tbody);
-		if (tbody!=null&&list!=null) FctTriA(tri[0],tri[1],'grp'+grId,tbody,list);
+		if (tbody!=null) FctTriA(tri[0],tri[1],'grp'+grId,tbody,list);
 		updateGrpFoot(grId);
 		grp[grId].splice(grp[grId].indexOf(i[0]),1);
 		}
@@ -1059,7 +1057,7 @@ function checkGrp(e,i){// i[0] = name, i[1] = id
 		if (tbody!=null){
 			appendGrpRow(tbody,i[0],i[1]);
 			var list = DOM._GetNodes("./tr",tbody);
-			if (list!=null) FctTriA(tri[0],tri[1],'grp'+i[1],tbody,list);
+			FctTriA(tri[0],tri[1],'grp'+i[1],tbody,list);
 			}
 		updateGrpFoot(i[1]);
 		grp[i[1]].push(i[0]);
@@ -1091,26 +1089,24 @@ function appendGrpRow(tbody,name,grId){
 function updateGrpFoot(grId){
 	var	list = DOM._GetNodes("//tbody[@id='BWEgrp"+grId+"body']/tr"),
 		lvlsum = 0,	ptssum = 0;
-	if (list!=null){
-		for (var i=0;i<list.snapshotLength;i++){
-			var r = new RegExp(L._Get('sTriPtsTest')).exec(DOM._GetFirstNodeTextContent("./td[3]",null,list.snapshotItem(i)));
-			if (r!=null){
-				lvlsum+=Number(parseInt(r[1]));
-				ptssum+=Number(parseInt(r[2]));
-				}
+	for (var i=0;i<list.snapshotLength;i++){
+		var r = new RegExp(L._Get('sTriPtsTest')).exec(DOM._GetFirstNodeTextContent("./td[3]",null,list.snapshotItem(i)));
+		if (r!=null){
+			lvlsum+=Number(parseInt(r[1]));
+			ptssum+=Number(parseInt(r[2]));
 			}
-		var nb = list.snapshotLength,
-			fnb = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot10']"),
-			flvlsum = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot12']"),
-			fptssum = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot13']"),
-			flvlaverage = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot22']"),
-			fptsaverage = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot23']");
-		if (fnb!=null) fnb.textContent = (nb>1?L._Get('sGrpPls',nb):L._Get('sGrpPl',nb));
-		if (flvlsum!=null) flvlsum.textContent = lvlsum;
-		if (fptssum!=null) fptssum.textContent = ptssum;
-		if (flvlaverage!=null) flvlaverage.textContent = nb>0?Math.floor(lvlsum/nb):0;
-		if (fptsaverage!=null) fptsaverage.textContent = nb>0?Math.floor(ptssum/nb):0;
 		}
+	var nb = list.snapshotLength,
+		fnb = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot10']"),
+		flvlsum = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot12']"),
+		fptssum = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot13']"),
+		flvlaverage = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot22']"),
+		fptsaverage = DOM._GetFirstNode("//td[@id='BWEgrp"+grId+"_foot23']");
+	if (fnb!=null) fnb.textContent = (nb>1?L._Get('sGrpPls',nb):L._Get('sGrpPl',nb));
+	if (flvlsum!=null) flvlsum.textContent = lvlsum;
+	if (fptssum!=null) fptssum.textContent = ptssum;
+	if (flvlaverage!=null) flvlaverage.textContent = nb>0?Math.floor(lvlsum/nb):0;
+	if (fptsaverage!=null) fptsaverage.textContent = nb>0?Math.floor(ptssum/nb):0;
 	}
 function showHideGr(e,i){//i[0]= node title,i[1]= node trA,i[2]= node trB
 	var show = PREF._Get('grp','sh')==1?0:1;
@@ -1136,7 +1132,7 @@ function BuildTable(table,list){
 				IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},newCol);
 				}
 			var list = DOM._GetNodes("./tr",tbody);
-			if (list!=null) FctTriA(tri[0],tri[1],p,tbody,list);
+			FctTriA(tri[0],tri[1],p,tbody,list);
 			}
 		}
 	var	headIU = {'tr2':['tr',{'class':'tblheader','id':'BWE'+p+'header'},,,table['thead']],
@@ -1207,7 +1203,7 @@ function BuildTable(table,list){
 	var tri = PREF._Get(p,'tri');
 	IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},head['th2'+tri[0]]);
 	var list = DOM._GetNodes("./tr",table['tbody']);
-	if (list!=null) FctTriA(tri[0],tri[1],p,table['tbody'],list);
+	FctTriA(tri[0],tri[1],p,table['tbody'],list);
 	}
 // Alimente un tableau déjà créé au format suivant :
 // - table ('id':'BWE'+p+'table')
@@ -1228,7 +1224,7 @@ function MixteTable(header,list,p){
 			PREF._Set(i[1],'tri',tri);
 			oldCol.parentNode.removeChild(oldCol);
 			IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},newCol);
-			if (list!=null) FctTriA(tri[0],tri[1], i[1],tbody,list);
+			FctTriA(tri[0],tri[1], i[1],tbody,list);
 			}
 		}
 	function GetLvl(v){
@@ -1396,7 +1392,7 @@ function MixteTable(header,list,p){
 			var selectCol = DOM._GetFirstNode("./td["+tri[0]+"]",newHead),
 				newList = DOM._GetNodes("./tr",newBody);
 			IU._CreateElement('span',{'class':'BWEtriSelect'},[(tri[1]==1?L._Get('sTriUp'):L._Get('sTriDown'))],{},selectCol);
-			if (newList!=null) FctTriA(tri[0],tri[1],p,newBody,newList);
+			FctTriA(tri[0],tri[1],p,newBody,newList);
 			}
 		}
 	}
@@ -1815,7 +1811,8 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 				var name = new RegExp(L._Get('sNameTest')).exec(DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='profile-hdr']",null)),
 					ttable = DOM._GetFirstNode("//div[@id='content-mid']/div[@style='float: left; width: 49%;']/fieldset[1]/table"),
 					trList = DOM._GetNodes("./tbody/tr",ttable);
-				if (name!=null&&ttable!=null&&trList!=null&&trList.snapshotLength==14){
+if (debug) console.debug('pProfile',name,ttable,trList);
+				if (name!=null&&ttable!=null&&trList.snapshotLength==14){
 					// récupère les données
 					var v = LS._GetVar('BWE:P:'+name[1],{}),
 						uid = /.*\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div/a[@target='_blank']",null)),
@@ -1894,7 +1891,8 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 				var target = DOM._GetFirstNode("//div[@id='content-mid']"),
 					builds = DOM._GetNodes("./div[@class='building']",target),
 					allnode = DOM._GetNodes("./div[(@class='bldprogress' or @class='strefaheader' or @class='building' or @class='hr720' or @class='hr620')]",target);
-				if (target!=null&&builds!=null&&allnode!=null){
+if (debug) console.debug('pBuild',target,builds,allnode);
+				if (target!=null){
 					var newTableIU = {
 						'div':['div',{'id':'BWE'+p+'div','align':'center'}],
 						'hr1':['div',{'class':'hr720'},,,'div'],
@@ -1909,16 +1907,17 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 					}
 				}
 			else if (p=='pTownview'&&PREF._Get(p,'sh')==1){
-				var target = DOM._GetFirstNode("//div[@id='content-mid']//div[@id='tw_table']"),
-					theader = DOM._GetFirstNode(".//tr[@class='tblheader']",target),
-					ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader);
-				if (target!=null&&theader!=null&&ttable!=null){
+				var target = DOM._GetFirstNode("//div[@id='content-mid']/div[@id='tw_table']"),
+					ttable = DOM._GetFirstNode(".//table[@class='hoverTable']",target);
+if (debug) console.debug('pTownview',target,ttable);
+				if (target!=null&&ttable!=null){
 					// recréé le tableau en cas de changement
 					var observer = new MutationObserver(function(mutations){
-							var theader = DOM._GetFirstNode("//div[@id='content-mid']//div[@id='tw_table']//tr[@class='tblheader']"),
-								ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader),
-								tlist = DOM._GetNodes("./following-sibling::tr",theader);
-							if (ttable!=null&&tlist!=null){
+						var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div[@id='tw_table']//table[@class='hoverTable']"),
+							theader = DOM._GetFirstNode(".//tr[@class='tblheader']",ttable),
+							tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]",ttable);
+if (debug) console.debug('pTownview',ttable,theader,tlist);
+							if (ttable!=null&&theader!=null){
 								observer.disconnect();
 								var oldTable = DOM._GetFirstNode("//div[@id='BWE"+p+"div']");
 								if (oldTable!=null) oldTable.parentNode.removeChild(oldTable);
@@ -1964,10 +1963,11 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 					}
 				// liste des vampires
 				if (PREF._Get(p,'sh')==1){
-					var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='sortable']"),
-						theader = DOM._GetFirstNode("./thead/tr[@class='tblheader']",ttable),
-						tlist = DOM._GetNodes("./tbody/tr",ttable);
-					if (ttable!=null&&theader!=null&&tlist!=null){
+					var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='sortable hoverTable']"),
+						theader = DOM._GetFirstNode(".//tr[@class='tblheader']",ttable),
+						tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]",ttable);
+if (debug) console.debug('pAliance',ttable,theader,tlist);
+					if (ttable!=null&&theader!=null){
 						var newTableIU = {
 							'div':['div',{'id':'BWE'+p+'div','align':'center'},],
 							'table':['table',{'id':'BWE'+p+'table','style':'width:95%;'},,,'div'],
@@ -1992,10 +1992,11 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 					}
 				}
 			else if (p=='pAlianceList'&&PREF._Get(p,'sh')==1){
-				var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
-					ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader),
-					tlist = DOM._GetNodes("./following-sibling::tr",theader);
-				if (ttable!=null&&theader!=null&&tlist!=null){
+				var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='hoverTable']"),
+					theader = DOM._GetFirstNode(".//tr[@class='tblheader']",ttable),
+					tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]",ttable);
+if (debug) console.debug('pAlianceList',ttable,theader,tlist);
+				if (ttable!=null&&theader!=null){
 					var newTableIU = {
 						'div':['div',{'id':'BWE'+p+'div','align':'center'},],
 						'table':['table',{'id':'BWE'+p+'table','style':'width:100%;'},,,'div'],
@@ -2028,6 +2029,7 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 				}
 			else if (p=='pAmbushRoot'&&PREF._Get('div','chLo')==1){
 				var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
+if (debug) console.debug('pAmbushRoot',atkaction);
 				if (atkaction!=null){
 					var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script",null);
 					if (ambushScript!=null){
@@ -2047,8 +2049,9 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 			else if (p=='pMsgList'||p=='pMsgSaveList'||p=='pMsgSendList'){
 				var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
 					ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader),
-					tlist = DOM._GetNodes("./following-sibling::tr",theader);
-				if (tlist!=null&&PREF._Get('div','chLo')==1){
+					tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]",ttable);
+if (debug) console.debug('pMsgList',ttable,theader,tlist);
+				if (PREF._Get('div','chLo')==1){
 					for (var i=0;i<tlist.snapshotLength;i++){
 						var node = tlist.snapshotItem(i),
 							msg = DOM._GetFirstNodeTextContent("./td[2]/a",null,node),
@@ -2065,7 +2068,7 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 							}
 						}
 					}
-				if (ttable!=null&&theader!=null&&tlist!=null&&PREF._Get(p,'sh')==1){
+				if (ttable!=null&&theader!=null&&PREF._Get(p,'sh')==1){
 					var newTableIU = {
 						'div':['div',{'id':'BWE'+p+'div','align':'center'},],
 						'table':['table',{'id':'BWE'+p+'table','class':'BWETabMsg','style':'width:100%;'},,,'div'],
@@ -2205,8 +2208,9 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 			else if (p=='pMsgFriendList'&&PREF._Get(p,'sh')==1){
 				var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
 					ttable = DOM._GetFirstNode("(./ancestor::table)[last()]",theader),
-					tlist = DOM._GetNodes("./following-sibling::tr",theader);
-				if (ttable!=null&&theader!=null&&tlist!=null){
+					tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]",ttable);
+if (debug) console.debug('pMsgFriendList',ttable,theader,tlist);
+				if (ttable!=null&&theader!=null){
 					var newTableIU = {
 						'div':['div',{'id':'BWE'+p+'div','align':'center'},],
 						'table':['table',{'id':'BWE'+p+'table','style':'width: 300px; margin-top: 20px;'},,,'div'],
@@ -2220,10 +2224,11 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 					}
 				}
 			else if (p=='pRank'&&PREF._Get(p,'sh')==1){
-				var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='rank']"),
-					theader = DOM._GetFirstNode("./tbody/tr[@class='tblheader']",ttable),
-					tlist = DOM._GetNodes("./following-sibling::tr",theader);
-				if (ttable!=null&&theader!=null&&tlist!=null){
+				var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='rank hoverTable']"),
+					theader = DOM._GetFirstNode(".//tr[@class='tblheader']",ttable),
+					tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]",ttable);
+if (debug) console.debug('pRank',ttable,theader,tlist);
+				if (ttable!=null&&theader!=null){
 					var newTableIU = {
 						'div':['div',{'id':'BWE'+p+'div','align':'center'},],
 						'table':['table',{'id':'BWE'+p+'table','style':'width:95%;'},,,'div'],
@@ -2237,7 +2242,8 @@ if (debug) console.debug('BWEstart: ',player,IDs,p);
 					}
 				}
 			else if (p=='pRootSettings'||p=='pSettingsAi'||p=='pSettingsAcc'||p=='pSettingsVac'||p=='pSettingsDelchar'){
-				var nodeOptions = DOM._GetFirstNode("//div[@id='content-mid']//div[@class='top-options']");
+				var nodeOptions = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='top-options']");
+if (debug) console.debug('pSettings',nodeOptions);
 				if (nodeOptions!=null){
 					var titleMenuIU = {
 						'1':['div',,[' - [ '],,nodeOptions],
