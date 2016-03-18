@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.01.29
+// @version		2016.03.18
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -359,7 +359,6 @@ var L = (function(){
 		"sTotal":["Total: ","Total: ","łączny: "],
 		// pAmbushRoot
 		"sMidMsg":["a=msg&do=view&mid=([0-9]+)"],
-		"sAtkTime":["timeFields\\.atkTime = ([0-9]+)"],
 		// historique
 		"sLogVS":["$1 VS $2"],
 		"sLogTime1":["$1s"],
@@ -502,36 +501,20 @@ var L = (function(){
 * Chaque fonction retourne 'null' en cas d'échec
 ******************************************************/
 var DATAS = (function(){
-	function GetTimeDiff(){
-		var stTime = new Date(),
-			r = document.getElementsByTagName('script');
-		for (var i=0;i<r.length;i++){
-			var r2 = /var timeDiff = ([0-9]+) - Math\.floor\(stTime\.getTime\(\)\/1000\) \+ ([0-9]+) \+ stTime\.getTimezoneOffset\(\)\*60;/.exec(r[i].textContent);
-			if (r2!=null) return (parseInt(r2[1])-Math.floor(stTime.getTime()/1000)+parseInt(r2[2])+stTime.getTimezoneOffset()*60);
-			}
-		return null;
-		}
 	function GetPlayerExpBar(){
 		var stats = DOM._GetFirstNode("//div[@class='stats-player']/div[@class='expbar']");
 		return stats!=null?stats.getAttribute('onmouseover'):null;
 		}
-	function GetPlayerName(){
-		return DOM._GetFirstNodeTextContent("//div[@class='stats-player']/a[@class='me']", null);
-		}
-	var timeDiff = GetTimeDiff(),
-		playerName = GetPlayerName(),
-		playerExpBar = GetPlayerExpBar();
+	var playerExpBar = GetPlayerExpBar();
 	return {
 	/* données du serveur */
 		_Time: function(){
-			var d = new Date();
-			if (timeDiff!=null)	d.setTime(d.getTime()+timeDiff*1000);
-			else d = null;
-			return d;
+			if (window.stTime&&window.timeDiff) return new Date(window.stTime.getTime()+window.timeDiff*1000);
+			else return null;
 			},
 	/* données du joueur */
 		_PlayerName: function(){
-			return playerName;
+			return DOM._GetFirstNodeTextContent("//div[@class='stats-player']/a[@class='me']", null);
 			},
 		_PlayerLevel: function(){
 			var playerLevel = new RegExp(L._Get('sNiveau')).exec(playerExpBar);
@@ -2028,21 +2011,14 @@ if (debug) console.debug('pAlianceList',ttable,theader,tlist);
 					}
 				}
 			else if (p=='pAmbushRoot'&&PREF._Get('div','chLo')==1){
-				var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
-if (debug) console.debug('pAmbushRoot',atkaction);
-				if (atkaction!=null){
-					var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script",null);
-					if (ambushScript!=null){
-						var r = new RegExp(L._Get('sAtkTime')).exec(ambushScript);
-						if (r!=null){
-							var msgDate = DATAS._Time(),
-								r2 = new RegExp(L._Get('sMidMsg')).exec(ambushScript),
-								playerVS = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']",null);
-							if (msgDate!=null&&r2!=null&&playerVS!=null){
-								msgDate.setTime(msgDate.getTime()+r[1]*1000);
-								UpdateHistory(ID,playerVS,r2[1],msgDate,null);
-								}
-							}
+if (debug) console.debug('pAmbushRoot',window.timeFields.atkTime,window.refLinks.atkTime);
+				if (window.timeFields.atkTime&&window.refLinks.atkTime){
+					var msgDate = DATAS._Time(),
+						r = new RegExp(L._Get('sMidMsg')).exec(window.refLinks.atkTime),
+						playerVS = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']",null);
+					if (msgDate!=null&&r!=null&&playerVS!=null){
+						msgDate.setTime(msgDate.getTime()+window.timeFields.atkTime*1000);
+						UpdateHistory(ID,playerVS,r[1],msgDate,null);
 						}
 					}
 				}
