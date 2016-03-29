@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.03.18
+// @version		2016.03.29
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -505,12 +505,12 @@ var DATAS = (function(){
 		var stats = DOM._GetFirstNode("//div[@class='stats-player']/div[@class='expbar']");
 		return stats!=null?stats.getAttribute('onmouseover'):null;
 		}
-	var playerExpBar = GetPlayerExpBar();
+	var playerExpBar = GetPlayerExpBar(),
+		gameTime = _Exist(window.stTime)&&_Exist(window.timeDiff)?new Date(window.stTime.getTime()+window.timeDiff*1000):null;
 	return {
 	/* données du serveur */
 		_Time: function(){
-			if (window.stTime&&window.timeDiff) return new Date(window.stTime.getTime()+window.timeDiff*1000);
-			else return null;
+			return gameTime;
 			},
 	/* données du joueur */
 		_PlayerName: function(){
@@ -1262,7 +1262,7 @@ function MixteTable(header,list,p){
 			var oldTR = list.snapshotItem(j),
 				newTR = IU._CreateElement('tr',{'class':'BWETR'+(j%2==0?'':' BWEeven')},[],{},newBody),
 				name = id!=null?DOM._GetFirstNodeTextContent(idx[p][0]+'/text()','',oldTR).trim():'',
-				v = {}; 
+				v = {};
 			if (name!=''){
 				v = LS._GetVar('BWE:P:'+name,{});
 				var niv = idx[p][1]!=null?DOM._GetFirstNodeTextContent("./td["+idx[p][1]+"]",null,oldTR):null,
@@ -2012,7 +2012,7 @@ if (debug) console.debug('pAlianceList',ttable,theader,tlist);
 				}
 			else if (p=='pAmbushRoot'&&PREF._Get('div','chLo')==1){
 if (debug) console.debug('pAmbushRoot',window.timeFields.atkTime,window.refLinks.atkTime);
-				if (window.timeFields.atkTime&&window.refLinks.atkTime){
+				if (_Exist(window.timeFields.atkTime)&&_Exist(window.refLinks.atkTime)){
 					var msgDate = DATAS._Time(),
 						r = new RegExp(L._Get('sMidMsg')).exec(window.refLinks.atkTime),
 						playerVS = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']",null);
