@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.03.29
+// @version		2016.04.08
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -320,18 +320,26 @@ var L = (function(){
 			  "Both sides were well prepared",
 			 "Obie strony były świetnie przygotowane"],
 		"sAmbushTest7":["([0-9]+) \\/ ([0-9]+)<br>([0-9]+) \\/ ([0-9]+)"],
-		"sAmbushTest8":
+		"sAmbushArc":
 			["(<b>([^<>]+)<\\/b> utilise l`arcane <span.+>([^<>]+)<\\/span> niveau <b>([0-9]+)<\\/b>\\.)+",
 			"(<b>([^<>]+)<\\/b> uses arcana <span.+>([^<>]+)<\\/span> level <b>([0-9]+)<\\/b>\\.)+",
 			"(<b>([^<>]+)<\\/b> używa arkana <span.+>([^<>]+)<\\/span> poziom <b>([0-9]+)<\\/b>\\.)+"],
-		"sAmbushTest9":
+		"sAmbushEvo":
 			["(<b>([^<>]+)<\\/b> utilise l`évolution: (<span[^>]+>[^<>]+<\\/span>[., ]+)+)+",
 			"(<b>([^<>]+)<\\/b> uses evolution: (<span[^>]+>[^<>]+<\\/span>[., ]+)+)+",
 			"(<b>([^<>]+)<\\/b> korzysta z ewolucji: (<span[^>]+>[^<>]+<\\/span>[., ]+)+)+"],
-		"sAmbushTest10":
+		"sAmbushEvo2":
 			["(<span[^>]+>([^<>]+) niv. ([0-9]+)<\\/span>)+",
 			 "(<span[^>]+>([^<>]+) lvl ([0-9]+)<\\/span>)+",
 			 "(<span[^>]+>([^<>]+) poz. ([0-9]+)<\\/span>)+"],
+		"sAmbushTal":
+			["(<b>([^<>]+)<\\/b> utilise les talismans : (?:[^,<>]+(?:, |\\.)+)+)+",
+			"(<b>([^<>]+)<\\/b> uses the following talismans: (?:[^,<>]+(?:, |\\.)+)+)+",
+			"(<b>([^<>]+)<\\/b> używa talizmanów: (?:[^,<>]+(?:, |\\.)+)+)+"],
+		"sAmbushTal2":
+			[" (([^:,]+) niv. ([0-9]+))+",
+			 " (([^:,]+) lvl ([0-9]+))+",
+			 " (([^:,]+) poz. ([0-9]+))+"],
 		"sAmbushTest11":["<td[^<>]+><b>([^<>]+)<\\/b><\\/td><td[^<>]+>$1<\\/td><td[^<>]+><b>([^<>]+)<\\/b>"],
 		"sAmbushTest12":
 			["(<b>([^<>]+)<\\/b> utilise l`objet[^<>]+<span.+>([^<>]+)<\\/span>\\.)+",
@@ -368,9 +376,12 @@ var L = (function(){
 		"sLogTime5":["+1an","+1y","+1rok"],
 		"sLogNC":["Analyse nécessaire","Analysis required","Analiza wymagane"],
 		"sNC":["INCONNUE","UNKNOW","NIEZNANY"],
-		"sArc":[["Silence du Sang","Absorption de la Force","Le pouvoir du Sang","Masque d`Adonis","Masque de Caligula","La Majesté","Sang de la Vie","Voies Félines","L`Ardeur du Sang","Le Chasseur de la Nuit","Le Souffle Mortel","L`Horreur","Frénésie Sauvage","Peau de Bête","L`Ombre de la Bête"],
-			["Silence of Blood","Power absorption","Power of Blood","Mask of Adonis","Mask of Caligula","Majesty","Blood of Life","Cat`s Paths","Searing Blood","Night Hunter","Breath of Death","Horror","Bloodfrenzy","Beast`s Hide","Shadow of the Beast"],
-			["Cisza Krwi","Wyssanie mocy","Moc Krwi","Maska Adonisa","Maska Kaliguli","Majestat","Krew Życia","Kocie Ścieżki","Żar Krwi","Nocny Łowca","Tchnienie Śmierci","Groza","Dziki Szał","Skóra Bestii","Cień Bestii"]],
+		"sArcTal":[["Silence du Sang","Absorption de la Force","Le pouvoir du Sang","Masque d`Adonis","Masque de Caligula","La Majesté","Sang de la Vie","Voies Félines","L`Ardeur du Sang","Le Chasseur de la Nuit","Le Souffle Mortel","L`Horreur","Frénésie Sauvage","Peau de Bête","L`Ombre de la Bête",
+			"Ambition","Léviathan","Béhémoth","Ziz","Pierre du mal","Pierre du bien","Pierre d`espace","Pierre du temps","Les Griffes de la nuit","Vie et mort","L`abime du silence","La puissance du pouvoir","La furie bestiale","L`aura bestiale","Le masque du pouvoir","Le Masque de l`Effroi","Le chasseur silencieux","Le chant du sang"],
+			["Silence of Blood","Power absorption","Power of Blood","Mask of Adonis","Mask of Caligula","Majesty","Blood of Life","Cat`s Paths","Searing Blood","Night Hunter","Breath of Death","Horror","Bloodfrenzy","Beast`s Hide","Shadow of the Beast",
+			"Ambition","Leviathan","Behemoth","Ziz","Stone of evil","Stone of goodness","Stone of space","Stone of time","Claws of the night","Life and death","Void of silence","Ultimate power","Bestial fury","Aura of the beast","Mask of power","Mask of fear","Silent hunter","Song of blood"],
+			["Cisza Krwi","Wyssanie mocy","Moc Krwi","Maska Adonisa","Maska Kaliguli","Majestat","Krew Życia","Kocie Ścieżki","Żar Krwi","Nocny Łowca","Tchnienie Śmierci","Groza","Dziki Szał","Skóra Bestii","Cień Bestii",
+			"Ambicja","Lewiatan","Behemot","Ziz","Kamień zła","Kamień dobra","Kamień przestrzeni","Kamień czasu","Szpony nocy","Życie i śmierć","Otchłań ciszy","Potęga mocy","Furia bestii","Aura bestii","Maska władzy","Maska strachu","Cichy łowca","Pieśń krwi"]],
 		"sEvo":[["Les Ailes","Carapace","Canines/Griffes/Pointes","Glandes à venin","Tendons renforcés","Chambre supplémentaire","Le sang du démon","Mutation ADN","Eclairé","Sixième sens","Absorption","Développement Harmonieux","Mana Purifiée","Mémoire Ancestrale","Puissance","Légèreté de l`être","Piromancie","Lien avec Gaia","Hydromancie","Forme Astrale","L`empreinte du démon"],
 			["Wings","Carapace","Claws/Fangs/Quills","Venom glands","Hardened tendons","Additional cavity","Daemon blood","Mutated DNA","Enlightened","Sixth sense","Absorption","Harmonious development","Mana contamination","Memory of the ancestors","Might","Lightness of being","Pyromancy","Bond Gaea","Hydromancy","Astral form","Demonic mark"],
 			["Skrzydla","Pancerz","Kly/Pazury/Kolce","Gruczoly jadowe","Wzmocnione sciegna","Dodatkowa komora","Krew demona","Mutacja DNA","Oswiecony","Szósty zmysl","Absorpcja","Harmonijny rozwój","Skażenie Maną","Pamięć przodków","Potęga","Lekkość bytu","Piromancja","Więź z Gają","Hydromancja","Forma astralna","Piętno demona"]],
@@ -382,7 +393,7 @@ var L = (function(){
 			[["RACE","SEXE","ADRESSE","CLAN","<vide>","NIVEAU","POINTS","NIV (PTS)","GROUPE","STATUT","Place au classement","Date d`inscription","Dernière connexion","Provenance","HISTORIQUE", // 0-14
 			"Nom","En ligne","<En ligne>","<Expéditions>","<Roi de la Colline>","Grade","A-B","<SEXE - icône>","ATT","<ATTAQUER>","DEF", // 15-25
 			"PLACE","NOM","<N° du quartier>","MAÎTRE DU QUARTIER","ACTIONS", // 26-30
-			"N°","Divers","Arcanes","Evolutions","Caractéristiques","Ressources", // 31-36
+			"N°","Divers","Arcanes/Talismans","Evolutions","Caractéristiques","Ressources", // 31-36
 			"Date","Emb.","PV Att","PV Déf","Objet Att","Objet Def", // 37-42
 			"NIVEAU","Pts DE VIE","Défense","FORCE","AGILITÉ","RÉSISTANCE","APPARENCE","CHARISME","RÉPUTATION","PERCEPTION","INTELLIGENCE","SAVOIR","AGI+PER", // 43-55
 			"PdP","PdH","Pts évo","LOL","Sang","Pop", // 56-61
@@ -394,7 +405,7 @@ var L = (function(){
 			["RACE","SEX","ADDRESS","CLAN","<empty>","LEVEL","POINTS","LVL (PTS)","GROUP","STATUS","Standing","Date of entry","Last logged","Provenance","HISTORY",
 			"Name","On-line","<On-line>","<Expedition>","King Of the hill","Rank","A-B","SEX - icon","ATT","<ATTACK>","DEF",
 			"STANDING","NAME","<N° of square>","SQUARE OWNER","ACTIONS",
-			"N°","Misc.","Arcana","Evolution","Characteristic","Resources",
+			"N°","Misc.","Arcana/Talisman","Evolution","Characteristic","Resources",
 			"Date","Emb.(%)","HP Att","HP Def","Obj.Att","Obj.Def",
 			"LEVEL","HIT POINTS","Defence","STRENGTH","AGILITY","TOUGHNESS","APPEARANCE","CHARISMA","REPUTATION","PERCEPTION","INTELLIGENCE","KNOWLEDGE","AGI+PER",
 			"PoP","PoH","Evo pts","Lgo","blood","People",
@@ -406,7 +417,7 @@ var L = (function(){
 			["RASA","PŁEĆ","ADRES","KLAN","<pusty>","POZIOM","PUNKTY","POZ (PKT)","GRUPA","STATUS","Miejsce w rankingu","Data dołączenia","Ostatnie logowanie","Pochodzenie","HISTORY",
 			"Imię","On-line","<On-line>","<Ekspedycja>","Król Wzgórza","Ranga","A-B","PŁEĆ - ikona","ATA","<NAPADNIJ>","OBR",
 			"MIEJSCE","IMIĘ","<N° kwadratu>","WŁADCA KWADRATU","DZIAŁANIA",
-			"N°","Różny","Arkana","Ewolucja","Charakterystyka","Zasoby",
+			"N°","Różny","Arkana/Talizmanów","Ewolucja","Charakterystyka","Zasoby",
 			"Data","Zas.(%)","PŻ Nap","PŻ Obr","Obi.Ata","Obi.Obr",
 			"POZIOM","PKT. ŻYCIA","Obrona","SIŁA","ZWINNOŚĆ","ODPORNOŚĆ","WYGLĄD","CHARYZMA","WPŁYWY","SPOSTRZEGAWCZOŚĆ","INTELIGENCJA","WIEDZA","ZWI+SPO",
 			"Pkt roz","Pkt rep","Pkt ewo","PLN","Krew","Ludzie",
@@ -847,14 +858,14 @@ function CreateHistory(att,def,node){
 								}
 							}
 						}
-					else if (col==2){ // Arcanes
+					else if (col==2){ // Arcanes/talimans
 						var table = IU._CreateElement('table',{},[],{},newTD),
 							arcA = h[j][2][4], arcB = h[j][2][5], arc = {};
 							for (var y=0;y<arcA.length;y++){arc[arcA[y][0]] = []; arc[arcA[y][0]][0] = arcA[y][1];}
 							for (var y=0;y<arcB.length;y++){arc[arcB[y][0]] = _Exist(arc[arcB[y][0]])?arc[arcB[y][0]]:[]; arc[arcB[y][0]][1] = arcB[y][1];}
 							for (var key in arc){
 								IU._CreateElements({'tr':['tr',,,,table],
-									'td1':['td',{'class':'BWEbold'},[L._Get('sArc')[key]],,'tr'],
+									'td1':['td',{'class':'BWEbold'},[L._Get('sArcTal')[key]],,'tr'],
 									'td2':['td',{'class':'atkHit BWERight BWELogTD2'},[_Exist(arc[key][0])?arc[key][0]:''],,'tr'],
 									'td3':['td',{'class':'defHit BWERight BWELogTD2'},[_Exist(arc[key][1])?arc[key][1]:''],,'tr']});
 								}
@@ -2136,19 +2147,33 @@ if (debug) console.debug('pMsgList',ttable,theader,tlist);
 						else emb[1] = 'r';
 						// Arcanes
 						if (logShow[2]==1){
-							var i,model = new RegExp(L._Get('sAmbushTest8'),'g'),
-								arc = L._Get('sArc');
+							var i,model = new RegExp(L._Get('sAmbushArc'),'g'),
+								arc = L._Get('sArcTal');
 							while ((i=model.exec(msgContent))!=null){
 								if (i[2]==att) emb[4].push([arc.indexOf(i[3]),Number(i[4])]);
 								else if (i[2]==def) emb[5].push([arc.indexOf(i[3]),Number(i[4])]);
 								}
 							}
+						// Talismans
+						if (logShow[2]==1){
+							var i,model = new RegExp(L._Get('sAmbushTal'),'g'),
+								tal = L._Get('sArcTal');
+							while ((i=model.exec(msgContent))!=null){
+if (debug) console.debug('Talismans :',i);
+								var y, model2 = new RegExp(L._Get('sAmbushTal2'),'g');
+								while ((y=model2.exec(i[1]))!=null){
+if (debug) console.debug('Talismans :',y);
+									if (i[2]==att) emb[4].push([tal.indexOf(y[2]),Number(y[3])]);
+									else if (i[2]==def) emb[5].push([tal.indexOf(y[2]),Number(y[3])]);
+									}
+								}
+							}
 						// Evolutions
 						if (logShow[3]==1){
-							var i,model = new RegExp(L._Get('sAmbushTest9'),'g'),
+							var i,model = new RegExp(L._Get('sAmbushEvo'),'g'),
 								evo = L._Get('sEvo');
 							while ((i=model.exec(msgContent))!=null){
-								var y, model2 = new RegExp(L._Get('sAmbushTest10'),'g');
+								var y, model2 = new RegExp(L._Get('sAmbushEvo2'),'g');
 								while ((y=model2.exec(i[1]))!=null){
 									if (i[2]==att) emb[6].push([evo.indexOf(y[2]),Number(y[3])]);
 									else if (i[2]==def) emb[7].push([evo.indexOf(y[2]),Number(y[3])]);
