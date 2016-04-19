@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.04.08
+// @version		2016.04.20
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -399,9 +399,10 @@ var L = (function(){
 			"PdP","PdH","Pts évo","LOL","Sang","Pop", // 56-61
 			"<Checkbox>","Titre du message","Expéditeur","Date d`envoi", // 62-65
 			"<Place au classement>","Nom du clan","Tag du clan","Chef","Date de la fondation","Membres", // 66-71
-			"LISTE D`AMIS", //72
+			"LISTE D`AMIS", // 72
 			"Zone","Bâtiment","Niveau","Sang","Argent","Population","Temps","Actions", // 73-80
-			"Ecart"], // 81
+			"Ecart", // 81
+			"<Données>"],// 82 - suite v. 1.7.9 beta
 			["RACE","SEX","ADDRESS","CLAN","<empty>","LEVEL","POINTS","LVL (PTS)","GROUP","STATUS","Standing","Date of entry","Last logged","Provenance","HISTORY",
 			"Name","On-line","<On-line>","<Expedition>","King Of the hill","Rank","A-B","SEX - icon","ATT","<ATTACK>","DEF",
 			"STANDING","NAME","<N° of square>","SQUARE OWNER","ACTIONS",
@@ -413,7 +414,8 @@ var L = (function(){
 			"<Place ranking>","Clan name","Clan tag","Leader","Creation date","Members",
 			"FRIENDLIST",
 			"Zone","Building","Level","Blood","Money","People","Time","Action",
-			"Gap"],
+			"Gap",
+			"<Data>"],
 			["RASA","PŁEĆ","ADRES","KLAN","<pusty>","POZIOM","PUNKTY","POZ (PKT)","GRUPA","STATUS","Miejsce w rankingu","Data dołączenia","Ostatnie logowanie","Pochodzenie","HISTORY",
 			"Imię","On-line","<On-line>","<Ekspedycja>","Król Wzgórza","Ranga","A-B","PŁEĆ - ikona","ATA","<NAPADNIJ>","OBR",
 			"MIEJSCE","IMIĘ","<N° kwadratu>","WŁADCA KWADRATU","DZIAŁANIA",
@@ -425,7 +427,8 @@ var L = (function(){
 			"<Ranking umieszczać>","Nazwa klanu","Tag klanu","Przywódca","Data powstania","Członków",
 			"LISTA PRZYJACIÓŁ",
 			"Strefa","Budowy","Poziom","Krew","Pieniądze","Ludzie","Czas","Akcja",
-			"Luka"]],
+			"Luka",
+			"<Dane>"]],
 		// Menus
 		"sTitleMenu1":["BWE - OPTIONS","BWE - OPTIONS","BWE - OPCJE"],
 		"sTitleMenu2":["BWE - BASE DE DONNÉES","BWE - DATABASE","BWE - BAZY DANYCH"],
@@ -637,7 +640,7 @@ var PREF = (function(){
 		'pOProfile':{'sh':1,'list':[[0,1,0,0],[1,1,1,0],[2,1,2,0],[3,1,3,0],[4,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[8,0,-1,0],[10,1,7,0],[9,1,8,0],[4,1,9,0],[11,1,10,0],[12,1,11,0],[4,1,12,0],[13,1,13,0]]},
 		'pProfile':{'sh':1,'list':[[0,1,0,0],[1,1,1,0],[2,1,2,0],[3,1,3,0],[4,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[8,0,-1,0],[14,1,-1,0],[10,1,7,0],[9,1,8,0],[4,1,9,0],[11,1,10,0],[12,1,11,0],[4,1,12,0],[13,1,13,0]]},
 		'pTownview':{'sh':1,'tri':[1,1],'list':[[28,1,1,2],[29,1,2,0],[9,1,3,0],[6,0,4,0],[5,0,-1,0],[7,1,-1,0],[23,1,-1,2],[24,1,5,1],[25,1,-1,0],[0,1,6,0],[1,0,7,0],[22,1,-1,1],[3,1,8,0],[30,1,9,0],[81,0,-1,0]]},
-		'pOAliance':{'sh':1,'sh1':1,'sh2':1,'tri':[1,1],'list':[[15,1,1,0],[16,0,2,1],[17,1,-1,1],[18,1,-1,1],[19,1,-1,1],[2,1,3,0],[20,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[21,0,-1,1],[22,1,-1,1],[0,1,-1,0],[1,0,-1,0],[11,0,7,0],[81,0,-1,0]]},
+		'pOAliance':{'sh':1,'sh1':1,'sh2':1,'tri':[1,1],'list':[[82,1,1,0],[15,1,2,0],[16,0,3,1],[17,1,-1,1],[18,1,-1,1],[19,1,-1,1],[2,1,4,0],[20,1,5,0],[5,0,6,0],[6,0,7,0],[7,1,-1,0],[21,0,-1,1],[22,1,-1,1],[0,1,-1,0],[1,0,-1,0],[11,0,8,0],[81,0,-1,0]]},
 		'pAliance':{'sh':1,'sh1':1,'tri':[1,1],'list':[[15,1,1,0],[23,1,-1,2],[24,1,2,1],[25,1,-1,0],[2,1,3,0],[20,1,4,0],[5,0,5,0],[6,0,6,0],[7,1,-1,0],[21,0,-1,1],[22,1,-1,1],[0,1,-1,0],[1,0,-1,0],[11,0,7,0],[81,0,-1,0]]},
 		'pAlianceList':{'sh':1,'list':[[66,1,1,2],[67,1,2,0],[68,1,3,0],[69,1,4,0],[70,1,5,0],[71,1,6,0],[6,1,7,0]]},
 		'pMsgList':{'sh':0,'tri':[4,0],'list':[[62,1,1,0],[63,1,2,0],[64,1,3,0],[65,1,4,0]]},
@@ -1237,7 +1240,7 @@ function MixteTable(header,list,p){
 			id = ['pTownview','pRank','pOAliance','pAliance'].indexOf(p)==-1?null:p,
 			idx = {'pTownview':["./td[2]/a",null,4,6,7],// name,niv,pts,race,sexe
 				'pRank':["./td[2]/a/b",null,8,3,4],
-				'pOAliance':["./td[1]/a",5,6,null,null],
+				'pOAliance':["./td[2]/a",6,7,null,null],
 				'pAliance':["./td[1]/a",5,6,null,null]};
 		// en-têtes et suppression des colonnes inutiles
 		for (var i=0; i<newCol.length; i++){
@@ -1343,7 +1346,7 @@ function MixteTable(header,list,p){
 						newTD.textContent = _Exist(v['P'])?L._Get('sNivFormat',(_Exist(v['N'])?v['N']:GetLvl(v['P'])[2]),v['P']):'-';
 						}
 					if (col==17||col==18||col==19){
-						var img = DOM._GetFirstNode("./td[2]/img["+(col==17?1:(col==18?2:3))+"]",oldTR);
+						var img = DOM._GetFirstNode("./td[3]/img["+(col==17?1:(col==18?2:3))+"]",oldTR);
 						if (img!=null){
 							newTD.className = "";
 							newTD.appendChild(img.cloneNode(true));
@@ -2159,10 +2162,8 @@ if (debug) console.debug('pMsgList',ttable,theader,tlist);
 							var i,model = new RegExp(L._Get('sAmbushTal'),'g'),
 								tal = L._Get('sArcTal');
 							while ((i=model.exec(msgContent))!=null){
-if (debug) console.debug('Talismans :',i);
 								var y, model2 = new RegExp(L._Get('sAmbushTal2'),'g');
 								while ((y=model2.exec(i[1]))!=null){
-if (debug) console.debug('Talismans :',y);
 									if (i[2]==att) emb[4].push([tal.indexOf(y[2]),Number(y[3])]);
 									else if (i[2]==def) emb[5].push([tal.indexOf(y[2]),Number(y[3])]);
 									}
