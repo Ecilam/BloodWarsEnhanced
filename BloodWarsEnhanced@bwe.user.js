@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.04.29
+// @version		2016.05.25
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -366,7 +366,8 @@ var L = (function(){
 		// pMkstone et autres
 		"sTotal":["Total: ","Total: ","łączny: "],
 		// pAmbushRoot
-		"sMidMsg":["a=msg&do=view&mid=([0-9]+)"],
+		"sMidMsg":["addMsgId\\(([0-9]+)\\)"],
+		"sAtkTime":["registerTimer\\('atkTimeLeft', ([0-9]+)\\)"],
 		// historique
 		"sLogVS":["$1 VS $2"],
 		"sLogTime1":["$1s"],
@@ -520,7 +521,14 @@ var DATAS = (function(){
 		return stats!=null?stats.getAttribute('onmouseover'):null;
 		}
 	var playerExpBar = GetPlayerExpBar(),
-		gameTime = _Exist(window.stTime)&&_Exist(window.timeDiff)?new Date(window.stTime.getTime()+window.timeDiff*1000):null;
+    serverTime = window.serverTime,
+    serverOffset = window.serverOffset,
+    clientTimeData =  new Date(),
+    clientTime = Math.floor(clientTimeData.getTime() / 1000),
+    clientOffset = clientTimeData.getTimezoneOffset() * 60,
+    diff = _Exist(serverTime) && _Exist(serverOffset)? (serverTime - clientTime + serverOffset + clientOffset) * 1000 : null,
+		gameTime = diff !== null ? new Date(clientTimeData.getTime() + diff) : null;
+
 	return {
 	/* données du serveur */
 		_Time: function(){
@@ -928,7 +936,7 @@ function CreateHistory(att,def,node){
 	var actuTime = DATAS._Time(), 
 		h = LS._GetVar('BWE:L:'+att+':'+def,[]),
 		nbLog = PREF._Get('div','nbLo');
-	if (actuTime!=null&&_Exist(h[0])&&_Exist(h[0][1])&&nbLog>0){
+	if (actuTime !== null && _Exist(h[0]) && _Exist(h[0][1])&&nbLog>0){
 		//prépare les éléments de l'historique
 		var actuH = 0, j = 0,
 			delay = (actuTime.getTime()-h[0][1])/1000,
@@ -1906,14 +1914,13 @@ if (debug) console.debug('pBuild',target,builds,allnode);
 			else if (p=='pTownview'&&PREF._Get(p,'sh')==1){
 				var target = DOM._GetFirstNode("//div[@id='content-mid']/div[@id='tw_table']"),
 					ttable = DOM._GetFirstNode(".//table[@class='hoverTable']",target);
-if (debug) console.debug('pTownview',target,ttable);
 				if (target!=null&&ttable!=null){
 					// recréé le tableau en cas de changement
 					var observer = new MutationObserver(function(mutations){
 						var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div[@id='tw_table']//table[@class='hoverTable']"),
 							theader = DOM._GetFirstNode(".//tr[@class='tblheader']",ttable),
 							tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]",ttable);
-if (debug) console.debug('pTownview',ttable,theader,tlist);
+if (debug) console.debug('pTownview',ttable,target,theader,tlist);
 							if (ttable!=null&&theader!=null){
 								observer.disconnect();
 								var oldTable = DOM._GetFirstNode("//div[@id='BWE"+p+"div']");
@@ -2025,14 +2032,22 @@ if (debug) console.debug('pAlianceList',ttable,theader,tlist);
 					}
 				}
 			else if (p=='pAmbushRoot'&&PREF._Get('div','chLo')==1){
-if (debug) console.debug('pAmbushRoot',window.timeFields.atkTime,window.refLinks.atkTime);
-				if (_Exist(window.timeFields.atkTime)&&_Exist(window.refLinks.atkTime)){
-					var msgDate = DATAS._Time(),
-						r = new RegExp(L._Get('sMidMsg')).exec(window.refLinks.atkTime),
-						playerVS = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']",null);
-					if (msgDate!=null&&r!=null&&playerVS!=null){
-						msgDate.setTime(msgDate.getTime()+window.timeFields.atkTime*1000);
-						UpdateHistory(ID,playerVS,r[1],msgDate,null);
+
+				var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
+				if (atkaction!=null){
+					var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script[2]",null);
+					if (ambushScript !== null){
+						var r = new RegExp(L._Get('sAtkTime')).exec(ambushScript);
+						if (r !== null){
+							var msgDate = DATAS._Time(),
+								r2 = new RegExp(L._Get('sMidMsg')).exec(ambushScript),
+								playerVS = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']",null);
+if (debug) console.debug('pAmbushRoot', msgDate, r, r2, playerVS);
+                if (msgDate !== null && r2 !== null && playerVS !== null){
+								msgDate.setTime(msgDate.getTime()+r[1]*1000);
+								UpdateHistory(ID,playerVS,r2[1],msgDate,null);
+								}
+							}
 						}
 					}
 				}
