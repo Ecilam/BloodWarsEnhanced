@@ -3,7 +3,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.05.25
+// @version		2016.05.26
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -366,8 +366,7 @@ var L = (function(){
 		// pMkstone et autres
 		"sTotal":["Total: ","Total: ","łączny: "],
 		// pAmbushRoot
-		"sMidMsg":["addMsgId\\(([0-9]+)\\)"],
-		"sAtkTime":["registerTimer\\('atkTimeLeft', ([0-9]+)\\)"],
+		"sAtkScript":["registerTimer\\('atkTimeLeft', ([0-9]+)\\)(?:(?!addMsgId)[^])*addMsgId\\(([0-9]+)\\)"],
 		// historique
 		"sLogVS":["$1 VS $2"],
 		"sLogTime1":["$1s"],
@@ -2032,22 +2031,16 @@ if (debug) console.debug('pAlianceList',ttable,theader,tlist);
 					}
 				}
 			else if (p=='pAmbushRoot'&&PREF._Get('div','chLo')==1){
-
 				var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
 				if (atkaction!=null){
 					var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script[2]",null);
 					if (ambushScript !== null){
-						var r = new RegExp(L._Get('sAtkTime')).exec(ambushScript);
-						if (r !== null){
-							var msgDate = DATAS._Time(),
-								r2 = new RegExp(L._Get('sMidMsg')).exec(ambushScript),
-								playerVS = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']",null);
-if (debug) console.debug('pAmbushRoot', msgDate, r, r2, playerVS);
-                if (msgDate !== null && r2 !== null && playerVS !== null){
-								msgDate.setTime(msgDate.getTime()+r[1]*1000);
-								UpdateHistory(ID,playerVS,r2[1],msgDate,null);
-								}
-							}
+						var r = new RegExp(L._Get('sAtkScript')).exec(ambushScript),
+              playerVS = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']",null);
+if (debug) console.debug('pAmbushRoot', DATAS._Time(), r, playerVS);
+            if (DATAS._Time() !== null && r !== null && playerVS !== null){
+              UpdateHistory(ID, playerVS, r[2], new Date(DATAS._Time().getTime() + Number(r[1])*1000), null);
+              }
 						}
 					}
 				}
