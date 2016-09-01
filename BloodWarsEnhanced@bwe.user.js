@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.08.21
+// @version		2016.09.01
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -2736,9 +2736,8 @@ if (debug) console.debug('BWEunload', overDiv);
         } else if (p == 'pMkstone' || p == 'pUpgitem' || p == 'pMixitem' || p == 'pDestitem' || p ==
           'pTatoo') {
           if (PREF._Get('div', 'chSt') == 1) {
-            var cost = new Array(['disp_stone_blood', 1], ['disp_stone_heart', 10], ['disp_stone_life', 50], [
-                'disp_stone_change', 150
-              ], ['disp_stone_soul', 500]),
+            var cost = new Array(['disp_stone_blood', 1], ['disp_stone_heart', 10], ['disp_stone_life', 30], [
+                'disp_stone_change', 60], ['disp_stone_soul', 120]),
               sum = 0;
             for (var i = 0; i < cost.length; i++) {
               var r = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//span[@id='" + cost[i][0] +
