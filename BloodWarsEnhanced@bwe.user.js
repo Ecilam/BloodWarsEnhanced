@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.09.01
+// @version		2016.09.12
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -356,9 +356,9 @@
       ],
       "sAmbushTest7": ["([0-9]+) \\/ ([0-9]+)<br>([0-9]+) \\/ ([0-9]+)"],
       "sAmbushArc": [
-        "(<b>([^<>]+)<\\/b>[^<>]+utilise l`arcane[^<>]+<span[^<>]+>([^<>]+)<\\/span>[^<>]+niveau[^<>]+<b>([0-9]+)<\\/b>\\.)+",
-        "(<b>([^<>]+)<\\/b>[^<>]+uses arcana[^<>]+<span[^<>]+>([^<>]+)<\\/span>[^<>]+level[^<>]+<b>([0-9]+)<\\/b>\\.)+",
-        "(<b>([^<>]+)<\\/b>[^<>]+używa arkana[^<>]+<span[^<>]+>([^<>]+)<\\/span>[^<>]+poziom[^<>]+<b>([0-9]+)<\\/b>\\.)+"
+        "(<b>([^<>]+)<\\/b>[^<>]+utilise l`arcane[^<>]+<span.+>([^<>]+)<\\/span>[^<>]+niveau[^<>]+<b>([0-9]+)<\\/b>\\.)+",
+        "(<b>([^<>]+)<\\/b>[^<>]+uses arcana[^<>]+<span.+>([^<>]+)<\\/span>[^<>]+level[^<>]+<b>([0-9]+)<\\/b>\\.)+",
+        "(<b>([^<>]+)<\\/b>[^<>]+używa arkana[^<>]+<span.+>([^<>]+)<\\/span>[^<>]+poziom[^<>]+<b>([0-9]+)<\\/b>\\.)+"
       ],
       "sAmbushEvo": ["(<b>([^<>]+)<\\/b> utilise l`évolution: (<span[^>]+>[^<>]+<\\/span>[., ]+)+)+",
         "(<b>([^<>]+)<\\/b> uses evolution: (<span[^>]+>[^<>]+<\\/span>[., ]+)+)+",
@@ -2845,7 +2845,7 @@ if (debug) console.debug('BWEunload', overDiv);
                   r3 = new RegExp(L._Get('sAmbushTest6')).exec(msgContent);
                 if (r1 != null) {
                   emb[1] = 'v';
-                  if (logShow[5] == 1) {
+                  if (logShow[5] == 1) { // embu réussie
                     // ressources (pdp,pdh,lol,sang,pop,évo)
                     var r = new RegExp(L._Get('sAmbushTest13', att)).exec(msgContent);
                     if (r != null && GaShow[0] == 1) emb[12][0] = Number(r[1]);
@@ -2863,7 +2863,7 @@ if (debug) console.debug('BWEunload', overDiv);
                     var r = new RegExp(L._Get('sAmbushTest16', att)).exec(msgContent);
                     if (r != null && GaShow[2] == 1) emb[12][2] = Number(r[1]);
                   }
-                } else if (r2 != null) {
+                } else if (r2 != null) { // embu ratée
                   emb[1] = 'd';
                   if (logShow[5] == 1) {
                     // ressources (pdp,lol,sang,pop)
@@ -2876,7 +2876,7 @@ if (debug) console.debug('BWEunload', overDiv);
                       if (GaShow[5] == 1) emb[12][5] = Number(r[3]);
                     }
                   }
-                } else if (r3 != null) emb[1] = 'n';
+                } else if (r3 != null) emb[1] = 'n'; // embu sans gagnant
                 // PV en fin de combat
                 var sommaire = DOM._GetLastNodeInnerHTML("//div[@class='sum2']", null);
                 if (sommaire != null) {
