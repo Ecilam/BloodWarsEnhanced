@@ -8,7 +8,7 @@ Ensemble de Userscripts améliorant le jeu [Blood Wars](http://www.fr.bloodwars.
 * [BloodWarsMix](https://github.com/Ecilam/BloodWarsMix)
 
 Ce script est compatible avec les serveurs Anglais/Français/Polonais et les navigateurs Firefox, Chrome et Opera.
-Testé principalement avec Firefox v40.0 sur serveur R3FR v1.7.0b.
+Testé avec Firefox v49.0.2 sur serveur R3FR v1.7.14 beta.
 
 Pour tout contact passer par mon [topic](http://forum.fr.bloodwars.net/index.php?page=Thread&threadID=204323/) sur le forum BloodWars.
 Pour les bugs, GitHub propose une section [Issues](https://github.com/Ecilam/BloodWarsEnhanced/issues).
