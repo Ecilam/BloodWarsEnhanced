@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.09.12
+// @version		2016.10.21
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2015, Ecilam
@@ -268,7 +268,7 @@
         "Blood Wars Enhanced - Błąd :\n\nNazwa tego wampira musi być związana z jej ID. Proszę zapoznać się z sali tronowej, aby skrypt uruchomiony.\nTo wiadomość jest normalne, jeśli użyć tego skryptu po raz pierwszy lub jeśli zmienił nazwę wampira."
       ],
       // pOProfile/pProfile
-      "sNameTest": ["Profil du vampire (.+) ", "Vampire profile (.+) ", "Profil wampira (.+) "],
+      "sNameTest": ["Profil du vampire ([^\t\n\r]+)", "Vampire profile ([^\t\n\r]+)", "Profil wampira ([^\t\n\r]+)"],
       "sSexeHomme": ["Homme", "Male", "Mężczyzna"],
       "sSexeH": ["H", "M", "M"],
       "sSexeF": ["F", "F", "K"],
@@ -2485,12 +2485,12 @@ if (debug) console.debug('BWEunload', overDiv);
         plDatas['P'] = Number(DATAS._PlayerXP());
         LS._SetVar('BWE:P:' + player, plDatas);
         if ((p == 'pOProfile' || p == 'pProfile') && PREF._Get(p, 'sh') == 1) {
-          var name = new RegExp(L._Get('sNameTest')).exec(DOM._GetFirstNodeTextContent(
-              "//div[@id='content-mid']/div[@class='profile-hdr']", null)),
-            ttable = DOM._GetFirstNode(
-              "//div[@id='content-mid']/div[@style='float: left; width: 49%;']/fieldset[1]/table"),
-            trList = DOM._GetNodes("./tbody/tr", ttable);
-          if (debug) console.debug('pProfile', name, ttable, trList);
+          var prof = DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='profile-hdr']", null);
+          var name = new RegExp(L._Get('sNameTest')).exec(prof);
+          var ttable = DOM._GetFirstNode(
+              "//div[@id='content-mid']/div[@style='float: left; width: 49%;']/fieldset[1]/table");
+          var trList = DOM._GetNodes("./tbody/tr", ttable);
+if (debug) console.debug('pProfile', prof, name, ttable, trList);
           if (name != null && ttable != null && trList.snapshotLength == 14) {
             // récupère les données
             var v = LS._GetVar('BWE:P:' + name[1], {}),
