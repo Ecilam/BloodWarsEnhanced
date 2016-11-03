@@ -2,10 +2,10 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.10.21
+// @version		2016.11.03
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
-// @copyright   2011-2015, Ecilam
+// @copyright   2011-2016, Ecilam
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
 // @homepageURL https://github.com/Ecilam/BloodWarsEnhanced
 // @supportURL  https://github.com/Ecilam/BloodWarsEnhanced/issues
@@ -525,8 +525,8 @@
           "LISTE D`AMIS", // 72
           "Zone", "Bâtiment", "Niveau", "Sang", "Argent", "Population", "Temps", "Actions", // 73-80
           "Ecart", // 81
-          "<Données>"
-        ], // 82 - suite v. 1.7.9 beta
+          "<Données>" // 82 - suite v. 1.7.9 beta
+        ],
         ["RACE", "SEX", "ADDRESS", "CLAN", "<empty>", "LEVEL", "POINTS", "LVL (PTS)", "GROUP",
           "STATUS", "Standing", "Date of entry", "Last logged", "Provenance", "HISTORY",
           "Name", "On-line", "<On-line>", "<Expedition>", "King Of the hill", "Rank", "A-B",
@@ -1725,7 +1725,6 @@
         FctTriA(tri[0], tri[1], i[1], tbody, list);
       }
     }
-
     function GetLvl(v) {
       if (!isNaN(v) && parseInt(v) == Number(v)) {
         var lvl = Math.floor(Math.log(1.1 * v) / Math.log(1.1)),
@@ -1843,6 +1842,9 @@
                   }
                 }
               }
+            } else if (col == 26) {
+              newTD.className = "";
+              newTD.style.color = td.style.color;
             } else if (col == 62) {
               var check = DOM._GetFirstNode("./input", td);
               if (check != null) IU._addEvent(newTD, 'change', function (e, i) { i.checked = e.target.checked; },
