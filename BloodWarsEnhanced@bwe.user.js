@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.11.03
+// @version		2016.11.10
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -284,7 +284,7 @@
       "sGrpMoy": ["Moyenne:", "Average:", "Średnia:"],
       // Constructions
       "sBuildZone": ["ZONE ([0-9]+)", "ZONE ([0-9]+)", "STREFA ([0-9]+)"],
-      "sBuildPrgUp": ["Actuellement en construction", "Under construction", "Aktualnie budowany"],
+      "sBuildPrgUp": ["Actuellement en construction: ", "Under construction: ", "Aktualnie budowany: "],
       "sBuildPrgDown": ["Démolition", "Demolition", "wyburzanie"],
       "sBuildNewOk": ["FAIRE CONSTRUIRE", "BUILD", "ZBUDUJ"],
       "sBuildUpOk": ["DÉVELOPPER JUSQU`AU NIVEAU", "UPGRADE TO LEVEL", "ROZBUDOWA DO POZIOMU"],
@@ -1596,49 +1596,42 @@
         'th28': ['th', { 'id': 'BWE' + p + 'col80', 'style': 'width:10%;', 'colspan': '2' },
           [L._Get('sColTitle')[80]], , 'tr2'
         ]
-      },
-      head = IU._CreateElements(headIU),
-      bldPgr = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='bldprogress']"),
-      bldNameUp = DOM._GetFirstNodeTextContent("./self::div[contains(.,'" + L._Get('sBuildPrgUp') + "')]/b",
-        "", bldPgr),
-      bldNameDown = DOM._GetFirstNodeTextContent("./span[contains(.,'" + L._Get('sBuildPrgDown') + "')]/b",
-        "", bldPgr),
-      bldPgrStop = DOM._GetFirstNode("./span[@id='bld_action_a']/a", bldPgr);
+      };
+    var head = IU._CreateElements(headIU);
+    var bldPgr = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='bldprogress']");
+    var bldNameUp = DOM._GetFirstNodeTextContent("./self::div[contains(.,'" + L._Get('sBuildPrgUp') + "')]/text()[1]",
+        "", bldPgr);
+    var bldNameDown = DOM._GetFirstNodeTextContent("./span[contains(.,'" + L._Get('sBuildPrgDown') + "')]/text()[1]",
+        "", bldPgr);
+    var bldPgrStop = DOM._GetFirstNode("./span[@id='bld_action_a']/a", bldPgr);
+if (debug) console.debug('BuildTable3 ', bldPgr, bldNameUp, bldNameDown, bldPgrStop);
     for (var i = 0; i < list.snapshotLength; i++) {
-      var nodeZone = DOM._GetFirstNode("./preceding-sibling::div[@class='strefaheader'][1]", list.snapshotItem(
-          i)),
-        content = DOM._GetFirstNode("(.//table)[last()]//td[2]", list.snapshotItem(i)),
-        title = DOM._GetFirstNode(".//span[@class='bldheader']", list.snapshotItem(i));
+      var nodeZone = DOM._GetFirstNode("./preceding-sibling::div[@class='strefaheader'][1]", list.snapshotItem(i));
+      var content = DOM._GetFirstNode("(.//table)[last()]//td[2]", list.snapshotItem(i));
+      var title = DOM._GetFirstNode(".//span[@class='bldheader']", list.snapshotItem(i));
       if (title != null && content != null && nodeZone != null) {
-        var zone = nodeZone != null ? (new RegExp(L._Get('sBuildZone')).exec(nodeZone.textContent)) : null,
-          nodeLvl = DOM._GetFirstNode("./following-sibling::b", title),
-          lvl = nodeLvl !== null ? nodeLvl.textContent : '0',
-          inUp = bldNameUp.replace(new RegExp('[\'"`]', 'g'), '') == title.textContent.replace(new RegExp(
-            '[\'"`]', 'g'), ''),
-          inDown = bldNameDown.replace(new RegExp('[\'"`]', 'g'), '') == title.textContent.replace(new RegExp(
-            '[\'"`]', 'g'), ''),
-          upOk = DOM._GetFirstNode(".//a[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" + L._Get(
-            'sBuildUpOk') + "')) and @class='enabled']", content),
-          upNo = DOM._GetFirstNode(".//span[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" +
-            L._Get('sBuildUpOk') + "')) and @class='disabled']", content),
-          downOk = DOM._GetFirstNode(".//a[contains(.,'" + L._Get('sBuildDownOk') + "')]", list.snapshotItem(
-            i)),
-          nodeLol = DOM._GetFirstNode(".//span[contains(.,'" + L._Get('sBuildlol') + "')]", content),
-          lol = nodeLol != null ? new RegExp("([0-9 ]+) " + L._Get('sBuildlol')).exec(nodeLol.textContent) :
-          null,
-          nodeMdo = DOM._GetFirstNode(".//span[contains(.,'" + L._Get('sBuildMdo') + "')]", content),
-          mdo = nodeMdo != null ? new RegExp("([0-9 ]+) " + L._Get('sBuildMdo')).exec(nodeMdo.textContent) :
-          null,
-          nodeSang = DOM._GetFirstNode(".//span[contains(.,'" + L._Get('sBuildSang') + "')]", content),
-          sang = nodeSang != null ? (new RegExp("([0-9 ]+) " + L._Get('sBuildSang')).exec(nodeSang.textContent)) :
-          null,
-          t = new RegExp(L._Get('sBuildTime') + L._Get('sTriOLTest')).exec(content.innerHTML),
-          time = t != null ? (t[1] ? L._Get('sLogTime4', t[1]) + ' ' : '') + (t[2] ? ('0' + t[2]).slice(-2) :
-            '00') + ':' + (t[3] ? ('0' + t[3]).slice(-2) : '00') + ':' + (t[4] ? ('0' + t[4]).slice(-2) :
-            '00') : '?',
-          overT = content.innerHTML.replace(new RegExp('[\x00-\x1F]', 'g'), '').replace(new RegExp(
-            '([\'"])', 'g'), '\\\$1'),
-          ligneIU = {
+        var zone = nodeZone != null ? (new RegExp(L._Get('sBuildZone')).exec(nodeZone.textContent)) : null;
+        var nodeLvl = DOM._GetFirstNode("./following-sibling::b", title);
+        var lvl = nodeLvl !== null ? nodeLvl.textContent : '0';
+        var inUp = bldNameUp.indexOf(title.textContent) !== -1;
+        var inDown = bldNameDown.indexOf(title.textContent) !== -1;
+        var upOk = DOM._GetFirstNode(".//a[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" +
+            L._Get('sBuildUpOk') + "')) and @class='enabled']", content);
+        var upNo = DOM._GetFirstNode(".//span[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" +
+            L._Get('sBuildUpOk') + "')) and @class='disabled']", content);
+        var downOk = DOM._GetFirstNode(".//a[contains(.,'" + L._Get('sBuildDownOk') + "')]", list.snapshotItem(i));
+        var nodeLol = DOM._GetFirstNode(".//span[contains(.,'" + L._Get('sBuildlol') + "')]", content);
+        var lol = nodeLol != null ? new RegExp("([0-9 ]+) " + L._Get('sBuildlol')).exec(nodeLol.textContent) : null;
+        var nodeMdo = DOM._GetFirstNode(".//span[contains(.,'" + L._Get('sBuildMdo') + "')]", content);
+        var mdo = nodeMdo != null ? new RegExp("([0-9 ]+) " + L._Get('sBuildMdo')).exec(nodeMdo.textContent) : null;
+        var nodeSang = DOM._GetFirstNode(".//span[contains(.,'" + L._Get('sBuildSang') + "')]", content);
+        var sang = nodeSang != null ? (new RegExp("([0-9 ]+) " + L._Get('sBuildSang')).exec(nodeSang.textContent)) : null;
+        var t = new RegExp(L._Get('sBuildTime') + L._Get('sTriOLTest')).exec(content.innerHTML);
+        var time = t != null ? (t[1] ? L._Get('sLogTime4', t[1]) + ' ' : '') + (t[2] ? ('0' + t[2]).slice(-2) :
+            '00') + ':' + (t[3] ? ('0' + t[3]).slice(-2) : '00') + ':' + (t[4] ? ('0' + t[4]).slice(-2) : '00') : '?';
+        var overT = content.innerHTML.replace(new RegExp('[\x00-\x1F]', 'g'), '').replace(new RegExp(
+            '([\'"])', 'g'), '\\\$1');
+        var ligneIU = {
             'tr': ['tr', { 'onmouseout': 'nd();', 'onmouseover': 'return overlib(\'<table><tbody><tr><td style=\"text-align: justify; vertical-align: top; width: 400px;\">' +
                 overT + '</td></tr></tbody></table>\',CAPTION,\'' + title.textContent +
                 '\',CAPTIONFONTCLASS,\'action-caption\',HAUTO,WRAP);' }, , , table['tbody']],
@@ -1665,8 +1658,8 @@
             ],
             'td8': ['td', { 'class': 'BWEMiddle' }, , , 'tr'],
             'td9': ['td', { 'class': 'BWEMiddle' }, , , 'tr']
-          },
-          ligne = IU._CreateElements(ligneIU);
+          };
+        var ligne = IU._CreateElements(ligneIU);
         if (upOk != null) IU._CreateElement('div', { 'class': 'BWEBldOk' }, ['->' + (Number(lvl) + 1)], { 'click': [
             function (e, link) { window.location.href = link; },
             upOk.href
@@ -2607,7 +2600,7 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
             allnode = DOM._GetNodes(
               "./div[(@class='bldprogress' or @class='strefaheader' or @class='building' or @class='hr720' or @class='hr620')]",
               target);
-          if (debug) console.debug('pBuild', target, builds, allnode);
+if (debug) console.debug('pBuild', target, builds, allnode);
           if (target != null) {
             var newTableIU = {
                 'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }],
@@ -2622,8 +2615,8 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
               newTable = IU._CreateElements(newTableIU);
             target.insertBefore(newTable['div'], target.childNodes[0]);
             BuildTable(newTable, builds);
-            for (var i = 0; i < allnode.snapshotLength; i++) { allnode.snapshotItem(i).setAttribute('style',
-                'display:none'); }
+//            for (var i = 0; i < allnode.snapshotLength; i++) { allnode.snapshotItem(i).setAttribute('style',
+//                'display:none'); }
           }
         } else if (p == 'pTownview' && PREF._Get(p, 'sh') == 1) {
           var target = DOM._GetFirstNode("//div[@id='content-mid']/div[@id='tw_table']"),
