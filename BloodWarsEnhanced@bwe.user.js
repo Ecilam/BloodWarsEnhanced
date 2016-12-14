@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.11.10
+// @version		2016.12.14
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -284,7 +284,7 @@
       "sGrpMoy": ["Moyenne:", "Average:", "Średnia:"],
       // Constructions
       "sBuildZone": ["ZONE ([0-9]+)", "ZONE ([0-9]+)", "STREFA ([0-9]+)"],
-      "sBuildPrgUp": ["Actuellement en construction: ", "Under construction: ", "Aktualnie budowany: "],
+      "sBuildPrgUp": ["Actuellement en construction", "Under construction", "Aktualnie budowany"],
       "sBuildPrgDown": ["Démolition", "Demolition", "wyburzanie"],
       "sBuildNewOk": ["FAIRE CONSTRUIRE", "BUILD", "ZBUDUJ"],
       "sBuildUpOk": ["DÉVELOPPER JUSQU`AU NIVEAU", "UPGRADE TO LEVEL", "ROZBUDOWA DO POZIOMU"],
@@ -1604,7 +1604,6 @@
     var bldNameDown = DOM._GetFirstNodeTextContent("./span[contains(.,'" + L._Get('sBuildPrgDown') + "')]/text()[1]",
         "", bldPgr);
     var bldPgrStop = DOM._GetFirstNode("./span[@id='bld_action_a']/a", bldPgr);
-if (debug) console.debug('BuildTable3 ', bldPgr, bldNameUp, bldNameDown, bldPgrStop);
     for (var i = 0; i < list.snapshotLength; i++) {
       var nodeZone = DOM._GetFirstNode("./preceding-sibling::div[@class='strefaheader'][1]", list.snapshotItem(i));
       var content = DOM._GetFirstNode("(.//table)[last()]//td[2]", list.snapshotItem(i));
@@ -1629,6 +1628,7 @@ if (debug) console.debug('BuildTable3 ', bldPgr, bldNameUp, bldNameDown, bldPgrS
         var t = new RegExp(L._Get('sBuildTime') + L._Get('sTriOLTest')).exec(content.innerHTML);
         var time = t != null ? (t[1] ? L._Get('sLogTime4', t[1]) + ' ' : '') + (t[2] ? ('0' + t[2]).slice(-2) :
             '00') + ':' + (t[3] ? ('0' + t[3]).slice(-2) : '00') + ':' + (t[4] ? ('0' + t[4]).slice(-2) : '00') : '?';
+if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         var overT = content.innerHTML.replace(new RegExp('[\x00-\x1F]', 'g'), '').replace(new RegExp(
             '([\'"])', 'g'), '\\\$1');
         var ligneIU = {
@@ -1680,8 +1680,8 @@ if (debug) console.debug('BuildTable3 ', bldPgr, bldNameUp, bldNameDown, bldPgrS
           ligne['td7'].setAttribute('id', 'BWEBuildTime');
           ligne['td7'].classList.add('BWEbold', (inUp ? 'enabled' : 'disabled'));
           var observer = new MutationObserver(function (mutations) {
-            var tTime = DOM._GetFirstNode("//td[@id='BWEBuildTime']"),
-              bldPgrTime = DOM._GetFirstNodeTextContent(
+            var tTime = DOM._GetFirstNode("//td[@id='BWEBuildTime']");
+            var bldPgrTime = DOM._GetFirstNodeTextContent(
                 "//div[@id='content-mid']/div[@class='bldprogress']/span[@id='bld_action']", "");
             if (tTime != null) tTime.textContent = bldPgrTime;
           });
@@ -2628,7 +2628,7 @@ if (debug) console.debug('pBuild', target, builds, allnode);
                   "//div[@id='content-mid']/div[@id='tw_table']//table[@class='hoverTable']"),
                 theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
                 tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-              if (debug) console.debug('pTownview', ttable, target, theader, tlist);
+if (debug) console.debug('pTownview', ttable, target, theader, tlist);
               if (ttable != null && theader != null) {
                 observer.disconnect();
                 var oldTable = DOM._GetFirstNode("//div[@id='BWE" + p + "div']");
@@ -2680,7 +2680,7 @@ if (debug) console.debug('pBuild', target, builds, allnode);
             var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='sortable hoverTable']"),
               theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
               tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-            if (debug) console.debug('pAliance', ttable, theader, tlist);
+if (debug) console.debug('pAliance', ttable, theader, tlist);
             if (ttable != null && theader != null) {
               var newTableIU = {
                   'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }, ],
@@ -2714,7 +2714,7 @@ if (debug) console.debug('pBuild', target, builds, allnode);
           var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='hoverTable']"),
             theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
             tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-          if (debug) console.debug('pAlianceList', ttable, theader, tlist);
+if (debug) console.debug('pAlianceList', ttable, theader, tlist);
           if (ttable != null && theader != null) {
             var newTableIU = {
                 'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }, ],
@@ -2753,26 +2753,26 @@ if (debug) console.debug('pBuild', target, builds, allnode);
             }
           }
         } else if (p == 'pAmbushRoot' && PREF._Get('div', 'chLo') == 1) {
-          var atkaction = DOM._GetFirstNode(
-            "//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
-          if (atkaction != null) {
-            var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script[2]", null);
-            if (ambushScript !== null) {
-              var r = new RegExp(L._Get('sAtkScript')).exec(ambushScript),
-                playerVS = DOM._GetFirstNodeTextContent(
-                  "//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']", null);
-              if (debug) console.debug('pAmbushRoot', DATAS._Time(), r, playerVS);
-              if (DATAS._Time() !== null && r !== null && playerVS !== null) {
-                UpdateHistory(ID, playerVS, r[2], new Date(DATAS._Time().getTime() + Number(r[1]) * 1000),
-                  null);
-              }
+          var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//span[@id='atkTimeLeft']/parent::div/parent::div");
+//          var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
+          var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script[contains(., 'atkTimeLeft')]", null);
+if (debug) console.debug('pAmbushRoot', atkaction, ambushScript);
+          if (!isNull(atkaction) && !isNull(ambushScript)) {
+            var playerVS = DOM._GetFirstNodeTextContent(
+                "./table/tbody/tr[@class='tblheader']/td/a[@class='players']", null, atkaction);
+//            var playerVS = DOM._GetFirstNodeTextContent(
+//                "//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']", null);
+            var r = new RegExp(L._Get('sAtkScript')).exec(ambushScript);
+if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
+            if (!isNull(DATAS._Time()) && !isNull(playerVS) && !isNull(r)) {
+              UpdateHistory(ID, playerVS, r[2], new Date(DATAS._Time().getTime() + Number(r[1]) * 1000), null);
             }
           }
         } else if (p == 'pMsgList' || p == 'pMsgSaveList' || p == 'pMsgSendList') {
           var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
             ttable = DOM._GetFirstNode("(./ancestor::table)[last()]", theader),
             tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-          if (debug) console.debug('pMsgList', ttable, theader, tlist);
+if (debug) console.debug('pMsgList', ttable, theader, tlist);
           if (PREF._Get('div', 'chLo') == 1) {
             for (var i = 0; i < tlist.snapshotLength; i++) {
               var node = tlist.snapshotItem(i),
