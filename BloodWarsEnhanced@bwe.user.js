@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.12.14
+// @version		2016.12.15
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -2758,14 +2758,14 @@ if (debug) console.debug('pAlianceList', ttable, theader, tlist);
           var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script[contains(., 'atkTimeLeft')]", null);
 if (debug) console.debug('pAmbushRoot', atkaction, ambushScript);
           if (!isNull(atkaction) && !isNull(ambushScript)) {
-            var playerVS = DOM._GetFirstNodeTextContent(
-                "./table/tbody/tr[@class='tblheader']/td/a[@class='players']", null, atkaction);
+            var playerVS = DOM._GetLastNode(
+                "./table/tbody/tr[@class='tblheader']/td/a[@class='players']", atkaction);
 //            var playerVS = DOM._GetFirstNodeTextContent(
 //                "//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']", null);
             var r = new RegExp(L._Get('sAtkScript')).exec(ambushScript);
 if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
             if (!isNull(DATAS._Time()) && !isNull(playerVS) && !isNull(r)) {
-              UpdateHistory(ID, playerVS, r[2], new Date(DATAS._Time().getTime() + Number(r[1]) * 1000), null);
+              UpdateHistory(ID, playerVS.textContent, r[2], new Date(DATAS._Time().getTime() + Number(r[1]) * 1000), null);
             }
           }
         } else if (p == 'pMsgList' || p == 'pMsgSaveList' || p == 'pMsgSendList') {
