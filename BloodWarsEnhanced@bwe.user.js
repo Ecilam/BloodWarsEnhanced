@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2016.12.15
+// @version		2017.02.21
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -290,7 +290,7 @@
       "sBuildUpOk": ["DÉVELOPPER JUSQU`AU NIVEAU", "UPGRADE TO LEVEL", "ROZBUDOWA DO POZIOMU"],
       "sBuildDownOk": ["DEMOLIR UN NIVEAU DE BATIMENT", "DEMOLISH ONE LEVEL", "WYBURZ JEDEN POZIOM"],
       "sBuildlol": ["LOL", "Lgo", "PLN"],
-      "sBuildMdo": ["de mains-d`œuvre", "people", "ludzi"],
+      "sBuildMdo": ["de main-d`œuvre", "people", "ludzi"],
       "sBuildSang": ["litres de sang", "litres of blood", "litrów krwi"],
       "sBuildTime": ["<b>Temps de construction:<\\/b>\\s*", "<b>Time of construction:<\\/b>\\s*",
         "<b>Czas budowy:<\\/b>\\s*"
