@@ -1,25 +1,27 @@
-###DESCRIPTION
+### DESCRIPTION
+
 Ensemble de Userscripts améliorant le jeu [Blood Wars](http://www.fr.bloodwars.net) où vous incarnez un vampire dans un monde post-apocalyptique :
 * [BloodWarsEnchanced](https://github.com/Ecilam/BloodWarsEnhanced) (celui-ci)
 * [BloodWarsAnalyseRC](https://github.com/Ecilam/BloodWarsAnalyseRC)
 * [BloodWarsSpyData](https://github.com/Ecilam/BloodWarsSpyData)
-* [BloodWarsToolBox](https://github.com/Ecilam/BloodWarsToolBox)
 * [BloodWarsItemTest](https://github.com/Ecilam/BloodWarsItemTest)
 * [BloodWarsMix](https://github.com/Ecilam/BloodWarsMix)
 
 Ce script est compatible avec les serveurs Anglais/Français/Polonais et les navigateurs Firefox, Chrome et Opera.
-Testé avec Firefox v49.0.2 sur serveur R3FR v1.7.14 beta.
+Testé principalement sur Firefox + Greasemonkey sur serveur R3FR.
 
-Pour tout contact passer par mon [topic](http://forum.fr.bloodwars.net/index.php?page=Thread&threadID=204323/) sur le forum BloodWars.
-Pour les bugs, GitHub propose une section [Issues](https://github.com/Ecilam/BloodWarsEnhanced/issues).
+Pour tout contact passer par mon [topic](http://forum.fr.bloodwars.net/index.php?page=Thread&threadID=247180) sur le forum BloodWars.
 
-###INSTALLATION
-* Firefox : installer préalablement le module [Greasemonkey](https://addons.mozilla.org/fr/firefox/addon/greasemonkey/) <strike>ou [Scriptish](https://addons.mozilla.org/en-US/firefox/addon/scriptish/)</strike>.
-* Google Chrome : installer l'extension [Tampermonkey](https://chrome.google.com/webstore/detail/dhdgffkkebhmkfjojejmpbldmpobfkfo).
-* Opera : installer [Chrome extension](https://addons.opera.com/fr/extensions/details/download-chrome-extension-9/?display=en) puis [Tampermonkey](https://chrome.google.com/webstore/detail/dhdgffkkebhmkfjojejmpbldmpobfkfo).
-* Ensuite afficher la version [RAW](https://raw.githubusercontent.com/Ecilam/BloodWarsEnhanced/master/BloodWarsEnhanced@bwe.user.js) du script pour que le module (ou l'extension) vous propose de l'installer.
 
-###FONCTIONS
+### INSTALLATION
+
+1. Installer l'extension adaptée à votre navigateur :
+  * Firefox => [Greasemonkey](https://addons.mozilla.org/fr/firefox/addon/greasemonkey/).
+  * Firefox, Google Chrome, Microsoft Edge, Opera next et autres => [Tampermonkey](http://tampermonkey.net/). Je ne peux garantir que mes scripts fonctionnent avec tous les navigateurs proposés par TamperMonkey. Il faudra tester de votre côté.
+2. Cliquer sur ce [lien](https://raw.githubusercontent.com/Ecilam/BloodWarsEnhanced/master/BloodWarsEnhanced@bwe.user.js) pour que l'extension vous propose de l'installer.
+
+### FONCTIONS
+
 * Listes/Tableaux modulables et triables (Profiles, Clans, Classement, Vue sur la cité, Amis).
 * **Historique des combats** aussi bien en attaque qu'en défense.
 * Affichage du "Site de construction" sous forme de tableau.
@@ -34,7 +36,8 @@ Les Préférences du jeu vous proposent 2 menus supplémentaires :
 * **BWE - OPTIONS :** permet de modifier le comportement des fonctions ci-dessus.
 * **BWE - BASE DE DONNÉES :** permet de consulter/supprimer les données stockées. A utiliser avec précaution !!
 
-###AIDE
+### AIDE
+
 * **1ère utilisation :** un message vous rappellera de consulter la Salle du Trône pour que le script puisse récupérer l'IUD du personnage afin de pouvoir fonctionner.
 * **Historique des combats :**
 	- affiche le temps passé depuis votre dernière attaque sur cette cible (gris= raté, vert = victoire, orange = match nul, rouge = défaite)
@@ -48,6 +51,7 @@ Les Préférences du jeu vous proposent 2 menus supplémentaires :
 	- sur le Profil, 'Groupe' est cliquable pour permettre d'afficher/masquer les listes.
 	- petite astuce : le copier/coller peut être utilisé pour envoyer la liste à un autre joueur.
 
-###INFORMATIONS
+### INFORMATIONS
+
 * **Données :** les données sont stockées avec LOCALSTORAGE.
 * **Localisation :** n'ayant que des personnages de bas niveau sur les serveurs Anglais/Polonais, je n'ai pas la possibilité de tester certaines fonctions de ce script.
