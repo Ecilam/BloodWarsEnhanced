@@ -7,7 +7,8 @@ Ensemble de Userscripts améliorant le jeu [Blood Wars](http://www.fr.bloodwars.
 * [BloodWarsItemTest](https://github.com/Ecilam/BloodWarsItemTest)
 * [BloodWarsMix](https://github.com/Ecilam/BloodWarsMix)
 
-Ce script est compatible avec les serveurs Anglais/Français/Polonais et les navigateurs Firefox, Chrome et Opera.
+Ce script est compatible avec les serveurs Anglais/Français/Polonais et les navigateurs Firefox, Google Chrome, Opera next et d'autres.
+
 Testé principalement sur Firefox + Greasemonkey sur serveur R3FR.
 
 Pour tout contact passer par mon [topic](http://forum.fr.bloodwars.net/index.php?page=Thread&threadID=247180) sur le forum BloodWars.
@@ -55,3 +56,4 @@ Les Préférences du jeu vous proposent 2 menus supplémentaires :
 
 * **Données :** les données sont stockées avec LOCALSTORAGE.
 * **Localisation :** n'ayant que des personnages de bas niveau sur les serveurs Anglais/Polonais, je n'ai pas la possibilité de tester certaines fonctions de ce script.
+* **[FrenchUnMod](https://greasyfork.org/scripts/2158-frenchunmod)** : plusieurs incompatibilités. Voir mon [topic](http://forum.fr.bloodwars.net/index.php?page=Thread&threadID=247180).
