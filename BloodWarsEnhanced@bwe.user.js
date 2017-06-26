@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author		Ecilam
 // @name		Blood Wars Enhanced
-// @version		2017.02.21
+// @version		2017.06.26
 // @namespace	BWE
 // @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -15,13 +15,15 @@
 // @include     /^http:\/\/beta[0-9]*\.bloodwars\.net\/.*$/
 // @grant       none
 // ==/UserScript==
-(function () {
+(function()
+{
   "use strict";
 
   var debugTime = Date.now(); // @type {Date} permet de mesurer le temps d'execution du script.
   var debug = false; // @type {Boolean} Active l'affichage des messages sur la console de dÃ©bogages.
 
-  function _Type(v) {
+  function _Type(v)
+  {
     var type = Object.prototype.toString.call(v);
     return type.slice(8, type.length - 1);
   }
@@ -32,7 +34,8 @@
    * @param {*} v la valeur Ã  tester
    * @return {Boolean} faux si 'undefined'
    */
-  function exist(v) {
+  function exist(v)
+  {
     return (v !== undefined && typeof v !== 'undefined');
   }
 
@@ -42,7 +45,8 @@
    * @param {*} v la valeur Ã  tester
    * @return {Boolean} vrai si Null
    */
-  function isNull(v) {
+  function isNull(v)
+  {
     return (v === null && typeof v === 'object');
   }
 
@@ -52,12 +56,15 @@
    * @param {Object} obj
    * @return {Object} newObjet
    */
-  function clone(obj) {
-    if (typeof obj !== 'object' || obj === null) {
+  function clone(obj)
+  {
+    if (typeof obj !== 'object' || obj === null)
+    {
       return obj;
     }
     var newObjet = obj.constructor();
-    for (var i in obj) {
+    for (var i in obj)
+    {
       newObjet[i] = clone(obj[i]);
     }
     return newObjet;
@@ -67,25 +74,33 @@
    * OBJET JSONS - JSON
    * - stringification des données
    ******************************************************/
-  var JSONS = (function () {
-    function reviver(key, v) {
-      if (_Type(v) == 'String') {
+  var JSONS = (function()
+  {
+    function reviver(key, v)
+    {
+      if (_Type(v) == 'String')
+      {
         var a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(v);
         if (a != null) return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
       }
       return v;
     }
     return {
-      _Decode: function (v) {
+      _Decode: function(v)
+      {
         var r = null;
-        try {
+        try
+        {
           r = JSON.parse(v, reviver);
-        } catch (e) {
+        }
+        catch (e)
+        {
           console.error('JSONS_Decode error :', v, e);
         }
         return r;
       },
-      _Encode: function (v) {
+      _Encode: function(v)
+      {
         return JSON.stringify(v);
       }
     };
@@ -96,25 +111,31 @@
    * - basé sur localStorage
    * Note : localStorage est lié au domaine
    ******************************************************/
-  var LS = (function () {
+  var LS = (function()
+  {
     var LS = window.localStorage;
     return {
-      _GetVar: function (key, defaut) {
+      _GetVar: function(key, defaut)
+      {
         var v = LS.getItem(key); // if key does not exist return null 
         return ((v != null) ? JSONS._Decode(v) : defaut);
       },
-      _SetVar: function (key, v) {
+      _SetVar: function(key, v)
+      {
         LS.setItem(key, JSONS._Encode(v));
         return v;
       },
-      _Delete: function (key) {
+      _Delete: function(key)
+      {
         LS.removeItem(key);
         return key;
       },
-      _Length: function () {
+      _Length: function()
+      {
         return LS.length;
       },
-      _Key: function (index) {
+      _Key: function(index)
+      {
         return LS.key(index);
       }
     };
@@ -125,46 +146,57 @@
    * -  DOM : fonctions d'accès aux noeuds du document
    * - _QueryString : accès aux arguments de l'URL
    ******************************************************/
-  var DOM = (function () {
+  var DOM = (function()
+  {
     return {
       // méthodes Xpath
-      _GetNodes: function (path, root) {
+      _GetNodes: function(path, root)
+      {
         return (exist(root) && root == null) ? null : document.evaluate(path, (exist(root) ? root :
           document), null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
       },
-      _GetFirstNode: function (path, root) {
+      _GetFirstNode: function(path, root)
+      {
         var r = this._GetNodes(path, root);
         return (r != null && r.snapshotLength >= 1 ? r.snapshotItem(0) : null);
       },
-      _GetLastNode: function (path, root) {
+      _GetLastNode: function(path, root)
+      {
         var r = this._GetNodes(path, root);
         return (r != null && r.snapshotLength >= 1 ? r.snapshotItem(r.snapshotLength - 1) : null);
       },
-      _GetFirstNodeTextContent: function (path, defaultValue, root) {
+      _GetFirstNodeTextContent: function(path, defaultValue, root)
+      {
         var r = this._GetFirstNode(path, root);
         return (r != null && r.textContent != null ? r.textContent : defaultValue);
       },
-      _GetFirstNodeInnerHTML: function (path, defaultValue, root) {
+      _GetFirstNodeInnerHTML: function(path, defaultValue, root)
+      {
         var r = this._GetFirstNode(path, root);
         return (r != null && r.innerHTML != null ? r.innerHTML : defaultValue);
       },
-      _GetLastNodeInnerHTML: function (path, defaultValue, root) {
+      _GetLastNodeInnerHTML: function(path, defaultValue, root)
+      {
         var r = this._GetLastNode(path, root);
         return (r != null && r.innerHTML != null ? r.innerHTML : defaultValue);
       },
       // méthodes DOM
-      _CleanNode: function (node) {
-        while (node.hasChildNodes()) {
+      _CleanNode: function(node)
+      {
+        while (node.hasChildNodes())
+        {
           node.removeChild(node.firstChild);
         }
       },
       // retourne la valeur de la clé "key" trouvé dans l'url
       // null: n'existe pas, true: clé existe mais sans valeur, autres: valeur
-      _QueryString: function (key) {
+      _QueryString: function(key)
+      {
         var url = window.location.search,
           reg = new RegExp("[\?&]" + key + "(=([^&$]+)|)(&|$)", "i"),
           offset = reg.exec(url);
-        if (offset != null) {
+        if (offset != null)
+        {
           offset = exist(offset[2]) ? offset[2] : true;
         }
         return offset;
@@ -175,11 +207,14 @@
   /******************************************************
    * OBJET IU - Interface Utilsateur
    ******************************************************/
-  var IU = (function () {
+  var IU = (function()
+  {
     return {
-      _CreateElements: function (list) {
+      _CreateElements: function(list)
+      {
         var r = {};
-        for (var key in list) {
+        for (var key in list)
+        {
           var type = exist(list[key][0]) ? list[key][0] : null,
             attributes = exist(list[key][1]) ? list[key][1] : {},
             content = exist(list[key][2]) ? list[key][2] : [],
@@ -190,46 +225,61 @@
         }
         return r;
       },
-      _CreateElement: function (type, attributes, content, events, node) {
-        if (exist(type) && type != null) {
+      _CreateElement: function(type, attributes, content, events, node)
+      {
+        if (exist(type) && type != null)
+        {
           attributes = exist(attributes) ? attributes : {};
           content = exist(content) ? content : [];
           events = exist(events) ? events : {};
           node = exist(node) ? node : null;
           var r = document.createElement(type);
-          for (var key in attributes) {
+          for (var key in attributes)
+          {
             if (_Type(attributes[key]) != 'Boolean') r.setAttribute(key, attributes[key]);
             else if (attributes[key] == true) r.setAttribute(key, key.toString());
           }
-          for (var key in events) {
+          for (var key in events)
+          {
             this._addEvent(r, key, events[key][0], events[key][1]);
           }
-          for (var i = 0; i < content.length; i++) {
+          for (var i = 0; i < content.length; i++)
+          {
             if (_Type(content[i]) === 'Object') r.appendChild(content[i]);
             else r.textContent += content[i];
           }
           if (node != null) node.appendChild(r);
           return r;
-        } else return null;
+        }
+        else return null;
       },
-      _addEvent: function (obj, type, fn, par) {
-        var funcName = function (event) {
-          return fn.call(obj, event, par); };
+      _addEvent: function(obj, type, fn, par)
+      {
+        var funcName = function(event)
+        {
+          return fn.call(obj, event, par);
+        };
         obj.addEventListener(type, funcName, false);
         if (!obj.BWEListeners) { obj.BWEListeners = {}; }
         if (!obj.BWEListeners[type]) obj.BWEListeners[type] = {};
         obj.BWEListeners[type][fn.name] = funcName;
       },
-      _removeEvent: function (obj, type, fn) {
-        if (obj.BWEListeners[type] && obj.BWEListeners[type][fn.name]) {
+      _removeEvent: function(obj, type, fn)
+      {
+        if (obj.BWEListeners[type] && obj.BWEListeners[type][fn.name])
+        {
           obj.removeEventListener(type, obj.BWEListeners[type][fn.name], false);
           delete obj.BWEListeners[type][fn.name];
         }
       },
-      _removeEvents: function (obj) {
-        if (obj.BWEListeners) {
-          for (var key in obj.BWEListeners) {
-            for (var key2 in obj.BWEListeners[key]) {
+      _removeEvents: function(obj)
+      {
+        if (obj.BWEListeners)
+        {
+          for (var key in obj.BWEListeners)
+          {
+            for (var key2 in obj.BWEListeners[key])
+            {
               obj.removeEventListener(key, obj.BWEListeners[key][key2], false);
             }
           }
@@ -242,7 +292,8 @@
   /******************************************************
    * OBJET L - localisation des chaînes de caractères (STRING) et expressions régulières (RegExp)
    ******************************************************/
-  var L = (function () {
+  var L = (function()
+  {
     var locStr = { // key:[français,anglais,polonais]
       //DATAS
       "sNiveau": ["NIVEAU ([0-9]+)", "LEVEL ([0-9]+)", "POZIOM ([0-9]+)"],
@@ -320,9 +371,9 @@
       // pMsgList/pMsgSaveList
       "sTitleIndex": ["Titre du message", "Message title", "Tytuł wiadomości"],
       "sDateIndex": ["Date d`envoi", "Send date", "Data wysłania"],
-      "sAmbushMsg1": [".(.+) a préparé une embuscade contre toi!",
-        ".(.+) ambushed you!",
-        ".(.+) urządził[a]? na Ciebie zasadzkę!"
+      "sAmbushMsg1": ["(.+) a préparé une embuscade contre toi!",
+        "(.+) ambushed you!",
+        "(.+) urządził[a]? na Ciebie zasadzkę!"
       ],
       "sAmbushMsg2": ["Tu as préparé une embuscade contre (.+)\\.",
         "You ambushed (.+)\\.",
@@ -659,12 +710,14 @@
       // Le caractère d'échappement '\' doit être doublé pour être pris en compte dans une expression régulière.
       // ex: "test": ["<b>$2<\/b> a tué $1 avec $3.",]
       // L._Get('test','Dr Moutarde','Mlle Rose','le chandelier'); => "<b>Mlle Rose<\/b> a tué le Dr Moutarde avec le chandelier."
-      _Get: function (key) {
+      _Get: function(key)
+      {
         var r = locStr[key];
         if (!exist(r)) throw new Error("L::Error:: la clé n'existe pas : " + key);
         if (exist(r[langue])) r = r[langue];
         else r = r[0];
-        for (var i = arguments.length - 1; i >= 1; i--) {
+        for (var i = arguments.length - 1; i >= 1; i--)
+        {
           var reg = new RegExp("\\$" + i, "g");
           r = r.replace(reg, arguments[i]);
         }
@@ -677,8 +730,10 @@
    * OBJET DATAS - Fonctions d'accès aux données de la page
    * Chaque fonction retourne 'null' en cas d'échec
    ******************************************************/
-  var DATAS = (function () {
-    function GetPlayerExpBar() {
+  var DATAS = (function()
+  {
+    function GetPlayerExpBar()
+    {
       var stats = DOM._GetFirstNode("//div[@class='stats-player']/div[@class='expbar']");
       return stats != null ? stats.getAttribute('onmouseover') : null;
     }
@@ -694,35 +749,43 @@
 
     return {
       /* données du serveur */
-      _Time: function () {
+      _Time: function()
+      {
         return gameTime;
       },
       /* données du joueur */
-      _PlayerName: function () {
+      _PlayerName: function()
+      {
         return DOM._GetFirstNodeTextContent("//div[@class='stats-player']/a[@class='me']", null);
       },
-      _PlayerLevel: function () {
+      _PlayerLevel: function()
+      {
         var playerLevel = new RegExp(L._Get('sNiveau')).exec(playerExpBar);
         if (playerLevel != null) playerLevel = parseInt((playerLevel[1]).replace(new RegExp(' ', 'g'),
           ''));
         return playerLevel;
       },
-      _PlayerXP: function () {
+      _PlayerXP: function()
+      {
         var playerXP = new RegExp(L._Get('sXP')).exec(playerExpBar);
         if (playerXP != null) playerXP = parseInt((playerXP[1]).replace(/ /g, ""));
         return playerXP;
       },
       /* Données diverses	*/
-      _GetPage: function () {
+      _GetPage: function()
+      {
         var p = 'null',
           // message Serveur (à approfondir)
           r = DOM._GetFirstNode("//div[@class='komunikat']");
-        if (r != null) {
+        if (r != null)
+        {
           var r = DOM._GetFirstNodeTextContent(".//u", r);
           if (r == L._Get('sDeconnecte')) p = "pServerDeco";
           else if (r == L._Get('sCourtePause')) p = "pServerUpdate";
           else p = "pServerOther";
-        } else {
+        }
+        else
+        {
           var qsA = DOM._QueryString("a"),
             qsDo = DOM._QueryString("do"),
             qsMid = DOM._QueryString("mid"),
@@ -731,7 +794,8 @@
           if (path != "/") {}
           // page interne
           // Profile
-          else if (qsA == "profile") {
+          else if (qsA == "profile")
+          {
             var qsUid = DOM._QueryString("uid");
             var qsEdit = DOM._QueryString("edit");
             if (qsUid == null) p = "pOProfile";
@@ -744,17 +808,20 @@
           // Vue sur la Cité
           else if (qsA == "townview") p = "pTownview";
           // Clan
-          else if (qsA == "aliance") {
+          else if (qsA == "aliance")
+          {
             if (qsDo == "list") p = "pAlianceList";
             else if (qsDo == null || qsDo == "leave" || qsDo == "togrec") p = "pOAliance";
-            else if (qsDo == "view") {
+            else if (qsDo == "view")
+            {
               var r = DOM._GetFirstNode("//div[@class='top-options']/span[@class='lnk']");
               if (r != null) p = "pOAliance";
               else p = "pAliance";
             }
           }
           // Le Puits des Âmes - Moria I
-          else if (qsA == "mixer") {
+          else if (qsA == "mixer")
+          {
             if (qsDo == null || qsDo == "mkstone") p = "pMkstone";
             else if (qsDo == "upgitem") p = "pUpgitem";
             else if (qsDo == "mixitem") p = "pMixitem";
@@ -762,19 +829,24 @@
             else if (qsDo == "tatoo") p = "pTatoo";
           }
           // Préparer une embuscade
-          else if (qsA == "ambush") {
+          else if (qsA == "ambush")
+          {
             var qsOpt = DOM._QueryString("opt");
             if (qsOpt == null) p = "pAmbushRoot";
           }
           // Page des messages
-          else if (qsA == "msg") {
+          else if (qsA == "msg")
+          {
             var qsType = DOM._QueryString("type");
-            if (qsDo == null || qsDo == "list") {
+            if (qsDo === null || qsDo === 'list' || qsDo === 'delMsgs' || qsDo === 'saveMsgs')
+            {
               if (qsType == null || qsType == "1") p = "pMsgList";
               else if (qsType == "2") p = "pMsgSaveList";
               else if (qsType == "3") p = "pMsgSendList";
-            } else if (qsDo == "fl") p = "pMsgFriendList";
-            else if (qsDo == "view" && qsMid != null) {
+            }
+            else if (qsDo === 'fl'  || qsDo === 'delFriend' || qsDo === 'addFriend') p = "pMsgFriendList";
+            else if (qsDo == "view" && qsMid != null)
+            {
               if (qsType == null || qsType == "1") p = "pMsg";
               else if (qsType == "2") p = "pMsgSave";
               else if (qsType == "3") p = "pMsgSend";
@@ -783,7 +855,8 @@
           // Page Classement
           else if (qsA == "rank") p = "pRank";
           // Page Préférences
-          else if (qsA == "settings") {
+          else if (qsA == "settings")
+          {
             if (qsDo == null) p = "pRootSettings";
             else if (qsDo == "ai") p = "pSettingsAi";
             else if (qsDo == "acc") p = "pSettingsAcc";
@@ -799,7 +872,8 @@
   /******************************************************
    * OBJET PREF - Gestion des préférences
    ******************************************************/
-  var PREF = (function () {
+  var PREF = (function()
+  {
     // préfèrences par défaut
     const index = 'BWE:O:',
       defPrefs = {
@@ -807,7 +881,10 @@
         // sh : Affiche (0=non,1=oui), tri (0=ascendant,1=descendant)
         // list: [n°titre des colonnes (cf sColTitle),afficher{1:0},n°colonne originale(-1 si a créer),alignement]
         // pages existantes
-        'pOProfile': { 'sh': 1, 'list': [
+        'pOProfile':
+        {
+          'sh': 1,
+          'list': [
             [0, 1, 0, 0],
             [1, 1, 1, 0],
             [2, 1, 2, 0],
@@ -824,8 +901,12 @@
             [12, 1, 11, 0],
             [4, 1, 12, 0],
             [13, 1, 13, 0]
-          ] },
-        'pProfile': { 'sh': 1, 'list': [
+          ]
+        },
+        'pProfile':
+        {
+          'sh': 1,
+          'list': [
             [0, 1, 0, 0],
             [1, 1, 1, 0],
             [2, 1, 2, 0],
@@ -843,8 +924,13 @@
             [12, 1, 11, 0],
             [4, 1, 12, 0],
             [13, 1, 13, 0]
-          ] },
-        'pTownview': { 'sh': 1, 'tri': [1, 1], 'list': [
+          ]
+        },
+        'pTownview':
+        {
+          'sh': 1,
+          'tri': [1, 1],
+          'list': [
             [28, 1, 1, 2],
             [29, 1, 2, 0],
             [9, 1, 3, 0],
@@ -860,8 +946,15 @@
             [3, 1, 8, 0],
             [30, 1, 9, 0],
             [81, 0, -1, 0]
-          ] },
-        'pOAliance': { 'sh': 1, 'sh1': 1, 'sh2': 1, 'tri': [1, 1], 'list': [
+          ]
+        },
+        'pOAliance':
+        {
+          'sh': 1,
+          'sh1': 1,
+          'sh2': 1,
+          'tri': [1, 1],
+          'list': [
             [82, 1, 1, 0],
             [15, 1, 2, 0],
             [16, 0, 3, 1],
@@ -879,8 +972,14 @@
             [1, 0, -1, 0],
             [11, 0, 8, 0],
             [81, 0, -1, 0]
-          ] },
-        'pAliance': { 'sh': 1, 'sh1': 1, 'tri': [1, 1], 'list': [
+          ]
+        },
+        'pAliance':
+        {
+          'sh': 1,
+          'sh1': 1,
+          'tri': [1, 1],
+          'list': [
             [4, 0, 1, 0],
             [15, 1, 2, 0],
             [23, 1, -1, 2],
@@ -897,8 +996,12 @@
             [1, 0, -1, 0],
             [11, 0, 8, 0],
             [81, 0, -1, 0]
-          ] },
-        'pAlianceList': { 'sh': 1, 'list': [
+          ]
+        },
+        'pAlianceList':
+        {
+          'sh': 1,
+          'list': [
             [66, 1, 1, 2],
             [67, 1, 2, 0],
             [68, 1, 3, 0],
@@ -906,30 +1009,55 @@
             [70, 1, 5, 0],
             [71, 1, 6, 0],
             [6, 1, 7, 0]
-          ] },
-        'pMsgList': { 'sh': 0, 'tri': [4, 0], 'list': [
+          ]
+        },
+        'pMsgList':
+        {
+          'sh': 0,
+          'tri': [4, 0],
+          'list': [
             [62, 1, 1, 0],
             [63, 1, 2, 0],
             [64, 1, 3, 0],
             [65, 1, 4, 0]
-          ] },
-        'pMsgSaveList': { 'sh': 0, 'tri': [4, 0], 'list': [
+          ]
+        },
+        'pMsgSaveList':
+        {
+          'sh': 0,
+          'tri': [4, 0],
+          'list': [
             [62, 1, 1, 0],
             [63, 1, 2, 0],
             [64, 1, 3, 0],
             [65, 1, 4, 0]
-          ] },
-        'pMsgSendList': { 'sh': 0, 'tri': [4, 0], 'list': [
+          ]
+        },
+        'pMsgSendList':
+        {
+          'sh': 0,
+          'tri': [4, 0],
+          'list': [
             [62, 1, 1, 0],
             [63, 1, 2, 0],
             [64, 1, 3, 0],
             [65, 1, 4, 0]
-          ] },
-        'pMsgFriendList': { 'sh': 1, 'tri': [1, 1], 'list': [
+          ]
+        },
+        'pMsgFriendList':
+        {
+          'sh': 1,
+          'tri': [1, 1],
+          'list': [
             [72, 1, 1, 1],
             [-1, 1, 2, 1]
-          ] },
-        'pRank': { 'sh': 1, 'tri': [1, 1], 'list': [
+          ]
+        },
+        'pRank':
+        {
+          'sh': 1,
+          'tri': [1, 1],
+          'list': [
             [26, 1, 1, 2],
             [27, 1, 2, 0],
             [0, 1, 3, 0],
@@ -944,27 +1072,36 @@
             [6, 0, 8, 0],
             [7, 1, -1, 0],
             [81, 0, -1, 0]
-          ] },
+          ]
+        },
         'pBuild': { 'sh': 1, 'tri': [1, 0] },
         // tableaux à créer
         'grp': { 'sh': 1, 'tri': [1, 1] },
-        'hlog': { 'list': [
+        'hlog':
+        {
+          'list': [
             [31, 1],
             [32, 1],
             [33, 1],
             [34, 1],
             [35, 1],
             [36, 1]
-          ] },
-        'hdiv': { 'list': [
+          ]
+        },
+        'hdiv':
+        {
+          'list': [
             [37, 1],
             [38, 1],
             [39, 1],
             [40, 1],
             [41, 1],
             [42, 1]
-          ] },
-        'hch': { 'list': [
+          ]
+        },
+        'hch':
+        {
+          'list': [
             [43, 0],
             [44, 0],
             [45, 1],
@@ -978,15 +1115,19 @@
             [53, 0],
             [54, 0],
             [55, 0]
-          ] },
-        'hres': { 'list': [
+          ]
+        },
+        'hres':
+        {
+          'list': [
             [56, 1],
             [57, 1],
             [58, 1],
             [59, 1],
             [60, 1],
             [61, 1]
-          ] },
+          ]
+        },
         // Aide Embucasde
         'AE': { 'sh': 0, 'nMin': '', 'nMax': '', 'aMin': '', 'aMax': '', 'cMin': '', 'cMax': '', 'acMin': '', 'acMax': '' },
         // Divers : stones, nbre de ligne du log,collecte log
@@ -995,16 +1136,22 @@
     var ID = null,
       prefs = {};
     return {
-      _Init: function (id) {
+      _Init: function(id)
+      {
         ID = id;
         prefs = LS._GetVar(index + ID, {});
         // mise à jour des listes si nécessaire
-        for (var i in prefs) {
-          if (exist(prefs[i]['list']) && prefs[i]['list'].length != defPrefs[i]['list'].length) {
-            for (var j = 0; j < defPrefs[i]['list'].length; j++) {
+        for (var i in prefs)
+        {
+          if (exist(prefs[i]['list']) && prefs[i]['list'].length != defPrefs[i]['list'].length)
+          {
+            for (var j = 0; j < defPrefs[i]['list'].length; j++)
+            {
               var y = false;
-              for (var x = 0; x < prefs[i]['list'].length; x++) {
-                if (defPrefs[i]['list'][j][0] == prefs[i]['list'][x][0]) {
+              for (var x = 0; x < prefs[i]['list'].length; x++)
+              {
+                if (defPrefs[i]['list'][j][0] == prefs[i]['list'][x][0])
+                {
                   y = true;
                   break;
                 }
@@ -1015,23 +1162,28 @@
           }
         }
       },
-      _Get: function (grp, key) {
+      _Get: function(grp, key)
+      {
         if (exist(prefs[grp]) && exist(prefs[grp][key])) return prefs[grp][key];
         else if (exist(defPrefs[grp]) && exist(defPrefs[grp][key])) return defPrefs[grp][key];
         else return null;
       },
-      _GetDef: function (grp, key) {
+      _GetDef: function(grp, key)
+      {
         if (exist(defPrefs[grp]) && exist(defPrefs[grp][key])) return defPrefs[grp][key];
         else return null;
       },
-      _Set: function (grp, key, v) {
-        if (ID != null) {
+      _Set: function(grp, key, v)
+      {
+        if (ID != null)
+        {
           if (!exist(prefs[grp])) prefs[grp] = {};
           prefs[grp][key] = v;
           LS._SetVar(index + ID, prefs);
         }
       },
-      _Raz: function () {
+      _Raz: function()
+      {
         prefs = {};
         LS._Delete(index + ID);
       }
@@ -1041,17 +1193,23 @@
   /******************************************************
    * CSS
    ******************************************************/
-  function getCssRules(selector, sheet) {
+  function getCssRules(selector, sheet)
+  {
     var sheets = exist(sheet) ? [sheet] : document.styleSheets;
-    for (var i = 0; i < sheets.length; i++) {
+    for (var i = 0; i < sheets.length; i++)
+    {
       var sheet = sheets[i];
-      try {
+      try
+      {
         if (!sheet.cssRules) return null;
-      } catch (e) {
+      }
+      catch (e)
+      {
         if (e.name !== 'SecurityError') throw e;
         return null;
       }
-      for (var j = 0; j < sheet.cssRules.length; j++) {
+      for (var j = 0; j < sheet.cssRules.length; j++)
+      {
         var rule = sheet.cssRules[j];
         if (rule.selectorText && rule.selectorText.split(',').indexOf(selector) !== -1) return rule.style;
       }
@@ -1059,7 +1217,8 @@
     return null;
   }
 
-  function SetCSS() {
+  function SetCSS()
+  {
     const css =
       // Global
       [".BWELeft{text-align: left;padding: 1px;white-space: nowrap;}",
@@ -1108,7 +1267,8 @@
         ".BWEdivLS,.BWEdivIE{overflow:auto;word-wrap:break-word;white-space:normal;}"
       ],
       head = DOM._GetFirstNode("//head");
-    if (head != null) {
+    if (head != null)
+    {
       var even = getCssRules('.even'),
         selectedItem = getCssRules('.selectedItem');
       if (even != null && selectedItem != null) css.push('.BWEeven{' + even.cssText + '}', '.BWETR:hover{' +
@@ -1121,26 +1281,36 @@
    * FUNCTIONS
    ******************************************************/
   // Historique des embuscades
-  function UpdateHistory(att, def, msgId, msgDate, emb) {
+  function UpdateHistory(att, def, msgId, msgDate, emb)
+  {
+if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, msgDate, emb);
     var h = LS._GetVar('BWE:L:' + att + ':' + def, []),
       a = msgId,
       b = (_Type(msgDate) == 'Date') ? msgDate.getTime() : null,
       c = emb;
-    for (var i = 0; i < PREF._Get('div', 'nbLo'); i++) {
-      if (exist(h[i])) {
-        if (a != h[i][0]) { // message différent
-          if (b != null && b > h[i][1]) { //message plus récent.
+    for (var i = 0; i < PREF._Get('div', 'nbLo'); i++)
+    {
+      if (exist(h[i]))
+      {
+        if (a != h[i][0])
+        { // message différent
+          if (b != null && b > h[i][1])
+          { //message plus récent.
             var temp = [a, b, c];
             a = h[i][0];
             b = h[i][1];
             c = h[i][2];
             h[i] = temp;
           }
-        } else { // message identique.
+        }
+        else
+        { // message identique.
           if (c != null) h[i][2] = c;
           break;
         }
-      } else { // pas de ligne à cette position.
+      }
+      else
+      { // pas de ligne à cette position.
         if (b != null) h[i] = [a, b, c];
         break;
       }
@@ -1149,9 +1319,11 @@
     if (h.length > 0) LS._SetVar('BWE:L:' + att + ':' + def, h);
   }
 
-  function CreateHistory(att, def, node) {
+  function CreateHistory(att, def, node)
+  {
     // créé l'historique à la volée
-    function CreateOverlib(e, i) { // i[0] = att, i[1] = def, i[2] = node,
+    function CreateOverlib(e, i)
+    { // i[0] = att, i[1] = def, i[2] = node,
       var histoIU = {
           'root': ['div'],
           'table': ['table', { 'style': 'border-collapse:collapse;' }, , , 'root'],
@@ -1159,22 +1331,34 @@
         },
         histo = IU._CreateElements(histoIU);
       var logCol = clone(PREF._Get('hlog', 'list'));
-      for (var x = 0; x < logCol.length; x++) {
-        if (logCol[x][1] != 1) { logCol.splice(x, 1);
-          x--; } else { IU._CreateElement('th', { 'class': 'BWELogTD' }, [L._Get("sColTitle")[logCol[x][0]]], {},
-            histo['tr']); }
+      for (var x = 0; x < logCol.length; x++)
+      {
+        if (logCol[x][1] != 1)
+        {
+          logCol.splice(x, 1);
+          x--;
+        }
+        else
+        {
+          IU._CreateElement('th', { 'class': 'BWELogTD' }, [L._Get("sColTitle")[logCol[x][0]]], {},
+            histo['tr']);
+        }
       }
       var j = 0,
         h = LS._GetVar('BWE:L:' + i[0] + ':' + i[1], []);
-      while (exist(h[j]) && j < nbLog) {
+      while (exist(h[j]) && j < nbLog)
+      {
         var overlib = IU._CreateElement('tr', { 'class': (j % 2 == 0 ? 'even' : '') }, [], {}, histo[
           'table']);
-        if (h[j][2] != null && exist(h[j][2][1])) {
-          for (var x = 0; x < logCol.length; x++) {
+        if (h[j][2] != null && exist(h[j][2][1]))
+        {
+          for (var x = 0; x < logCol.length; x++)
+          {
             var col = logCol[x][0] - 31,
               newTD = IU._CreateElement('td', { 'class': 'BWELogTD', 'style': 'vertical-align:top' }, [], {},
                 overlib);
-            if (col == 0) { // n°
+            if (col == 0)
+            { // n°
               var bgcolor = h[j][2][1] == 'r' ? '#707070' :
                 h[j][2][1] == 'n' ? '#F07000' :
                 h[j][2][1] == 'v' ? i[0] == ID ? '#2A9F2A' : '#DB0B32' :
@@ -1183,25 +1367,48 @@
               newTD.setAttribute('style', 'background-color:' + bgcolor +
                 ';vertical-align:middle;text-align:center;');
               newTD.textContent = j;
-            } else if (col == 1) { // Divers
+            }
+            else if (col == 1)
+            { // Divers
               var div = PREF._Get('hdiv', 'list'),
                 table = IU._CreateElement('table', {}, [], {}, newTD);
-              for (var y = 0; y < div.length; y++) {
-                if (div[y][1] == 1) {
+              for (var y = 0; y < div.length; y++)
+              {
+                if (div[y][1] == 1)
+                {
                   var ligne = div[y][0] - 37,
                     datas = '',
                     tdClass = '';
                   if (ligne == 0) { datas = (new Date(h[j][1])).toLocaleDateString(); } // date
                   else if (ligne == 1 && h[j][2][0] != '') { datas = h[j][2][0] + '%'; } // emb
-                  else if (ligne == 2 && h[j][2][2] != '') { datas = h[j][2][2];
-                    tdClass = ' atkHit'; } // PV Att.
-                  else if (ligne == 3 && h[j][2][3] != '') { datas = h[j][2][3];
-                    tdClass = ' defHit'; } // PV Déf.
-                  else if (ligne == 4 && h[j][2][10].length > 0) { h[j][2][10].forEach(function (e) { datas
-                        += L._Get('sObjet')[e] + ' '; }); } // Objet Att.
-                  else if (ligne == 5 && h[j][2][11].length > 0) { h[j][2][11].forEach(function (e) { datas
-                        += L._Get('sObjet')[e] + ' '; }); } // Objet Def.
-                  if (datas != '') IU._CreateElements({
+                  else if (ligne == 2 && h[j][2][2] != '')
+                  {
+                    datas = h[j][2][2];
+                    tdClass = ' atkHit';
+                  } // PV Att.
+                  else if (ligne == 3 && h[j][2][3] != '')
+                  {
+                    datas = h[j][2][3];
+                    tdClass = ' defHit';
+                  } // PV Déf.
+                  else if (ligne == 4 && h[j][2][10].length > 0)
+                  {
+                    h[j][2][10].forEach(function(e)
+                    {
+                      datas
+                        += L._Get('sObjet')[e] + ' ';
+                    });
+                  } // Objet Att.
+                  else if (ligne == 5 && h[j][2][11].length > 0)
+                  {
+                    h[j][2][11].forEach(function(e)
+                    {
+                      datas
+                        += L._Get('sObjet')[e] + ' ';
+                    });
+                  } // Objet Def.
+                  if (datas != '') IU._CreateElements(
+                  {
                     'tr': ['tr', , , , table],
                     'td1': ['td', { 'class': 'BWEbold' },
                       [L._Get('sColTitle')[div[y][0]]], , 'tr'
@@ -1212,18 +1419,28 @@
                   });
                 }
               }
-            } else if (col == 2) { // Arcanes/talimans
+            }
+            else if (col == 2)
+            { // Arcanes/talimans
               var table = IU._CreateElement('table', {}, [], {}, newTD),
                 arcA = h[j][2][4],
                 arcB = h[j][2][5],
                 arc = {};
-              for (var y = 0; y < arcA.length; y++) { arc[arcA[y][0]] = [];
-                arc[arcA[y][0]][0] = arcA[y][1]; }
-              for (var y = 0; y < arcB.length; y++) { arc[arcB[y][0]] = exist(arc[arcB[y][0]]) ? arc[arcB[
+              for (var y = 0; y < arcA.length; y++)
+              {
+                arc[arcA[y][0]] = [];
+                arc[arcA[y][0]][0] = arcA[y][1];
+              }
+              for (var y = 0; y < arcB.length; y++)
+              {
+                arc[arcB[y][0]] = exist(arc[arcB[y][0]]) ? arc[arcB[
                   y][0]] : [];
-                arc[arcB[y][0]][1] = arcB[y][1]; }
-              for (var key in arc) {
-                IU._CreateElements({
+                arc[arcB[y][0]][1] = arcB[y][1];
+              }
+              for (var key in arc)
+              {
+                IU._CreateElements(
+                {
                   'tr': ['tr', , , , table],
                   'td1': ['td', { 'class': 'BWEbold' },
                     [L._Get('sArcTal')[key]], , 'tr'
@@ -1236,18 +1453,28 @@
                   ]
                 });
               }
-            } else if (col == 3) { // Evolutions
+            }
+            else if (col == 3)
+            { // Evolutions
               var table = IU._CreateElement('table', {}, [], {}, newTD),
                 evoA = h[j][2][6],
                 evoB = h[j][2][7],
                 evo = {};
-              for (var y = 0; y < evoA.length; y++) { evo[evoA[y][0]] = [];
-                evo[evoA[y][0]][0] = evoA[y][1]; }
-              for (var y = 0; y < evoB.length; y++) { evo[evoB[y][0]] = exist(evo[evoB[y][0]]) ? evo[evoB[
+              for (var y = 0; y < evoA.length; y++)
+              {
+                evo[evoA[y][0]] = [];
+                evo[evoA[y][0]][0] = evoA[y][1];
+              }
+              for (var y = 0; y < evoB.length; y++)
+              {
+                evo[evoB[y][0]] = exist(evo[evoB[y][0]]) ? evo[evoB[
                   y][0]] : [];
-                evo[evoB[y][0]][1] = evoB[y][1]; }
-              for (var key in evo) {
-                IU._CreateElements({
+                evo[evoB[y][0]][1] = evoB[y][1];
+              }
+              for (var key in evo)
+              {
+                IU._CreateElements(
+                {
                   'tr': ['tr', , , , table],
                   'td1': ['td', { 'class': 'BWEbold' },
                     [L._Get('sEvo')[key]], , 'tr'
@@ -1260,17 +1487,22 @@
                   ]
                 });
               }
-            } else if (col == 4) { // Caractéristiques
+            }
+            else if (col == 4)
+            { // Caractéristiques
               var table = IU._CreateElement('table', {}, [], {}, newTD),
                 ch = PREF._Get('hch', 'list'),
                 chA = h[j][2][8],
                 chB = h[j][2][9];
-              for (var y = 0; y < ch.length; y++) {
+              for (var y = 0; y < ch.length; y++)
+              {
                 var index = ch[y][0] - 43,
                   cA = exist(chA[index]) && chA[index] != null ? chA[index] : '',
                   cB = exist(chB[index]) && chB[index] != null ? chB[index] : '';
-                if (ch[y][1] == 1 && (cA != '' || cB != '')) {
-                  IU._CreateElements({
+                if (ch[y][1] == 1 && (cA != '' || cB != ''))
+                {
+                  IU._CreateElements(
+                  {
                     'tr': ['tr', , , , table],
                     'td1': ['td', { 'class': 'BWEbold' },
                       [L._Get('sColTitle')[ch[y][0]]], , 'tr'
@@ -1284,14 +1516,19 @@
                   });
                 }
               }
-            } else if (col == 5 && h[j][2][12].length > 0) { // Ressources
+            }
+            else if (col == 5 && h[j][2][12].length > 0)
+            { // Ressources
               var Ga = PREF._Get('hres', 'list'),
                 table = IU._CreateElement('table', {}, [], {}, newTD),
                 res = h[j][2][12];
-              for (var y = 0; y < Ga.length; y++) {
+              for (var y = 0; y < Ga.length; y++)
+              {
                 var datas = exist(res[Ga[y][0] - 56]) ? res[Ga[y][0] - 56] : null;
-                if (Ga[y][1] == 1 && datas != null) {
-                  IU._CreateElements({
+                if (Ga[y][1] == 1 && datas != null)
+                {
+                  IU._CreateElements(
+                  {
                     'tr': ['tr', , , , table],
                     'td1': ['td', { 'class': 'BWEbold' },
                       [L._Get('sColTitle')[Ga[y][0]]], , 'tr'
@@ -1304,9 +1541,16 @@
               }
             }
           }
-        } else if (logCol.length >= 1) {
-          IU._CreateElement('td', { 'class': 'BWELogTD2', 'style': 'background-color:white;color:black;', 'colspan': logCol
-                .length }, [(new Date(h[j][1])).toLocaleDateString() + ' ' + L._Get('sLogNC')], {},
+        }
+        else if (logCol.length >= 1)
+        {
+          IU._CreateElement('td',
+            {
+              'class': 'BWELogTD2',
+              'style': 'background-color:white;color:black;',
+              'colspan': logCol
+                .length
+            }, [(new Date(h[j][1])).toLocaleDateString() + ' ' + L._Get('sLogNC')], {},
             overlib);
         }
         j++;
@@ -1321,7 +1565,8 @@
     var actuTime = DATAS._Time(),
       h = LS._GetVar('BWE:L:' + att + ':' + def, []),
       nbLog = PREF._Get('div', 'nbLo');
-    if (actuTime !== null && exist(h[0]) && exist(h[0][1]) && nbLog > 0) {
+    if (actuTime !== null && exist(h[0]) && exist(h[0][1]) && nbLog > 0)
+    {
       //prépare les éléments de l'historique
       var actuH = 0;
       var j = 0;
@@ -1333,13 +1578,14 @@
         delayABS < 31536000 ? L._Get('sLogTime4', Math.floor(delay / (86400))) :
         L._Get('sLogTime5');
       var rIU = {
-          'span': ['span', { 'id': 'BWElog', 'class': 'BWEbold' },
+        'span': ['span', { 'id': 'BWElog', 'class': 'BWEbold' },
             [delay], , node
           ],
-          'span2': ['span', { 'class': 'BWELog2' }, , , node]
-        };
+        'span2': ['span', { 'class': 'BWELog2' }, , , node]
+      };
       var r = IU._CreateElements(rIU);
-      while (exist(h[j]) && exist(h[j][1]) && j < nbLog) {
+      while (exist(h[j]) && exist(h[j][1]) && j < nbLog)
+      {
         var bgcolor = h[j][2] != null && exist(h[j][2][1]) ? h[j][2][1] == 'r' ? '#707070' :
           h[j][2][1] == 'n' ? '#F07000' :
           h[j][2][1] == 'v' ? att == ID ? '#2A9F2A' : '#DB0B32' :
@@ -1353,21 +1599,26 @@
       }
       if (actuH >= 2) r['span'].textContent = '*' + r['span'].textContent;
       IU._addEvent(node, 'mouseover', CreateOverlib, [att, def, node]);
-    } else { IU._CreateElement('span', { 'id': 'BWElog' }, ['-'], {}, node); }
+    }
+    else { IU._CreateElement('span', { 'id': 'BWElog' }, ['-'], {}, node); }
   }
   // Gestion des groupes
   // Pages Clan et Profil
-  function GroupTable(grId) {
-    function clickRaz(e, i) {
+  function GroupTable(grId)
+  {
+    function clickRaz(e, i)
+    {
       var list = DOM._GetNodes("//tbody[@id='BWEgrp" + i[0] + "body']/tr");
-      for (var j = 0; j < list.snapshotLength; j++) {
+      for (var j = 0; j < list.snapshotLength; j++)
+      {
         var name = decodeURIComponent(list.snapshotItem(j).getAttribute('id'));
         name = name.substring(10, name.length);
         checkGrp(null, [name, i[0]]);
       }
     }
 
-    function clickCol(e, i) { // i[0] = col
+    function clickCol(e, i)
+    { // i[0] = col
       var headerA = DOM._GetFirstNode("//tr[@id='BWEgrpAheader']"),
         headerB = DOM._GetFirstNode("//tr[@id='BWEgrpBheader']"),
         tbodyA = DOM._GetFirstNode("//tbody[@id='BWEgrpAbody']"),
@@ -1379,7 +1630,8 @@
         oldColB = DOM._GetFirstNode("./th[" + tri[0] + "]/span", headerB),
         newColA = DOM._GetFirstNode("./th[" + i[0] + "]", headerA),
         newColB = DOM._GetFirstNode("./th[" + i[0] + "]", headerB);
-      if (oldColA != null && newColA != null && oldColB != null && newColB != null) {
+      if (oldColA != null && newColA != null && oldColB != null && newColB != null)
+      {
         tri[1] = (i[0] == tri[0] && tri[1] == 1) ? 0 : 1;
         tri[0] = i[0];
         PREF._Set('grp', 'tri', tri);
@@ -1394,10 +1646,16 @@
       }
     }
     var r = DOM._GetFirstNode("//td[@id='BWEgrp" + grId + "']");
-    if (r != null) {
+    if (r != null)
+    {
       var grpIU = {
-          'table': ['table', { 'class': 'profile-stats BWEGrp', 'style': 'width:100%', 'id': 'BWEgrp' +
-              grId + 'table' }, , , r],
+          'table': ['table',
+          {
+            'class': 'profile-stats BWEGrp',
+            'style': 'width:100%',
+            'id': 'BWEgrp' +
+              grId + 'table'
+          }, , , r],
           'thead': ['thead', , , , 'table'],
           'th00': ['tr', , , , 'thead'],
           'td001': ['th', { 'class': 'BWEbold BWELeft', 'style': 'width:79%', 'colspan': '3' },
@@ -1445,7 +1703,8 @@
         },
         grpNode = IU._CreateElements(grpIU);
       var grp = LS._GetVar('BWE:G:' + ID, { 'A': [], 'B': [] });
-      for (var i = 0; i < grp[grId].length; i++) {
+      for (var i = 0; i < grp[grId].length; i++)
+      {
         appendGrpRow(grpNode['tbody'], grp[grId][i], grId);
       }
       var tri = PREF._Get('grp', 'tri');
@@ -1457,11 +1716,13 @@
     }
   }
 
-  function checkGrp(e, i) { // i[0] = name, i[1] = id
+  function checkGrp(e, i)
+  { // i[0] = name, i[1] = id
     var grp = LS._GetVar('BWE:G:' + ID, { 'A': [], 'B': [] }),
       grId = grp['A'].indexOf(i[0]) > -1 ? 'A' : grp['B'].indexOf(i[0]) > -1 ? 'B' : '',
       tri = PREF._Get('grp', 'tri');
-    if (grId != '') {
+    if (grId != '')
+    {
       var grpRow = DOM._GetFirstNode("//tr[@id='" + encodeURIComponent('BWEgrp' + grId + 'tr_' + i[0]) +
         "']");
       if (grpRow != null) grpRow.parentNode.removeChild(grpRow);
@@ -1472,9 +1733,11 @@
       grp[grId].splice(grp[grId].indexOf(i[0]), 1);
     }
     if (grId == i[1]) grId = '';
-    else {
+    else
+    {
       var tbody = DOM._GetFirstNode("//tbody[@id='BWEgrp" + i[1] + "body']");
-      if (tbody != null) {
+      if (tbody != null)
+      {
         appendGrpRow(tbody, i[0], i[1]);
         var list = DOM._GetNodes("./tr", tbody);
         FctTriA(tri[0], tri[1], 'grp' + i[1], tbody, list);
@@ -1490,7 +1753,8 @@
     if (checkB != null) checkB.checked = grId == 'B' ? true : false;
   }
 
-  function appendGrpRow(tbody, name, grId) {
+  function appendGrpRow(tbody, name, grId)
+  {
     var v = LS._GetVar('BWE:P:' + name, {}),
       races = L._Get('sRaces'),
       race = exist(v['R']) && exist(races[v['R']]) ? races[v['R']] : '-';
@@ -1517,14 +1781,17 @@
     IU._CreateElements(trIU);
   }
 
-  function updateGrpFoot(grId) {
+  function updateGrpFoot(grId)
+  {
     var list = DOM._GetNodes("//tbody[@id='BWEgrp" + grId + "body']/tr"),
       lvlsum = 0,
       ptssum = 0;
-    for (var i = 0; i < list.snapshotLength; i++) {
+    for (var i = 0; i < list.snapshotLength; i++)
+    {
       var r = new RegExp(L._Get('sTriPtsTest')).exec(DOM._GetFirstNodeTextContent("./td[3]", null, list.snapshotItem(
         i)));
-      if (r != null) {
+      if (r != null)
+      {
         lvlsum += Number(parseInt(r[1]));
         ptssum += Number(parseInt(r[2]));
       }
@@ -1542,7 +1809,8 @@
     if (fptsaverage != null) fptsaverage.textContent = nb > 0 ? Math.floor(ptssum / nb) : 0;
   }
 
-  function showHideGr(e, i) { //i[0]= node title,i[1]= node trA,i[2]= node trB
+  function showHideGr(e, i)
+  { //i[0]= node title,i[1]= node trA,i[2]= node trB
     var show = PREF._Get('grp', 'sh') == 1 ? 0 : 1;
     PREF._Set('grp', 'sh', show);
     i['1'].setAttribute('style', 'display:' + (show == 1 ? 'table-row;' : 'none;'));
@@ -1550,18 +1818,22 @@
     i[0].setAttribute('style', 'color:' + (show == 1 ? 'lime;' : 'red;') + ';cursor: pointer;');
   }
   // batiments
-  function BuildTable(table, list) {
-    function clickCol(e, i) { // i[0] = col
+  function BuildTable(table, list)
+  {
+    function clickCol(e, i)
+    { // i[0] = col
       var header = DOM._GetFirstNode("//tr[@id='BWE" + p + "header']"),
         tbody = DOM._GetFirstNode("//tbody[@id='BWE" + p + "body']");
-      if (header != null && tbody != null) {
+      if (header != null && tbody != null)
+      {
         var tri = PREF._Get(p, 'tri'),
           oldCol = DOM._GetFirstNode("./th[" + tri[0] + "]/span", header),
           newCol = DOM._GetFirstNode("./th[" + i[0] + "]", header);
         tri[1] = (i[0] == tri[0] && tri[1] == 1) ? 0 : 1;
         tri[0] = i[0];
         PREF._Set(p, 'tri', tri);
-        if (oldCol != null && newCol != null) {
+        if (oldCol != null && newCol != null)
+        {
           oldCol.parentNode.removeChild(oldCol);
           IU._CreateElement('span', { 'class': 'BWEtriSelect' }, [(tri[1] == 1 ? L._Get('sTriUp') : L._Get(
             'sTriDown'))], {}, newCol);
@@ -1571,53 +1843,55 @@
       }
     }
     var headIU = {
-        'tr2': ['tr', { 'class': 'tblheader', 'id': 'BWE' + p + 'header' }, , , table['thead']],
-        'th21': ['th', { 'id': 'BWE' + p + 'col73', 'class': 'BWEMiddleHeader', 'style': 'width:7%;' },
+      'tr2': ['tr', { 'class': 'tblheader', 'id': 'BWE' + p + 'header' }, , , table['thead']],
+      'th21': ['th', { 'id': 'BWE' + p + 'col73', 'class': 'BWEMiddleHeader', 'style': 'width:7%;' },
           [L._Get('sColTitle')[73]], { 'click': [clickCol, [1]] }, 'tr2'
         ],
-        'th22': ['th', { 'id': 'BWE' + p + 'col74', 'class': 'BWELeftHeader', 'style': 'width:26%;' },
+      'th22': ['th', { 'id': 'BWE' + p + 'col74', 'class': 'BWELeftHeader', 'style': 'width:26%;' },
           [L._Get('sColTitle')[74]], { 'click': [clickCol, [2]] }, 'tr2'
         ],
-        'th23': ['th', { 'id': 'BWE' + p + 'col75', 'class': 'BWEMiddleHeader', 'style': 'width:8%;' },
+      'th23': ['th', { 'id': 'BWE' + p + 'col75', 'class': 'BWEMiddleHeader', 'style': 'width:8%;' },
           [L._Get('sColTitle')[75]], { 'click': [clickCol, [3]] }, 'tr2'
         ],
-        'th24': ['th', { 'id': 'BWE' + p + 'col76', 'class': 'BWERightHeader', 'style': 'width:12%;' },
+      'th24': ['th', { 'id': 'BWE' + p + 'col76', 'class': 'BWERightHeader', 'style': 'width:12%;' },
           [L._Get('sColTitle')[76]], { 'click': [clickCol, [4]] }, 'tr2'
         ],
-        'th25': ['th', { 'id': 'BWE' + p + 'col77', 'class': 'BWERightHeader', 'style': 'width:12%;' },
+      'th25': ['th', { 'id': 'BWE' + p + 'col77', 'class': 'BWERightHeader', 'style': 'width:12%;' },
           [L._Get('sColTitle')[77]], { 'click': [clickCol, [5]] }, 'tr2'
         ],
-        'th26': ['th', { 'id': 'BWE' + p + 'col78', 'class': 'BWERightHeader', 'style': 'width:12%;' },
+      'th26': ['th', { 'id': 'BWE' + p + 'col78', 'class': 'BWERightHeader', 'style': 'width:12%;' },
           [L._Get('sColTitle')[78]], { 'click': [clickCol, [6]] }, 'tr2'
         ],
-        'th27': ['th', { 'id': 'BWE' + p + 'col79', 'class': 'BWERightHeader', 'style': 'width:13%;' },
+      'th27': ['th', { 'id': 'BWE' + p + 'col79', 'class': 'BWERightHeader', 'style': 'width:13%;' },
           [L._Get('sColTitle')[79]], { 'click': [clickCol, [7]] }, 'tr2'
         ],
-        'th28': ['th', { 'id': 'BWE' + p + 'col80', 'style': 'width:10%;', 'colspan': '2' },
+      'th28': ['th', { 'id': 'BWE' + p + 'col80', 'style': 'width:10%;', 'colspan': '2' },
           [L._Get('sColTitle')[80]], , 'tr2'
         ]
-      };
+    };
     var head = IU._CreateElements(headIU);
     var bldPgr = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='bldprogress']");
     var bldNameUp = DOM._GetFirstNodeTextContent("./self::div[contains(.,'" + L._Get('sBuildPrgUp') + "')]/text()[1]",
-        "", bldPgr);
+      "", bldPgr);
     var bldNameDown = DOM._GetFirstNodeTextContent("./span[contains(.,'" + L._Get('sBuildPrgDown') + "')]/text()[1]",
-        "", bldPgr);
+      "", bldPgr);
     var bldPgrStop = DOM._GetFirstNode("./span[@id='bld_action_a']/a", bldPgr);
-    for (var i = 0; i < list.snapshotLength; i++) {
+    for (var i = 0; i < list.snapshotLength; i++)
+    {
       var nodeZone = DOM._GetFirstNode("./preceding-sibling::div[@class='strefaheader'][1]", list.snapshotItem(i));
       var content = DOM._GetFirstNode("(.//table)[last()]//td[2]", list.snapshotItem(i));
       var title = DOM._GetFirstNode(".//span[@class='bldheader']", list.snapshotItem(i));
-      if (title != null && content != null && nodeZone != null) {
+      if (title != null && content != null && nodeZone != null)
+      {
         var zone = nodeZone != null ? (new RegExp(L._Get('sBuildZone')).exec(nodeZone.textContent)) : null;
         var nodeLvl = DOM._GetFirstNode("./following-sibling::b", title);
         var lvl = nodeLvl !== null ? nodeLvl.textContent : '0';
         var inUp = bldNameUp.indexOf(title.textContent) !== -1;
         var inDown = bldNameDown.indexOf(title.textContent) !== -1;
         var upOk = DOM._GetFirstNode(".//a[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" +
-            L._Get('sBuildUpOk') + "')) and @class='enabled']", content);
+          L._Get('sBuildUpOk') + "')) and @class='enabled']", content);
         var upNo = DOM._GetFirstNode(".//span[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" +
-            L._Get('sBuildUpOk') + "')) and @class='disabled']", content);
+          L._Get('sBuildUpOk') + "')) and @class='disabled']", content);
         var downOk = DOM._GetFirstNode(".//a[contains(.,'" + L._Get('sBuildDownOk') + "')]", list.snapshotItem(i));
         var nodeLol = DOM._GetFirstNode(".//span[contains(.,'" + L._Get('sBuildlol') + "')]", content);
         var lol = nodeLol != null ? new RegExp("([0-9 ]+) " + L._Get('sBuildlol')).exec(nodeLol.textContent) : null;
@@ -1627,62 +1901,80 @@
         var sang = nodeSang != null ? (new RegExp("([0-9 ]+) " + L._Get('sBuildSang')).exec(nodeSang.textContent)) : null;
         var t = new RegExp(L._Get('sBuildTime') + L._Get('sTriOLTest')).exec(content.innerHTML);
         var time = t != null ? (t[1] ? L._Get('sLogTime4', t[1]) + ' ' : '') + (t[2] ? ('0' + t[2]).slice(-2) :
-            '00') + ':' + (t[3] ? ('0' + t[3]).slice(-2) : '00') + ':' + (t[4] ? ('0' + t[4]).slice(-2) : '00') : '?';
-if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
+          '00') + ':' + (t[3] ? ('0' + t[3]).slice(-2) : '00') + ':' + (t[4] ? ('0' + t[4]).slice(-2) : '00') : '?';
+        if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         var overT = content.innerHTML.replace(new RegExp('[\x00-\x1F]', 'g'), '').replace(new RegExp(
-            '([\'"])', 'g'), '\\\$1');
+          '([\'"])', 'g'), '\\\$1');
         var ligneIU = {
-            'tr': ['tr', { 'onmouseout': 'nd();', 'onmouseover': 'return overlib(\'<table><tbody><tr><td style=\"text-align: justify; vertical-align: top; width: 400px;\">' +
-                overT + '</td></tr></tbody></table>\',CAPTION,\'' + title.textContent +
-                '\',CAPTIONFONTCLASS,\'action-caption\',HAUTO,WRAP);' }, , , table['tbody']],
-            'td1': ['td', { 'class': 'BWEMiddle' },
+          'tr': ['tr',
+          {
+            'onmouseout': 'nd();',
+            'onmouseover': 'return overlib(\'<table><tbody><tr><td style=\"text-align: justify; vertical-align: top; width: 400px;\">' +
+              overT + '</td></tr></tbody></table>\',CAPTION,\'' + title.textContent +
+              '\',CAPTIONFONTCLASS,\'action-caption\',HAUTO,WRAP);'
+          }, , , table['tbody']],
+          'td1': ['td', { 'class': 'BWEMiddle' },
               [(zone != null ? zone[1] : "?")], , 'tr'
             ],
-            'td2': ['td', { 'class': ((inUp || upOk != null) ? 'enabled' : (inDown ? 'disabled' : '')) },
+          'td2': ['td', { 'class': ((inUp || upOk != null) ? 'enabled' : (inDown ? 'disabled' : '')) },
               [title.textContent], , 'tr'
             ],
-            'td3': ['td', { 'class': 'BWEMiddle' + (inUp ? ' enabled' : (inDown ? ' disabled' : '')) },
+          'td3': ['td', { 'class': 'BWEMiddle' + (inUp ? ' enabled' : (inDown ? ' disabled' : '')) },
               [lvl + ((inUp || inDown) ? ('->' + (Number(lvl) + (inUp ? 1 : -1))) : '')], , 'tr'
             ],
-            'td4': ['td', { 'class': 'BWERight' + (nodeSang != null ? ' ' + nodeSang.className : '') },
+          'td4': ['td', { 'class': 'BWERight' + (nodeSang != null ? ' ' + nodeSang.className : '') },
               [(sang != null ? sang[1] : "")], , 'tr'
             ],
-            'td5': ['td', { 'class': 'BWERight' + (nodeLol != null ? ' ' + nodeLol.className : '') },
+          'td5': ['td', { 'class': 'BWERight' + (nodeLol != null ? ' ' + nodeLol.className : '') },
               [(lol != null ? lol[1] : "")], , 'tr'
             ],
-            'td6': ['td', { 'class': 'BWERight' + (nodeMdo != null ? ' ' + nodeMdo.className : '') },
+          'td6': ['td', { 'class': 'BWERight' + (nodeMdo != null ? ' ' + nodeMdo.className : '') },
               [(mdo != null ? mdo[1] : "")], , 'tr'
             ],
-            'td7': ['td', { 'class': 'BWERight' + (upOk == null && upNo == null ? ' disabled' : '') },
+          'td7': ['td', { 'class': 'BWERight' + (upOk == null && upNo == null ? ' disabled' : '') },
               [(upOk == null && upNo == null ? L._Get('sBuildMaxLvl') : time)], , 'tr'
             ],
-            'td8': ['td', { 'class': 'BWEMiddle' }, , , 'tr'],
-            'td9': ['td', { 'class': 'BWEMiddle' }, , , 'tr']
-          };
+          'td8': ['td', { 'class': 'BWEMiddle' }, , , 'tr'],
+          'td9': ['td', { 'class': 'BWEMiddle' }, , , 'tr']
+        };
         var ligne = IU._CreateElements(ligneIU);
-        if (upOk != null) IU._CreateElement('div', { 'class': 'BWEBldOk' }, ['->' + (Number(lvl) + 1)], { 'click': [
-            function (e, link) { window.location.href = link; },
+        if (upOk != null) IU._CreateElement('div', { 'class': 'BWEBldOk' }, ['->' + (Number(lvl) + 1)],
+        {
+          'click': [
+            function(e, link) { window.location.href = link; },
             upOk.href
-          ] }, ligne['td8']);
-        else if (inUp && bldPgrStop != null) IU._CreateElement('div', { 'class': 'BWEBldChg' }, ['X'], { 'click': [
-            function () { window.location.href = bldPgrStop.href; }
-          ] }, ligne['td8']);
+          ]
+        }, ligne['td8']);
+        else if (inUp && bldPgrStop != null) IU._CreateElement('div', { 'class': 'BWEBldChg' }, ['X'],
+        {
+          'click': [
+            function() { window.location.href = bldPgrStop.href; }
+          ]
+        }, ligne['td8']);
         else IU._CreateElement('div', { 'class': 'BWEMiddle' }, ['-'], {}, ligne['td8']);
-        if (downOk != null) IU._CreateElement('div', { 'class': 'BWEBldDel' }, ['->' + (Number(lvl) - 1)], { 'click': [
-            function (e, link) { window.location.href = link; },
+        if (downOk != null) IU._CreateElement('div', { 'class': 'BWEBldDel' }, ['->' + (Number(lvl) - 1)],
+        {
+          'click': [
+            function(e, link) { window.location.href = link; },
             downOk.href
-          ] }, ligne['td9']);
-        else if (inDown && bldPgrStop != null) IU._CreateElement('div', { 'class': 'BWEBldChg' }, ['X'], { 'click': [
-            function () { window.location.href = bldPgrStop.href; }
-          ] }, ligne['td9']);
+          ]
+        }, ligne['td9']);
+        else if (inDown && bldPgrStop != null) IU._CreateElement('div', { 'class': 'BWEBldChg' }, ['X'],
+        {
+          'click': [
+            function() { window.location.href = bldPgrStop.href; }
+          ]
+        }, ligne['td9']);
         else IU._CreateElement('div', { 'class': 'BWEMiddle' }, ['-'], {}, ligne['td9']);
-        if (inUp || inDown) {
+        if (inUp || inDown)
+        {
           ligne['td7'].setAttribute('id', 'BWEBuildTime');
           ligne['td7'].classList.add('BWEbold', (inUp ? 'enabled' : 'disabled'));
-          var observer = new MutationObserver(function (mutations) {
+          var observer = new MutationObserver(function(mutations)
+          {
             var tTime = DOM._GetFirstNode("//td[@id='BWEBuildTime']");
             var bldPgrTime = DOM._GetFirstNodeTextContent(
-                "//div[@id='content-mid']/div[@class='bldprogress']/span[@id='bld_action']", "");
+              "//div[@id='content-mid']/div[@class='bldprogress']/span[@id='bld_action']", "");
             if (tTime != null) tTime.textContent = bldPgrTime;
           });
           observer.observe(bldPgr, { childList: true, subtree: true, characterData: true });
@@ -1700,15 +1992,18 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
   // - head (child de table) -> tr ('id':'BWE'+p+'header')
   // - tbody (child de table,'id':'BWE'+p+'body')
   // header = ancien en-tête, list = liste des TR du tableau à copier
-  function MixteTable(header, list, p) {
-    function clickCol(e, i) { // i[0] = col, i[1] = p
+  function MixteTable(header, list, p)
+  {
+    function clickCol(e, i)
+    { // i[0] = col, i[1] = p
       var header = DOM._GetFirstNode("//tr[@id='BWE" + i[1] + "header']"),
         tbody = DOM._GetFirstNode("//tbody[@id='BWE" + i[1] + "body']"),
         list = DOM._GetNodes("./tr", tbody),
         tri = PREF._Get(i[1], 'tri'),
         oldCol = DOM._GetFirstNode("./td[" + tri[0] + "]/span", header),
         newCol = DOM._GetFirstNode("./td[" + i[0] + "]", header);
-      if (oldCol != null && newCol != null) {
+      if (oldCol != null && newCol != null)
+      {
         tri[1] = (i[0] == tri[0] && tri[1] == 1) ? 0 : 1;
         tri[0] = i[0];
         PREF._Set(i[1], 'tri', tri);
@@ -1718,16 +2013,21 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         FctTriA(tri[0], tri[1], i[1], tbody, list);
       }
     }
-    function GetLvl(v) {
-      if (!isNaN(v) && parseInt(v) == Number(v)) {
+
+    function GetLvl(v)
+    {
+      if (!isNaN(v) && parseInt(v) == Number(v))
+      {
         var lvl = Math.floor(Math.log(1.1 * v) / Math.log(1.1)),
           lvlSup = Math.floor(Math.log(0.0011 * (v * 1000 + 999)) / Math.log(1.1));
         return new Array(lvl, lvlSup, (lvl != lvlSup ? lvl + "-" + lvlSup : lvl));
-      } else return new Array('-', '-', '-');
+      }
+      else return new Array('-', '-', '-');
     }
     var newHead = DOM._GetFirstNode("//tr[@id='BWE" + p + "header']"),
       newBody = DOM._GetFirstNode("//tbody[@id='BWE" + p + "body']");
-    if (newHead != null && newBody != null) {
+    if (newHead != null && newBody != null)
+    {
       var newCol = clone(PREF._Get(p, 'list')),
         tri = PREF._Get(p, 'tri'),
         id = ['pTownview', 'pRank', 'pOAliance', 'pAliance'].indexOf(p) == -1 ? null : p,
@@ -1738,30 +2038,43 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
           'pAliance': ["./td[2]/a", 6, 7, null, null]
         };
       // en-têtes et suppression des colonnes inutiles
-      for (var i = 0; i < newCol.length; i++) {
-        if (newCol[i][1] != 1) { newCol.splice(i, 1);
-          i--; } else {
+      for (var i = 0; i < newCol.length; i++)
+      {
+        if (newCol[i][1] != 1)
+        {
+          newCol.splice(i, 1);
+          i--;
+        }
+        else
+        {
           var col = newCol[i][0];
-          if (col != -1) {
+          if (col != -1)
+          {
             var newTD = IU._CreateElement('td', {}, [], {});
-            if (newCol[i][2] != -1) { // en-tête existante
+            if (newCol[i][2] != -1)
+            { // en-tête existante
               var td = DOM._GetFirstNode("./td[" + newCol[i][2] + "]", header);
-              if (td != null) {
+              if (td != null)
+              {
                 newTD = td.cloneNode(true);
                 if ([62, 65].indexOf(col) == -1) newTD.removeAttribute('width');
                 newTD.removeAttribute('style');
               }
-            } else { // en-tête à créer
+            }
+            else
+            { // en-tête à créer
               if ([17, 18, 19, 22].indexOf(col) == -1) newTD.textContent = L._Get("sColTitle")[col];
               if (col == 22) IU._CreateElement('img', { 'style': "width:16px; height:16px; vertical-align:middle;", 'src': "data:image/png,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%10%00%00%00%10%08%06%00%00%00%1F%F3%FFa%00%00%02%1FIDATx%DAcd%20%12%9C%3CyB%FF%F2%E5%CB5%3F%7F%FE%D2%FA%F7%FF%9F%D6%E9S%A7%E7-Z%B4(%99%91X%03v%ED%DA%C1%EF%E6%E6%F1q%CA%94I%FF%BF%7D%FF%CE%B0w%EF%DE%AE%9D%3Bv%95%E34%E0%DA%B5%AB%F6%BF%7F%FDb%F8%F9%EB%D7%0333%F3%87%13%26%F4%E9%0B%89%08%1Dx%FB%E6%9D%C0%D7%AF_%18%0E%1E8%5C%BB%7B%F7%EE%16%0C%03v%ED%DC%11%FF%EF%DF%FFI%CF%9E%3D%E1%FB%F9%E3%17%03%03P%C5%DF%7F%7FO%B0%B1%B1i%BC%FF%F0%9E%E9%E3%C7%8F~m%AD%1D%07%DD%DD%DD3w%EE%DC9%1D%C5%80%E3%C7%0F%FB%3F%7C%F8d%C3%B3%A7O.%FC%FC%F9%A3%E1%DB%B7o%1F~%FC%FC%E5%A0%A8%A8X%F0%FD%FBw%81%5B%B7n9%CC%9C9%FB%20%B2%1E%14%03%E6%CF%9B%F7%F8%DE%FD%BBo%9A%9B%5B%0D%91%C5%17%2C%9Co%FF%EB%D7%AF%03%87%0E%1FnZ%B2hI%3DV%03f%CC%9C%AE%FF%E3%DB%F7%0B%17%2F_J%98%3Fo%C1Bt%AF%B5%B4%B6%9C%BF%7F%FF%DE%87%B9s%E69b5%A0%B5%AD%D5%FE%FB%D7%AF%07._%BD%E2%B0q%C3%A6%83%E8%06%14%97%14%ED%7F%F7%F6%1D%C3%FC%F9%0B%B0%1B%60hl%C8ook%FF%E1%E6%AD%9B%0B%B6o%DB%9E%88%AC%C8%DB%CF%9B_%5DU%ED%C1%B3%E7%CF7%ACX%B6%22%11%AB%01%20%10%9F%10%3F%FF%DB%D7o%09%2C%AC%2C%05%CB%97-%9F%08%12%B3s%B0%E3WQV9%C0%CE%CEnp%FD%C6u%87%03%FB%0E%E0%0ED%0F%2F%0F~nN%AE%03%9C%9C%9C%06%BF%FF%FCy%F0%EF%DF%BF%07%2C%CC%CC%0El%EC%EC%0C%EF%DE%BDI%D8%BCi%2BF%D8%60MH%F6%0E%F6%F1%26%C6%26%09%8F%1E%3Dr%F8%FA%ED%EB%84%E7%2F%9EO8%7F%F6%FCCljq%A6%C4%9E%DE%9E%FA%FD%07%F67l%DD%BC%15or%C7*%99%98%98x%FC%C7%8F%1F%16_%BF%7CaP%D7%D0%60%B8z%EDj%FF%B6%AD%DB%8AHr%01%08%B8%B9%B9%FD%DF%B5k%17%E9.%80%01%5B%3B%DB%FF%87%0F%1D%C6%AB%06%00%A2%EE%06%20%5B%F9%3D%19%00%00%00%00IEND%AEB%60%82" }, [], {},
                 newTD);
             }
-            if (tri != null) {
+            if (tri != null)
+            {
               IU._addEvent(newTD, 'click', clickCol, [i + 1, p]);
               newTD.classList.add(exist(newCol[i][3]) ? ['BWELeftHeader', 'BWEMiddleHeader',
                 'BWERightHeader'
               ][newCol[i][3]] : 'BWELeftHeader');
-            } else newTD.classList.add(exist(newCol[i][3]) ? ['BWELeft', 'BWEMiddle', 'BWERight'][newCol[i]
+            }
+            else newTD.classList.add(exist(newCol[i][3]) ? ['BWELeft', 'BWEMiddle', 'BWERight'][newCol[i]
               [3]
             ] : 'BWELeft');
             newTD.setAttribute('id', 'BWE' + p + 'col' + newCol[i][0]);
@@ -1770,13 +2083,15 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         }
       }
       // body
-      for (var j = 0; j < list.snapshotLength; j++) {
+      for (var j = 0; j < list.snapshotLength; j++)
+      {
         var oldTR = list.snapshotItem(j),
           newTR = IU._CreateElement('tr', { 'class': 'BWETR' + (j % 2 == 0 ? '' : ' BWEeven') }, [], {},
             newBody),
           name = id != null ? DOM._GetFirstNodeTextContent(idx[p][0] + '/text()', '', oldTR).trim() : '',
           v = {};
-        if (name != '') {
+        if (name != '')
+        {
           v = LS._GetVar('BWE:P:' + name, {});
           var niv = idx[p][1] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][1] + "]", null, oldTR) :
             null,
@@ -1787,14 +2102,16 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
             sexe = idx[p][4] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][4] + "]", null, oldTR) :
             null;
           if (niv != null) v['N'] = niv;
-          if (pts != null) {
+          if (pts != null)
+          {
             v['P'] = Number(pts);
             if (!exist(v['N']) || (exist(v['N']) && v['N'] < GetLvl(v['P'])[0])) v['N'] = GetLvl(v['P'])[
               2];
           }
           if (race != null) v['R'] = L._Get('sRaces').indexOf(race);
           if (sexe != null) v['S'] = sexe;
-          if (p == 'pRank' && name == player) {
+          if (p == 'pRank' && name == player)
+          {
             var rank = DOM._GetFirstNodeTextContent("./td[1]", null, oldTR);
             if (rank != null) v['C'] = Number(rank);
           }
@@ -1802,21 +2119,28 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
           if (uid != null) v['U'] = uid[1];
           LS._SetVar('BWE:P:' + name, v);
         }
-        for (var i = 0; i < newCol.length; i++) {
+        for (var i = 0; i < newCol.length; i++)
+        {
           var newTD, col = newCol[i][0];
-          if (newCol[i][2] != -1) { // colonne existante
+          if (newCol[i][2] != -1)
+          { // colonne existante
             var td = DOM._GetFirstNode("./td[" + newCol[i][2] + "]", oldTR);
-            if (td != null) {
+            if (td != null)
+            {
               newTD = newTR.appendChild(td.cloneNode(true));
               newTD.removeAttribute('width');
               newTD.removeAttribute('style');
             }
-            if (col == 24) {
+            if (col == 24)
+            {
               newTD.setAttribute('width', '18px');
-              if (name != '' && PREF._Get('AE', 'sh') == 1) {
+              if (name != '' && PREF._Get('AE', 'sh') == 1)
+              {
                 var img = DOM._GetFirstNode(".//img", newTD);
-                if (img != null && img.src.indexOf('/0.gif') != -1) {
-                  if (exist(v['P'])) {
+                if (img != null && img.src.indexOf('/0.gif') != -1)
+                {
+                  if (exist(v['P']))
+                  {
                     var lvl = GetLvl(v['P'])[0],
                       olvl = DATAS._PlayerLevel(),
                       cla = p == 'pRank' ? Number(DOM._GetFirstNodeTextContent("./td[1]", 0, oldTR)) : null,
@@ -1835,60 +2159,106 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
                   }
                 }
               }
-            } else if (col == 26) {
+            }
+            else if (col == 26)
+            {
               newTD.className = "";
               newTD.style.color = td.style.color;
-            } else if (col == 62) {
+            }
+            else if (col == 62)
+            {
               var check = DOM._GetFirstNode("./input", td);
-              if (check != null) IU._addEvent(newTD, 'change', function (e, i) { i.checked = e.target.checked; },
+              if (check != null) IU._addEvent(newTD, 'change', function(e, i) { i.checked = e.target.checked; },
                 check);
             }
-          } else { // colonne à créer
+          }
+          else
+          { // colonne à créer
             newTD = IU._CreateElement('td', {}, [], {}, newTR);
-            if (col == 0) {
+            if (col == 0)
+            {
               var races = L._Get('sRaces');
               newTD.textContent = exist(v['R']) && exist(races[v['R']]) ? races[v['R']] : '-';
-            } else if (col == 1) {
+            }
+            else if (col == 1)
+            {
               newTD.textContent = exist(v['S']) ? v['S'] : '-';
               newTD.className = 'BWELeft ' + (exist(v['S']) ? v['S'] == L._Get('sSexeH') ? 'BWEsexH' :
                 'BWEsexF' : '');
-            } else if (col == 5) {
+            }
+            else if (col == 5)
+            {
               newTD.textContent = exist(v['P']) ? GetLvl(v['P'])[2] : '-';
-            } else if (col == 7) {
+            }
+            else if (col == 7)
+            {
               newTD.textContent = exist(v['P']) ? L._Get('sNivFormat', (exist(v['N']) ? v['N'] : GetLvl(v[
                 'P'])[2]), v['P']) : '-';
             }
-            if (col == 17 || col == 18 || col == 19) {
+            if (col == 17 || col == 18 || col == 19)
+            {
               var img = DOM._GetFirstNode("./td[3]/img[" + (col == 17 ? 1 : (col == 18 ? 2 : 3)) + "]",
                 oldTR);
-              if (img != null) {
+              if (img != null)
+              {
                 newTD.className = "";
                 newTD.appendChild(img.cloneNode(true));
               }
-            } else if (col == 21) {
-              if (name == '') { newTD.textContent = '-'; } else {
+            }
+            else if (col == 21)
+            {
+              if (name == '') { newTD.textContent = '-'; }
+              else
+              {
                 var grp = LS._GetVar('BWE:G:' + ID, { 'A': [], 'B': [] });
-                IU._CreateElements({
-                  'checkA': ['input', { 'class': 'BWEInput', 'type': 'checkbox', 'id': encodeURIComponent(
-                      'BWEcheckA_' + name), 'checked': (grp['A'].indexOf(name) > -1) }, , { 'change': [
+                IU._CreateElements(
+                {
+                  'checkA': ['input',
+                  {
+                    'class': 'BWEInput',
+                    'type': 'checkbox',
+                    'id': encodeURIComponent(
+                      'BWEcheckA_' + name),
+                    'checked': (grp['A'].indexOf(name) > -1)
+                  }, ,
+                  {
+                    'change': [
                       checkGrp, [name, 'A']
-                    ] }, newTD],
-                  'checkB': ['input', { 'class': 'BWEInput', 'type': 'checkbox', 'id': encodeURIComponent(
-                      'BWEcheckB_' + name), 'checked': (grp['B'].indexOf(name) > -1) }, , { 'change': [
+                    ]
+                  }, newTD],
+                  'checkB': ['input',
+                  {
+                    'class': 'BWEInput',
+                    'type': 'checkbox',
+                    'id': encodeURIComponent(
+                      'BWEcheckB_' + name),
+                    'checked': (grp['B'].indexOf(name) > -1)
+                  }, ,
+                  {
+                    'change': [
                       checkGrp, [name, 'B']
-                    ] }, newTD]
+                    ]
+                  }, newTD]
                 });
               }
-            } else if (col == 22) {
+            }
+            else if (col == 22)
+            {
               newTD.textContent = exist(v['S']) ? v['S'] : '-';
               newTD.className = exist(v['S']) ? (v['S'] == L._Get('sSexeH') ? 'BWEsexH' : 'BWEsexF') : '';
-            } else if (col == 23) {
+            }
+            else if (col == 23)
+            {
               if (name == '') newTD.textContent = '-';
               else CreateHistory(ID, name, newTD);
-            } else if (col == 25) {
+            }
+            else if (col == 25)
+            {
               if (name == '') newTD.textContent = '-';
               else CreateHistory(name, ID, newTD);
-            } else if (col == 81) {
+            }
+            else if (col == 81)
+            {
               var r = exist(v['P']) ? v['P'] - Math.floor(plDatas['P'] / 1000) : null;
               newTD.textContent = r != null ? (r > 0 ? '+' : '') + r : '-';
             }
@@ -1898,8 +2268,10 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         }
       }
       // tri du nouveau tableau
-      if (tri != null) {
-        if (tri[0] > newCol.length) {
+      if (tri != null)
+      {
+        if (tri[0] > newCol.length)
+        {
           tri = [1, 1];
           PREF._Set(p, 'tri', tri);
         }
@@ -1912,74 +2284,101 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
     }
   }
   // Divers
-  function FctTriA(key, order, p, tbody, list) {
+  function FctTriA(key, order, p, tbody, list)
+  {
     var list2 = [],
       header = DOM._GetFirstNode("//tr[@id='BWE" + p + "header']/td[" + key + "]|//tr[@id='BWE" + p +
         "header']/th[" + key + "]"),
       id = header != null ? parseInt(header.id.replace(new RegExp('BWE' + p + 'col', 'g'), '')) : 0;
-    for (var i = 0; i < list.snapshotLength; i++) {
+    for (var i = 0; i < list.snapshotLength; i++)
+    {
       var col = DOM._GetFirstNode("./td[" + key + "]", list.snapshotItem(i));
-      if (col != null) {
+      if (col != null)
+      {
         var v = col.textContent.trim().toLowerCase(); // tri de base - texte
-        if ([3, 15, 27, 29, 64, 67, 69, 72].indexOf(id) != -1) { // texte avec lien
+        if ([3, 15, 27, 29, 64, 67, 69, 72].indexOf(id) != -1)
+        { // texte avec lien
           var isA = DOM._GetFirstNode("./a", col);
           if (isA != null) v = isA.textContent.toUpperCase();
-        } else if ([5, 6, 26, 28, 66, 73, 75, 76, 77, 78, 81].indexOf(id) != -1) { // chiffre + quartier + classement
+        }
+        else if ([5, 6, 26, 28, 66, 73, 75, 76, 77, 78, 81].indexOf(id) != -1)
+        { // chiffre + quartier + classement
           var r = new RegExp(L._Get('sTriNbTest')).exec(v);
           if (r != null) v = parseInt(r[1].replace(new RegExp('[ ]', 'g'), ''));
           else if (v == '∞') v = Number.POSITIVE_INFINITY;
           else v = -1;
-        } else if ([16, 17].indexOf(id) != -1) { // en ligne
+        }
+        else if ([16, 17].indexOf(id) != -1)
+        { // en ligne
           var isIMG = DOM._GetFirstNode("./img", col),
             r = new RegExp(L._Get('sTriOLTest')).exec(isIMG != null ? isIMG.alt : v);
           if (r != null) v = (r[1] ? parseInt(r[1]) : 0) * 86400 + (r[2] ? parseInt(r[2]) : 0) * 3600 + (r[
             3] ? parseInt(r[3]) : 0) * 60 + (r[4] ? parseInt(r[4]) : 0);
           else v = 0;
-        } else if ([18, 19].indexOf(id) != -1) { // Rdc + Expé
+        }
+        else if ([18, 19].indexOf(id) != -1)
+        { // Rdc + Expé
           var isIMG = DOM._GetFirstNode(".//img", col);
-          if (isIMG != null) {
+          if (isIMG != null)
+          {
             var r = new RegExp(L._Get('sTriImgTest')).exec(isIMG.src);
             if (r != null) v = (r[1] == 'ok' ? 0 : 1);
             else v = isIMG.src;
           }
-        } else if ([8, 21].indexOf(id) != -1) { // Groupe
+        }
+        else if ([8, 21].indexOf(id) != -1)
+        { // Groupe
           var isInput = DOM._GetFirstNode("./input[1]", col),
             isInput2 = DOM._GetFirstNode("./input[2]", col);
-          if (isInput != null && isInput2 != null) {
+          if (isInput != null && isInput2 != null)
+          {
             v = (isInput.checked ? "0" : "1") + (isInput2.checked ? "0" : "1");
           }
-        } else if ([23, 25].indexOf(id) != -1) { //ATT - DEF
+        }
+        else if ([23, 25].indexOf(id) != -1)
+        { //ATT - DEF
           var temp = v.replace('*', ''),
             r = new RegExp("^(-?[0-9]+)").exec(temp);
           if (v == '-') v = 31708800; // 367jrs
-          else if (r != null) {
+          else if (r != null)
+          {
             if (temp == L._Get('sLogTime5')) v = 31622400; // 366jrs
             else if (temp == L._Get('sLogTime1', r[1])) v = r[1];
             else if (temp == L._Get('sLogTime2', r[1])) v = r[1] * 60;
             else if (temp == L._Get('sLogTime3', r[1])) v = r[1] * 3600;
             else if (temp == L._Get('sLogTime4', r[1])) v = r[1] * 86400;
           }
-        } else if (id == 24) { // <ATTAQUER>
+        }
+        else if (id == 24)
+        { // <ATTAQUER>
           var isIMG = DOM._GetFirstNode("./a/img|./img", col);
           if (isIMG != null) v = isIMG.alt;
-        } else if (id == 2) { // adresse
+        }
+        else if (id == 2)
+        { // adresse
           var isA = DOM._GetFirstNode("./a", col);
-          if (isA != null) {
+          if (isA != null)
+          {
             var r = new RegExp(L._Get('sTriAdrTest')).exec(isA.textContent);
             if (r != null) v = parseInt(r[1]) * 100000 + parseInt(r[2]) * 100 + parseInt(r[3]);
           }
-        } else if (id == 7) { // NIV (PTS)
+        }
+        else if (id == 7)
+        { // NIV (PTS)
           var r = new RegExp(L._Get('sTriPtsTest')).exec(v);
           if (r != null) v = parseInt(r[2]);
         }
         list2[i] = [v, i];
       }
     }
-    list2.sort(function (a, b) {
-      return a[0] < b[0] ? -1 : a[0] == b[0] ? 0 : 1; });
+    list2.sort(function(a, b)
+    {
+      return a[0] < b[0] ? -1 : a[0] == b[0] ? 0 : 1;
+    });
     if (order == 0) list2.reverse();
     // mise en forme
-    for (var i = 0; i < list2.length; i++) {
+    for (var i = 0; i < list2.length; i++)
+    {
       var r = list.snapshotItem(list2[i][1]);
       r.classList.add('BWETR');
       if (i % 2 == 0) r.classList.remove('BWEeven');
@@ -1988,28 +2387,35 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
     }
   }
   // Pages 'pOAliance','pAliance'
-  function show_hide(e, i) {
+  function show_hide(e, i)
+  {
     var show = PREF._Get(p, i[2]) == 1 ? 0 : 1;
     PREF._Set(p, i[2], show);
     i[0].setAttribute('style', 'display:' + (show == 1 ? 'block;' : 'none;'));
     i[1].setAttribute('style', 'color:' + (show == 1 ? 'lime;' : 'red;') + ';cursor: pointer;');
   }
   // pages 'pRootSettings','pSettingsAi','pSettingsAcc','pSettingsVac','pSettingsDelchar'
-  function setMenuOptions(e) {
-    function check(e, i) { // i[0] = ensemble ,i[1] = key
+  function setMenuOptions(e)
+  {
+    function check(e, i)
+    { // i[0] = ensemble ,i[1] = key
       PREF._Set(i[0], i[1], e.target.checked ? 1 : 0);
     }
 
-    function inputNumber(e, i) { // i[0] = ensemble ,i[1] = key
+    function inputNumber(e, i)
+    { // i[0] = ensemble ,i[1] = key
       var v = e.target.value,
         r = new RegExp("^(|(?:[0-9]+|[0-9]*[.]?[0-9]+))$").exec(v);
-      if (r != null) {
+      if (r != null)
+      {
         e.target.setAttribute('class', 'BWEInput');
         PREF._Set(i[0], i[1], v);
-      } else e.target.setAttribute('class', 'BWEInput BWEAEButError');
+      }
+      else e.target.setAttribute('class', 'BWEInput BWEAEButError');
     }
 
-    function changeCol(e, i) { // i[0]= liste, i[1]= ligne, i[2]= ligne + ou -
+    function changeCol(e, i)
+    { // i[0]= liste, i[1]= ligne, i[2]= ligne + ou -
       var col = PREF._Get(i[0], 'list'),
         temp = col[i[1]];
       col[i[1]] = col[i[2]];
@@ -2018,32 +2424,38 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
       createColList();
     }
 
-    function clickCol(e, i) { // i[0]= liste, i[1]= ligne
+    function clickCol(e, i)
+    { // i[0]= liste, i[1]= ligne
       var col = PREF._Get(i[0], 'list');
       col[i[1]][1] = col[i[1]][1] == 1 ? 0 : 1;
       PREF._Set(i[0], 'list', col);
       createColList();
     }
 
-    function clickA(e, i) { // i[0]= liste, i[1]= ligne, i[2]= choix
+    function clickA(e, i)
+    { // i[0]= liste, i[1]= ligne, i[2]= choix
       var col = PREF._Get(i[0], 'list');
       col[i[1]][3] = i[2];
       PREF._Set(i[0], 'list', col);
       createColList();
     }
 
-    function razPrefs(e) {
+    function razPrefs(e)
+    {
       PREF._Raz();
       setMenuOptions();
     }
 
-    function createColList() {
+    function createColList()
+    {
       var liste = nodeMenu['select1'].options[nodeMenu['select1'].selectedIndex].value,
         col = PREF._Get(liste, 'list'),
         colDef = PREF._GetDef(liste, 'list');
       DOM._CleanNode(nodeMenu['tbody1']);
-      if (PREF._Get(liste, 'sh') != null) {
-        IU._CreateElements({
+      if (PREF._Get(liste, 'sh') != null)
+      {
+        IU._CreateElements(
+        {
           'tr': ['tr', , , , nodeMenu['tbody1']],
           'td1': ['td', , [], , 'tr'],
           'td2': ['td', , [], , 'tr'],
@@ -2053,27 +2465,45 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
           'td3': ['td', { 'colspan': '4' },
             [], , 'tr'
           ],
-          'check': ['input', { 'class': 'BWEInput', 'type': 'checkbox', 'id': 'BWElabel', 'checked': PREF
-              ._Get(liste, 'sh') == 1 }, , { 'change': [check, [liste, 'sh']] }, 'td3']
+          'check': ['input',
+          {
+            'class': 'BWEInput',
+            'type': 'checkbox',
+            'id': 'BWElabel',
+            'checked': PREF
+              ._Get(liste, 'sh') == 1
+          }, , { 'change': [check, [liste, 'sh']] }, 'td3']
         });
       }
-      for (var j = 0; j < col.length; j++) {
+      for (var j = 0; j < col.length; j++)
+      {
         var cellIU = {
-            'tr': ['tr', { 'class': (j % 2 == 1 ? 'even' : ''), 'onmouseout': "this.className=" + (j % 2 ==
-                1 ? "'even';" : "'';"), 'onmouseover': "this.className='selectedItem';" }, , , nodeMenu[
+            'tr': ['tr',
+            {
+              'class': (j % 2 == 1 ? 'even' : ''),
+              'onmouseout': "this.className=" + (j % 2 ==
+                1 ? "'even';" : "'';"),
+              'onmouseover': "this.className='selectedItem';"
+            }, , , nodeMenu[
               'tbody1']],
             'td1': ['td', { 'class': 'BWEPrefTD1' },
               [j], , 'tr'
             ],
-            'td2': ['td', { 'class': 'BWEPrefTD2 ' + (col[j][1] == 1 ? 'defHit' : 'atkHit'), 'style': 'text-decoration:' +
-                  (col[j][1] == 1 ? 'none' : 'line-through') },
+            'td2': ['td',
+              {
+                'class': 'BWEPrefTD2 ' + (col[j][1] == 1 ? 'defHit' : 'atkHit'),
+                'style': 'text-decoration:' +
+                  (col[j][1] == 1 ? 'none' : 'line-through')
+              },
               [L._Get('sColTitle')[col[j][0]]], { 'click': [clickCol, [liste, j]] }, 'tr'
             ]
           },
           cell = IU._CreateElements(cellIU);
-        if (exist(colDef[0][3])) {
+        if (exist(colDef[0][3]))
+        {
           if (!exist(col[j][3])) col[j][3] = 0;
-          IU._CreateElements({
+          IU._CreateElements(
+          {
             'td3': ['td', { 'class': 'BWEPrefTD2' + (col[j][3] == 0 ? ' heal' : '') },
               [L._Get('sLeft')], { 'click': [clickA, [liste, j, 0]] },
               cell['tr']
@@ -2091,20 +2521,27 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         var td6 = IU._CreateElement('td', { 'class': 'BWEPrefTD3' }, [], {}, cell['tr']);
         if (j != 0) IU._CreateElement('a', {}, [L._Get('sTriUp')], { 'click': [changeCol, [liste, j, (j - 1)]] },
           td6);
-        if (j < col.length - 1) IU._CreateElement('a', {}, [L._Get('sTriDown')], { 'click': [changeCol, [
+        if (j < col.length - 1) IU._CreateElement('a', {}, [L._Get('sTriDown')],
+        {
+          'click': [changeCol, [
             liste, j, (j + 1)
-          ]] }, td6);
+          ]]
+        }, td6);
       }
     }
 
-    function createList(list, node) {
+    function createList(list, node)
+    {
       var newNode = node;
-      for (var j = 0; j < list.length; j++) {
-        if (_Type(list[j][1]) == 'Array') {
+      for (var j = 0; j < list.length; j++)
+      {
+        if (_Type(list[j][1]) == 'Array')
+        {
           newNode = IU._CreateElement('optgroup', { 'label': L._Get("sTitresList")[list[j][0]] }, [], {},
             node);
           createList(list[j][1], newNode);
-        } else IU._CreateElement('option', { 'value': list[j][1] }, [L._Get("sTitresList")[list[j][0]]], {},
+        }
+        else IU._CreateElement('option', { 'value': list[j][1] }, [L._Get("sTitresList")[list[j][0]]], {},
           newNode);
       }
     }
@@ -2114,11 +2551,11 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
     nodeTitle['4'].className = '';
     var menuIU = {
         'menudiv': ['div', { 'align': 'center', 'style': 'margin-top: 15px;' }],
-        'div1': ['div', , [((typeof (GM_info) == 'object') ? GM_info.script.name : '?') + ' : '], ,
+        'div1': ['div', , [((typeof(GM_info) == 'object') ? GM_info.script.name : '?') + ' : '], ,
           'menudiv'
         ],
         'a1': ['a', { 'href': 'https://github.com/Ecilam/BloodWarsEnhanced', 'TARGET': '_blank' },
-          [((typeof (GM_info) == 'object') ? GM_info.script.version : '?')], , 'div1'
+          [((typeof(GM_info) == 'object') ? GM_info.script.version : '?')], , 'div1'
         ],
         'br2': ['br', , , , 'menudiv'],
         'table0': ['table', { 'style': 'width:100%;', 'class': 'BWEMenu' }, , , 'menudiv'],
@@ -2128,8 +2565,14 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         'thead1': ['thead', , , , 'table1'],
         'tr1_0': ['tr', { 'class': 'tblheader' }, , , 'thead1'],
         'td1_0_0': ['td', { 'class': 'BWELeft', 'colspan': '6' }, , , 'tr1_0'],
-        'help1': ['img', { 'class': 'BWEHelp', 'src': '/gfx/hint2.png', 'onmouseout': 'nd();', 'onmouseover': "return overlib('" +
-            L._Get("sInfoMsg") + "',HAUTO,WRAP);" }, , , 'td1_0_0'],
+        'help1': ['img',
+        {
+          'class': 'BWEHelp',
+          'src': '/gfx/hint2.png',
+          'onmouseout': 'nd();',
+          'onmouseover': "return overlib('" +
+            L._Get("sInfoMsg") + "',HAUTO,WRAP);"
+        }, , , 'td1_0_0'],
         'texte1': ['span', { 'class': 'BWELeft' },
           [L._Get("sTitleList")], , 'td1_0_0'
         ],
@@ -2146,9 +2589,12 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         ],
         'tbody2': ['tbody', , , , 'table2'],
         'br3': ['br', , , , 'menudiv'],
-        'reset': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sDefaut") }, , { 'click': [
+        'reset': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sDefaut") }, ,
+        {
+          'click': [
             razPrefs
-          ] }, 'menudiv']
+          ]
+        }, 'menudiv']
       },
       nodeMenu = IU._CreateElements(menuIU),
       // n°titre du groupe ou Array:[n°titre(cf sTitresList),nom de la liste]
@@ -2198,7 +2644,8 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
     createList(menuList, nodeMenu['select1']);
     createColList();
     // Partie Divers
-    for (var j = 0; j < menuDiv.length; j++) {
+    for (var j = 0; j < menuDiv.length; j++)
+    {
       var cellIU = {
           'tr': ['tr', { 'class': (j % 2 == 1 ? 'even' : '') }, , , nodeMenu['tbody2']],
           'td1': ['td', { 'class': 'BWELeft' }, , , 'tr'],
@@ -2206,34 +2653,58 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         },
         cell = IU._CreateElements(cellIU);
       cell['td1'].textContent = L._Get("sTitresDiv")[menuDiv[j][1]];
-      if (menuDiv[j][0] == "check") IU._CreateElement('input', { 'class': 'BWEInput', 'type': 'checkbox', 'checked': PREF
-          ._Get(menuDiv[j][2][0], menuDiv[j][2][1]) == 1 }, [], { 'change': [check, [menuDiv[j][2][0],
+      if (menuDiv[j][0] == "check") IU._CreateElement('input',
+      {
+        'class': 'BWEInput',
+        'type': 'checkbox',
+        'checked': PREF
+          ._Get(menuDiv[j][2][0], menuDiv[j][2][1]) == 1
+      }, [],
+      {
+        'change': [check, [menuDiv[j][2][0],
           menuDiv[j][2][1]
-        ]] }, cell['td2']);
-      else if (menuDiv[j][0] == "inputN") IU._CreateElement('input', { 'class': 'BWEInput', 'type': 'text', 'value': PREF
-          ._Get(menuDiv[j][2][0], menuDiv[j][2][1]), 'size': '5', 'maxlength': '5' }, [], { 'change': [
+        ]]
+      }, cell['td2']);
+      else if (menuDiv[j][0] == "inputN") IU._CreateElement('input',
+      {
+        'class': 'BWEInput',
+        'type': 'text',
+        'value': PREF
+          ._Get(menuDiv[j][2][0], menuDiv[j][2][1]),
+        'size': '5',
+        'maxlength': '5'
+      }, [],
+      {
+        'change': [
           inputNumber, [menuDiv[j][2][0], menuDiv[j][2][1]]
-        ], 'keyup': [inputNumber, [menuDiv[j][2][0], menuDiv[j][2][1]]] }, cell['td2']);
+        ],
+        'keyup': [inputNumber, [menuDiv[j][2][0], menuDiv[j][2][1]]]
+      }, cell['td2']);
     }
     var oldDiv = DOM._GetNodes(
       "//div[@id='content-mid']/*[preceding-sibling::div[@class='top-options']]"
     );
-    for (var i = 0; i < oldDiv.snapshotLength; i++) {
+    for (var i = 0; i < oldDiv.snapshotLength; i++)
+    {
       oldDiv.snapshotItem(i).parentNode.removeChild(oldDiv.snapshotItem(i));
     }
     nodeOptions.parentNode.insertBefore(nodeMenu['menudiv'], nodeOptions.nextSibling);
     nodeOptions.parentNode.insertBefore(IU._CreateElement('div', { 'class': 'hr720' }), nodeOptions.nextSibling);
   }
   // pages 'pRootSettings','pSettingsAi','pSettingsAcc','pSettingsVac','pSettingsDelchar'
-  function setMenuDB(e) {
-    function selectLSChange(e) {
+  function setMenuDB(e)
+  {
+    function selectLSChange(e)
+    {
       if (nodeMenu['selectLS'].selectedIndex >= 0)
         nodeMenu['divLS'].textContent = JSONS._Encode(LS._GetVar(decodeURIComponent(nodeMenu['selectLS'].options[
           nodeMenu['selectLS'].selectedIndex].value), ""));
     }
 
-    function delLS(e) {
-      if (nodeMenu['selectLS'].selectedIndex >= 0) {
+    function delLS(e)
+    {
+      if (nodeMenu['selectLS'].selectedIndex >= 0)
+      {
         var index = nodeMenu['selectLS'].selectedIndex,
           key = decodeURIComponent(nodeMenu['selectLS'].options[index].value);
         LS._Delete(key);
@@ -2246,8 +2717,10 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
       }
     }
 
-    function razLS(e) {
-      if (confirm(L._Get("sRazChkLS"))) {
+    function razLS(e)
+    {
+      if (confirm(L._Get("sRazChkLS")))
+      {
         nodeMenu['divLS'].textContent = "";
         nodeMenu['td1_2_0'].textContent = L._Get('sResult', 0, 0);
         LSList = [],
@@ -2260,27 +2733,34 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
       }
     }
 
-    function triLSList(e) {
+    function triLSList(e)
+    {
       while (nodeMenu['selectLS'].length > 0) nodeMenu['selectLS'].remove(0);
       nodeMenu['divLS'].textContent = "";
       r = [];
       for (var i = 0; i < LSList.length; i++)
         if (LSList[i].toLowerCase().indexOf(nodeMenu['LSsearch'].value.toLowerCase()) != -1) r.push(i);
-      r.sort(function (a, b) {
+      r.sort(function(a, b)
+      {
         var x = LSList[a].toLowerCase(),
           y = LSList[b].toLowerCase();
         return x < y ? -1 : x == y ? 0 : 1;
       });
       nodeMenu['td1_2_0'].textContent = L._Get('sResult', r.length, LSList.length);
-      for (var i = 0; i < r.length; i++) IU._CreateElement('option', { 'value': encodeURIComponent(LSList[r[
-          i]]) }, [LSList[r[i]]], {}, nodeMenu['selectLS']);
+      for (var i = 0; i < r.length; i++) IU._CreateElement('option',
+      {
+        'value': encodeURIComponent(LSList[r[
+          i]])
+      }, [LSList[r[i]]], {}, nodeMenu['selectLS']);
       nodeMenu['selectLS'].selectedIndex = 0;
       selectLSChange();
     }
 
-    function outputLog() {
+    function outputLog()
+    {
       var output = '';
-      for (var i = 0; i < LS._Length(); i++) {
+      for (var i = 0; i < LS._Length(); i++)
+      {
         var key = LS._Key(i),
           r = new RegExp('^BWE:L:(' + ID + '(:(?!' + ID + '$)(.+$))|(((?!' + ID + ':)(.+:))' + ID + '$))').exec(
             key);
@@ -2289,17 +2769,20 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
       nodeMenu['divIE'].textContent = encodeURIComponent(output);
     }
 
-    function importLog(e) {
+    function importLog(e)
+    {
       var input = decodeURIComponent(nodeMenu['textIE'].value),
         x = 0,
         i, reg = new RegExp('BWE:L:(' + ID + '(?!:' + ID + '=)|(?!' + ID + ':)[^:=]+(?=:' + ID +
           '=)):([^:=]+)=(\\[.*?\\])(?=BWE|$)', 'g');
-      while ((i = reg.exec(input)) != null) {
+      while ((i = reg.exec(input)) != null)
+      {
         var att = i[1],
           def = i[2],
           log = i[3],
           r = JSONS._Decode(log);
-        for (var j = 0; j < r.length; j++) {
+        for (var j = 0; j < r.length; j++)
+        {
           UpdateHistory(att, def, r[j][0], new Date(r[j][1]), r[j][2]);
           if (LS._GetVar('BWE:L:' + att + ':' + def, null) != null && LSList.indexOf('BWE:L:' + att + ':' +
               def) == -1) LSList.push('BWE:L:' + att + ':' + def);
@@ -2344,18 +2827,28 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         ],
         'tr1_1': ['tr', , , , 'table1'],
         'td1_1_0': ['td', , , , 'tr1_1'],
-        'LSsearch': ['input', { 'class': 'inputbox', 'type': 'text' }, , { 'change': [triLSList], 'keyup': [
+        'LSsearch': ['input', { 'class': 'inputbox', 'type': 'text' }, ,
+        {
+          'change': [triLSList],
+          'keyup': [
             triLSList
-          ] }, 'td1_1_0'],
+          ]
+        }, 'td1_1_0'],
         'td1_1_1': ['td', , , , 'tr1_1'],
         'td1_1_2': ['td', { 'class': 'BWELeft' }, , , 'tr1_1'],
-        'delLS': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sDelete") }, , { 'click': [
+        'delLS': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sDelete") }, ,
+        {
+          'click': [
             delLS
-          ] }, 'td1_1_2'],
+          ]
+        }, 'td1_1_2'],
         'td1_1_3': ['td', { 'class': 'BWERight' }, , , 'tr1_1'],
-        'razLS': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sRAZ") }, , { 'click': [
+        'razLS': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sRAZ") }, ,
+        {
+          'click': [
             razLS
-          ] }, 'td1_1_3'],
+          ]
+        }, 'td1_1_3'],
         'tr1_2': ['tr', , , , 'table1'],
         'td1_2_0': ['td', { 'colspan': '4' }, , , 'tr1_2'],
         'tr1_3': ['tr', , , , 'table1'],
@@ -2380,22 +2873,40 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
         'td3_0_0': ['td', { 'class': 'BWELeft' },
           [L._Get('sExportText')], , 'tr3_0'
         ],
-        'ExportHelp': ['img', { 'class': 'BWEHelp', 'src': '/gfx/hint2.png', 'onmouseout': 'nd();', 'onmouseover': "return overlib('" +
-            L._Get("sExportHelp") + "',HAUTO,WRAP);" }, , , 'td3_0_0'],
+        'ExportHelp': ['img',
+        {
+          'class': 'BWEHelp',
+          'src': '/gfx/hint2.png',
+          'onmouseout': 'nd();',
+          'onmouseover': "return overlib('" +
+            L._Get("sExportHelp") + "',HAUTO,WRAP);"
+        }, , , 'td3_0_0'],
         'td3_0_1': ['td', { 'class': 'BWERight' }, , , 'tr3_0'],
-        'export': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sOutputLog") }, , { 'click': [
+        'export': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sOutputLog") }, ,
+        {
+          'click': [
             outputLog
-          ] }, 'td3_0_1'],
+          ]
+        }, 'td3_0_1'],
         'td3_0_2': ['td', , , , 'tr3_0'],
         'td3_0_3': ['td', { 'class': 'BWELeft' },
           [L._Get('sImportText')], , 'tr3_0'
         ],
-        'ImportHelp': ['img', { 'class': 'BWEHelp', 'src': '/gfx/hint2.png', 'onmouseout': 'nd();', 'onmouseover': "return overlib('" +
-            L._Get("sImportHelp") + "',HAUTO,WRAP);" }, , , 'td3_0_3'],
+        'ImportHelp': ['img',
+        {
+          'class': 'BWEHelp',
+          'src': '/gfx/hint2.png',
+          'onmouseout': 'nd();',
+          'onmouseover': "return overlib('" +
+            L._Get("sImportHelp") + "',HAUTO,WRAP);"
+        }, , , 'td3_0_3'],
         'td3_0_4': ['td', { 'class': 'BWERight' }, , , 'tr3_0'],
-        'import': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sImportLog") }, , { 'click': [
+        'import': ['input', { 'class': 'button', 'type': 'button', 'value': L._Get("sImportLog") }, ,
+        {
+          'click': [
             importLog
-          ] }, 'td3_0_4'],
+          ]
+        }, 'td3_0_4'],
         'tr3_1': ['tr', , , , 'table3'],
         'td3_1_0': ['td', { 'colspan': '2', 'valign': 'top', 'style': 'width:345px;' }, , , 'tr3_1'],
         'divIE': ['div', { 'class': 'inputbox BWEdivIE', 'style': 'width:345px;' }, , , 'td3_1_0'],
@@ -2410,7 +2921,8 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
     var oldDiv = DOM._GetNodes(
       "//div[@id='content-mid']/*[preceding-sibling::div[@class='top-options']]"
     );
-    for (var i = 0; i < oldDiv.snapshotLength; i++) {
+    for (var i = 0; i < oldDiv.snapshotLength; i++)
+    {
       oldDiv.snapshotItem(i).parentNode.removeChild(oldDiv.snapshotItem(i));
     }
     nodeOptions.parentNode.insertBefore(nodeMenu['menudiv'], nodeOptions.nextSibling);
@@ -2418,7 +2930,8 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
     // LS
     var LSList = [],
       r = [];
-    for (var i = 0; i < LS._Length(); i++) {
+    for (var i = 0; i < LS._Length(); i++)
+    {
       var key = LS._Key(i);
       LSList.push(key); //if(key.indexOf('BWE:')==0)
     }
@@ -2434,34 +2947,40 @@ if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
   if (!JSON) throw new Error("Erreur : le service JSON n\'est pas disponible.");
   else if (!MutationObserver) throw new Error("Erreur : le service MutationObserver n\'est pas disponible.");
   else if (!window.localStorage) throw new Error("Erreur : le service localStorage n\'est pas disponible.");
-  else {
+  else
+  {
     // fix : suite chargement en defer de overlib par BW, masque le tooltip au chargement
     var overDiv = document.getElementById("overDiv");
-    if (!isNull(overDiv) && overDiv.style.visibility === 'visible') {
+    if (!isNull(overDiv) && overDiv.style.visibility === 'visible')
+    {
       overDiv.style.visibility = 'hidden';
     }
-/*    window.addEventListener("beforeunload",
-      function () {
-        var overDiv = document.getElementById("overDiv");
-        if (!isNull(overDiv) && overDiv.style.visibility === 'visible') {
-if (debug) console.debug('BWEunload', overDiv);
+    /*    window.addEventListener("beforeunload",
+          function () {
+            var overDiv = document.getElementById("overDiv");
+            if (!isNull(overDiv) && overDiv.style.visibility === 'visible') {
+    if (debug) console.debug('BWEunload', overDiv);
 
-        }
-        return;
-      });*/
+            }
+            return;
+          });*/
     var p = DATAS._GetPage(),
       player = DATAS._PlayerName(),
       IDs = LS._GetVar('BWE:IDS', {});
     if (debug) console.debug('BWEstart: ', player, IDs, p);
     // Pages gérées par le script
-    if (['null', 'pServerDeco', 'pServerUpdate', 'pServerOther'].indexOf(p) == -1 && player != null) {
-      if (p == 'pMain') {
+    if (['null', 'pServerDeco', 'pServerUpdate', 'pServerOther'].indexOf(p) == -1 && player != null)
+    {
+      if (p == 'pMain')
+      {
         var r = DOM._GetFirstNodeTextContent(
           "//div[@id='content-mid']/div[@id='reflink']/span[@class='reflink']", null);
-        if (r != null) {
+        if (r != null)
+        {
           var r2 = /r\.php\?r=([0-9]+)/.exec(r),
             ID = exist(r2[1]) ? r2[1] : null;
-          if (ID != null) {
+          if (ID != null)
+          {
             for (var i in IDs)
               if (IDs[i] == ID) delete IDs[i]; // en cas de changement de nom
             IDs[player] = ID;
@@ -2470,7 +2989,8 @@ if (debug) console.debug('BWEunload', overDiv);
         }
       }
       // Autre pages nécessitant l'ID
-      else if (exist(IDs[player])) {
+      else if (exist(IDs[player]))
+      {
         var ID = IDs[player];
         PREF._Init(ID);
         SetCSS();
@@ -2479,14 +2999,16 @@ if (debug) console.debug('BWEunload', overDiv);
         plDatas['N'] = DATAS._PlayerLevel();
         plDatas['P'] = Number(DATAS._PlayerXP());
         LS._SetVar('BWE:P:' + player, plDatas);
-        if ((p == 'pOProfile' || p == 'pProfile') && PREF._Get(p, 'sh') == 1) {
+        if ((p == 'pOProfile' || p == 'pProfile') && PREF._Get(p, 'sh') == 1)
+        {
           var prof = DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='profile-hdr']", null);
           var name = new RegExp(L._Get('sNameTest')).exec(prof);
           var ttable = DOM._GetFirstNode(
-              "//div[@id='content-mid']/div[@style='float: left; width: 49%;']/fieldset[1]/table");
+            "//div[@id='content-mid']/div[@style='float: left; width: 49%;']/fieldset[1]/table");
           var trList = DOM._GetNodes("./tbody/tr", ttable);
-if (debug) console.debug('pProfile', prof, name, ttable, trList);
-          if (name != null && ttable != null && trList.snapshotLength == 14) {
+          if (debug) console.debug('pProfile', prof, name, ttable, trList);
+          if (name != null && ttable != null && trList.snapshotLength == 14)
+          {
             // récupère les données
             var v = LS._GetVar('BWE:P:' + name[1], {}),
               uid = /.*\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNodeTextContent(
@@ -2510,13 +3032,16 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
             ttable.parentNode.insertBefore(newTable['table'], ttable.nextSibling);
             // garde uniquement les lignes sélectionnées
             var newLig = PREF._Get(p, 'list');
-            for (var j = 0; j < newLig.length; j++) {
-              if (newLig[j][1] == 1) {
+            for (var j = 0; j < newLig.length; j++)
+            {
+              if (newLig[j][1] == 1)
+              {
                 var ligne;
                 // ligne existante
                 if (newLig[j][2] != -1) ligne = newTable['tbody'].appendChild(trList.snapshotItem(newLig[j]
                   [2]).cloneNode(true));
-                else { // ligne à créer
+                else
+                { // ligne à créer
                   var trIU = {
                       'tr': ['tr', , , , newTable['tbody']],
                       'td1': ['td', , , , 'tr'],
@@ -2527,7 +3052,8 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
                     line = newLig[j][0];
                   ligne = newTR['tr'];
                   if (line == 7) newTR['td2'].textContent = L._Get('sNivFormat', niv, pts);
-                  else if (line == 8) {
+                  else if (line == 8)
+                  {
                     var show = PREF._Get('grp', 'sh') == 1,
                       grp = LS._GetVar('BWE:G:' + ID, { 'A': [], 'B': [] }),
                       grpIU = {
@@ -2549,7 +3075,8 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
                         'labelA': ['label', { 'for': encodeURIComponent('BWEcheckA_' + name[1]) },
                           ['A'], , newTR['td2']
                         ],
-                        'checkA': ['input', {
+                        'checkA': ['input',
+                          {
                             'class': 'BWEInput',
                             'type': 'checkbox',
                             'id': encodeURIComponent('BWEcheckA_' + name[1]),
@@ -2561,7 +3088,8 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
                         'labelB': ['label', { 'for': encodeURIComponent('BWEcheckB_' + name[1]) },
                           ['B'], , newTR['td2']
                         ],
-                        'checkB': ['input', {
+                        'checkB': ['input',
+                          {
                             'class': 'BWEInput',
                             'type': 'checkbox',
                             'id': encodeURIComponent('BWEcheckB_' + name[1]),
@@ -2574,7 +3102,9 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
                       grTD = IU._CreateElements(grTDIU);
                     GroupTable('A');
                     GroupTable('B');
-                  } else if (line == 14) {
+                  }
+                  else if (line == 14)
+                  {
                     var trIU = {
                         'table': ['table', { 'style': 'width:90%;' }, , , newTR['td2']],
                         'tr10': ['tr', , , , 'table'],
@@ -2594,14 +3124,17 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
             }
             ttable.setAttribute('style', 'display:none');
           }
-        } else if (p == 'pBuild' && PREF._Get(p, 'sh') == 1) {
+        }
+        else if (p == 'pBuild' && PREF._Get(p, 'sh') == 1)
+        {
           var target = DOM._GetFirstNode("//div[@id='content-mid']"),
             builds = DOM._GetNodes("./div[@class='building']", target),
             allnode = DOM._GetNodes(
               "./div[(@class='bldprogress' or @class='strefaheader' or @class='building' or @class='hr720' or @class='hr620')]",
               target);
-if (debug) console.debug('pBuild', target, builds, allnode);
-          if (target != null) {
+          if (debug) console.debug('pBuild', target, builds, allnode);
+          if (target != null)
+          {
             var newTableIU = {
                 'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }],
                 'hr1': ['div', { 'class': 'hr720' }, , , 'div'],
@@ -2615,21 +3148,26 @@ if (debug) console.debug('pBuild', target, builds, allnode);
               newTable = IU._CreateElements(newTableIU);
             target.insertBefore(newTable['div'], target.childNodes[0]);
             BuildTable(newTable, builds);
-//            for (var i = 0; i < allnode.snapshotLength; i++) { allnode.snapshotItem(i).setAttribute('style',
-//                'display:none'); }
+            //            for (var i = 0; i < allnode.snapshotLength; i++) { allnode.snapshotItem(i).setAttribute('style',
+            //                'display:none'); }
           }
-        } else if (p == 'pTownview' && PREF._Get(p, 'sh') == 1) {
+        }
+        else if (p == 'pTownview' && PREF._Get(p, 'sh') == 1)
+        {
           var target = DOM._GetFirstNode("//div[@id='content-mid']/div[@id='tw_table']"),
             ttable = DOM._GetFirstNode(".//table[@class='hoverTable']", target);
-          if (target != null && ttable != null) {
+          if (target != null && ttable != null)
+          {
             // recréé le tableau en cas de changement
-            var observer = new MutationObserver(function (mutations) {
+            var observer = new MutationObserver(function(mutations)
+            {
               var ttable = DOM._GetFirstNode(
                   "//div[@id='content-mid']/div[@id='tw_table']//table[@class='hoverTable']"),
                 theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
                 tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-if (debug) console.debug('pTownview', ttable, target, theader, tlist);
-              if (ttable != null && theader != null) {
+              if (debug) console.debug('pTownview', ttable, target, theader, tlist);
+              if (ttable != null && theader != null)
+              {
                 observer.disconnect();
                 var oldTable = DOM._GetFirstNode("//div[@id='BWE" + p + "div']");
                 if (oldTable != null) oldTable.parentNode.removeChild(oldTable);
@@ -2650,24 +3188,31 @@ if (debug) console.debug('pTownview', ttable, target, theader, tlist);
             observer.observe(target, { childList: true, attributes: true, subtree: true });
             ttable.setAttribute('style', 'display:none'); // provoque observer
           }
-        } else if (p == 'pOAliance' || p == 'pAliance') {
+        }
+        else if (p == 'pOAliance' || p == 'pAliance')
+        {
           // options pour afficher/masquer
           var td = DOM._GetNodes("//div[@id='content-mid']//div[@class='clan-desc']");
-          if (td != null && PREF._Get('div', 'chDe') == 1) {
-            if (exist(td.snapshotItem(0))) {
+          if (td != null && PREF._Get('div', 'chDe') == 1)
+          {
+            if (exist(td.snapshotItem(0)))
+            {
               var td1prev = DOM._GetFirstNode("./parent::td/preceding-sibling::td/b", td.snapshotItem(0));
-              if (td1prev != null) {
+              if (td1prev != null)
+              {
                 var show = PREF._Get(p, 'sh1') == 1;
                 td.snapshotItem(0).setAttribute('style', 'display:' + (show ? 'block;' : 'none;'));
                 td1prev.setAttribute('style', 'color:' + (show ? 'lime;' : 'red;') + ';cursor: pointer;');
                 IU._addEvent(td1prev, 'click', show_hide, [td.snapshotItem(0), td1prev, 'sh1']);
               }
             }
-            if (exist(td.snapshotItem(1))) {
+            if (exist(td.snapshotItem(1)))
+            {
               var td2prev = DOM._GetFirstNode(
                 "//div[@id='content-mid']//td[@style='padding-top: 10px; padding-bottom: 4px; vertical-align: top;']/b"
               );
-              if (td2prev != null) {
+              if (td2prev != null)
+              {
                 var show = PREF._Get(p, 'sh2') == 1;
                 td.snapshotItem(1).setAttribute('style', 'display:' + (show ? 'block;' : 'none;'));
                 td2prev.setAttribute('style', 'color:' + (show ? 'lime;' : 'red;') + ';cursor: pointer;');
@@ -2676,12 +3221,14 @@ if (debug) console.debug('pTownview', ttable, target, theader, tlist);
             }
           }
           // liste des vampires
-          if (PREF._Get(p, 'sh') == 1) {
+          if (PREF._Get(p, 'sh') == 1)
+          {
             var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='sortable hoverTable']"),
               theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
               tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-if (debug) console.debug('pAliance', ttable, theader, tlist);
-            if (ttable != null && theader != null) {
+            if (debug) console.debug('pAliance', ttable, theader, tlist);
+            if (ttable != null && theader != null)
+            {
               var newTableIU = {
                   'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }, ],
                   'table': ['table', { 'id': 'BWE' + p + 'table', 'style': 'width:95%;' }, , , 'div'],
@@ -2693,7 +3240,8 @@ if (debug) console.debug('pAliance', ttable, theader, tlist);
               ttable.parentNode.insertBefore(newTable['div'], ttable.nextSibling);
               MixteTable(theader, tlist, p);
               ttable.setAttribute('style', 'display:none');
-              if (DOM._GetFirstNode("//td[@id='BWE" + p + "col21']") != null) {
+              if (DOM._GetFirstNode("//td[@id='BWE" + p + "col21']") != null)
+              {
                 var newGrpIU = {
                     'tableGrp': ['table', { 'id': 'BWEGrp', 'style': 'width:95%;' }, , , newTable['div']],
                     'tr0': ['tr', , , , 'tableGrp'],
@@ -2710,12 +3258,15 @@ if (debug) console.debug('pAliance', ttable, theader, tlist);
               }
             }
           }
-        } else if (p == 'pAlianceList' && PREF._Get(p, 'sh') == 1) {
+        }
+        else if (p == 'pAlianceList' && PREF._Get(p, 'sh') == 1)
+        {
           var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='hoverTable']"),
             theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
             tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-if (debug) console.debug('pAlianceList', ttable, theader, tlist);
-          if (ttable != null && theader != null) {
+          if (debug) console.debug('pAlianceList', ttable, theader, tlist);
+          if (ttable != null && theader != null)
+          {
             var newTableIU = {
                 'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }, ],
                 'table': ['table', { 'id': 'BWE' + p + 'table', 'style': 'width:100%;' }, , , 'div'],
@@ -2728,19 +3279,24 @@ if (debug) console.debug('pAlianceList', ttable, theader, tlist);
             MixteTable(theader, tlist, p);
             ttable.setAttribute('style', 'display:none');
           }
-        } else if (p == 'pMkstone' || p == 'pUpgitem' || p == 'pMixitem' || p == 'pDestitem' || p ==
-          'pTatoo') {
-          if (PREF._Get('div', 'chSt') == 1) {
+        }
+        else if (p == 'pMkstone' || p == 'pUpgitem' || p == 'pMixitem' || p == 'pDestitem' || p ==
+          'pTatoo')
+        {
+          if (PREF._Get('div', 'chSt') == 1)
+          {
             var cost = new Array(['disp_stone_blood', 1], ['disp_stone_heart', 10], ['disp_stone_life', 30], [
                 'disp_stone_change', 60], ['disp_stone_soul', 120]),
               sum = 0;
-            for (var i = 0; i < cost.length; i++) {
+            for (var i = 0; i < cost.length; i++)
+            {
               var r = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//span[@id='" + cost[i][0] +
                 "']", null);
               if (r != null) sum = sum + (cost[i][1] * parseInt(r));
             }
             var r = DOM._GetFirstNode("//div[@id='content-mid']//fieldset[@class='profile mixer']");
-            if (r != null) {
+            if (r != null)
+            {
               var totalIU = {
                   'div1': ['div', { 'align': 'center' }],
                   'div2': ['div', { 'style': 'padding:2px;' },
@@ -2752,51 +3308,55 @@ if (debug) console.debug('pAlianceList', ttable, theader, tlist);
               r.parentNode.insertBefore(total['div1'], r.nextSibling);
             }
           }
-        } else if (p == 'pAmbushRoot' && PREF._Get('div', 'chLo') == 1) {
+        }
+        else if (p == 'pAmbushRoot' && PREF._Get('div', 'chLo') == 1)
+        {
           var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//span[@id='atkTimeLeft']/parent::div/parent::div");
-//          var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
+          //          var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
           var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script[contains(., 'atkTimeLeft')]", null);
 if (debug) console.debug('pAmbushRoot', atkaction, ambushScript);
-          if (!isNull(atkaction) && !isNull(ambushScript)) {
-            var playerVS = DOM._GetLastNode(
-                "./table/tbody/tr[@class='tblheader']/td/a[@class='players']", atkaction);
-//            var playerVS = DOM._GetFirstNodeTextContent(
-//                "//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='players']", null);
+          if (!isNull(atkaction) && !isNull(ambushScript))
+          {
+            var playerVS = DOM._GetLastNode("./table/tbody/tr[@class='tblheader']/td/a[@class='players']", atkaction);
             var r = new RegExp(L._Get('sAtkScript')).exec(ambushScript);
 if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
-            if (!isNull(DATAS._Time()) && !isNull(playerVS) && !isNull(r)) {
+            if (!isNull(DATAS._Time()) && !isNull(playerVS) && !isNull(r))
+            {
               UpdateHistory(ID, playerVS.textContent, r[2], new Date(DATAS._Time().getTime() + Number(r[1]) * 1000), null);
             }
           }
-        } else if (p == 'pMsgList' || p == 'pMsgSaveList' || p == 'pMsgSendList') {
+        }
+        else if (p == 'pMsgList' || p == 'pMsgSaveList' || p == 'pMsgSendList')
+        {
           var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
             ttable = DOM._GetFirstNode("(./ancestor::table)[last()]", theader),
             tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-if (debug) console.debug('pMsgList', ttable, theader, tlist);
-          if (PREF._Get('div', 'chLo') == 1) {
-            for (var i = 0; i < tlist.snapshotLength; i++) {
-              var node = tlist.snapshotItem(i),
-                msg = DOM._GetFirstNodeTextContent("./td[2]/a", null, node),
-                msgDate = DOM._GetFirstNodeTextContent("./td[4]", null, node),
-                msgId = DOM._GetFirstNode("./td[1]/input", node);
-              var v = new RegExp("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})").exec(
-                msgDate);
+          if (PREF._Get('div', 'chLo') == 1)
+          {
+            for (var i = 0; i < tlist.snapshotLength; i++)
+            {
+              var node = tlist.snapshotItem(i);
+              var msg = DOM._GetFirstNodeTextContent("./td[2]/a", '', node).trim();
+              var msgDate = DOM._GetFirstNodeTextContent("./td[4]", '', node).trim();
+              var msgId = DOM._GetFirstNode("./td[1]/input", node);
+              var v = new RegExp("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})").exec(msgDate);
               msgDate = (v != null) ? new Date(v[1], v[2] - 1, v[3], v[4], v[5], v[6]) : null;
-              if (msg != null && msgDate != null && msgId != null) {
-                var msgId = msgId.getAttribute('id').replace('msgid_', ''),
-                  m1 = new RegExp(L._Get('sAmbushMsg1')).exec(msg),
-                  m2 = new RegExp(L._Get('sAmbushMsg2')).exec(msg);
+              if (msg !== '' && msgDate !== null && msgId !== null)
+              {
+                var msgId = msgId.getAttribute('id').replace('msgid_', '');
+                var m1 = new RegExp(L._Get('sAmbushMsg1')).exec(msg);
+                var m2 = new RegExp(L._Get('sAmbushMsg2')).exec(msg);
+if (debug) console.debug('msgId, m1, m2 : ', msgId, m1, m2);
                 if (m1 != null) UpdateHistory(m1[1], ID, msgId, msgDate, null);
                 else if (m2 != null) UpdateHistory(ID, m2[1], msgId, msgDate, null);
               }
             }
           }
-          if (ttable != null && theader != null && PREF._Get(p, 'sh') == 1) {
+          if (ttable != null && theader != null && PREF._Get(p, 'sh') == 1)
+          {
             var newTableIU = {
                 'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }, ],
-                'table': ['table', { 'id': 'BWE' + p + 'table', 'class': 'BWETabMsg', 'style': 'width:100%;' }, , ,
-                  'div'
-                ],
+                'table': ['table', { 'id': 'BWE' + p + 'table', 'class': 'BWETabMsg', 'style': 'width:100%;' }, , , 'div'],
                 'thead': ['thead', , , , 'table'],
                 'tr': ['tr', { 'id': 'BWE' + p + 'header', 'class': 'tblheader' }, , , 'thead'],
                 'tbody': ['tbody', { 'id': 'BWE' + p + 'body' }, , , 'table']
@@ -2806,13 +3366,17 @@ if (debug) console.debug('pMsgList', ttable, theader, tlist);
             MixteTable(theader, tlist, p);
             ttable.setAttribute('style', 'display:none');
           }
-        } else if (p == 'pMsg' || p == 'pMsgSave') {
+        }
+        else if (p == 'pMsg' || p == 'pMsgSave')
+        {
           // Analyse le message d'embuscade
           var msgContent = DOM._GetFirstNodeInnerHTML("//div[@class='msg-content ']", null);
-          if (msgContent != null && PREF._Get('div', 'chLo') == 1) {
+          if (msgContent != null && PREF._Get('div', 'chLo') == 1)
+          {
             // embuscade
             var r = new RegExp(L._Get('sAmbushTest1')).exec(msgContent);
-            if (r != null) {
+            if (r != null)
+            {
               var att = r[1],
                 def = r[2],
                 //[%,réussite,PV att,PV def,aa,ad,ea,ed,ca,cd,pa,pd,ressources]
@@ -2833,24 +3397,29 @@ if (debug) console.debug('pMsgList', ttable, theader, tlist);
               if (r != null && divShow[1] == 1) emb[0] = r[1];
               // embuscade réussie
               var r = new RegExp(L._Get('sAmbushTest3', att)).exec(msgContent);
-              if (r != null) {
+              if (r != null)
+              {
                 // résultat
                 var r1 = new RegExp(L._Get('sAmbushTest4')).exec(msgContent),
                   r2 = new RegExp(L._Get('sAmbushTest5', def)).exec(msgContent),
                   r3 = new RegExp(L._Get('sAmbushTest6')).exec(msgContent);
-                if (r1 != null) {
+                if (r1 != null)
+                {
                   emb[1] = 'v';
-                  if (logShow[5] == 1) { // embu réussie
+                  if (logShow[5] == 1)
+                  { // embu réussie
                     // ressources (pdp,pdh,lol,sang,pop,évo)
                     var r = new RegExp(L._Get('sAmbushTest13', att)).exec(msgContent);
                     if (r != null && GaShow[0] == 1) emb[12][0] = Number(r[1]);
                     var r = new RegExp(L._Get('sAmbushTest14', att)).exec(msgContent);
-                    if (r != null) {
+                    if (r != null)
+                    {
                       if (GaShow[0] == 1) emb[12][0] = Number(r[1]);
                       if (GaShow[1] == 1) emb[12][1] = Number(r[2]);
                     }
                     var r = new RegExp(L._Get('sAmbushTest15', def)).exec(msgContent);
-                    if (r != null) {
+                    if (r != null)
+                    {
                       if (GaShow[3] == 1) emb[12][3] = Number(r[1]);
                       if (GaShow[4] == 1) emb[12][4] = Number(r[2]);
                       if (GaShow[5] == 1) emb[12][5] = Number(r[3]);
@@ -2858,25 +3427,32 @@ if (debug) console.debug('pMsgList', ttable, theader, tlist);
                     var r = new RegExp(L._Get('sAmbushTest16', att)).exec(msgContent);
                     if (r != null && GaShow[2] == 1) emb[12][2] = Number(r[1]);
                   }
-                } else if (r2 != null) { // embu ratée
+                }
+                else if (r2 != null)
+                { // embu ratée
                   emb[1] = 'd';
-                  if (logShow[5] == 1) {
+                  if (logShow[5] == 1)
+                  {
                     // ressources (pdp,lol,sang,pop)
                     var r = new RegExp(L._Get('sAmbushTest13', def)).exec(msgContent);
                     if (r != null && GaShow[0] == 1) emb[12][0] = Number(r[1]);
                     var r = new RegExp(L._Get('sAmbushTest15', att)).exec(msgContent);
-                    if (r != null) {
+                    if (r != null)
+                    {
                       if (GaShow[3] == 1) emb[12][3] = Number(r[1]);
                       if (GaShow[4] == 1) emb[12][4] = Number(r[2]);
                       if (GaShow[5] == 1) emb[12][5] = Number(r[3]);
                     }
                   }
-                } else if (r3 != null) emb[1] = 'n'; // embu sans gagnant
+                }
+                else if (r3 != null) emb[1] = 'n'; // embu sans gagnant
                 // PV en fin de combat
                 var sommaire = DOM._GetLastNodeInnerHTML("//div[@class='sum2']", null);
-                if (sommaire != null) {
+                if (sommaire != null)
+                {
                   var r = new RegExp(L._Get('sAmbushTest7')).exec(sommaire);
-                  if (r != null) {
+                  if (r != null)
+                  {
                     if (logShow[1] == 1 && divShow[2] == 1) emb[2] = L._Get('sPVFormat', r[1], r[2]);
                     if (logShow[1] == 1 && divShow[3] == 1) emb[3] = L._Get('sPVFormat', r[3], r[4]);
                   }
@@ -2885,50 +3461,64 @@ if (debug) console.debug('pMsgList', ttable, theader, tlist);
               // embuscade ratée : "Tu as été remarquée..."
               else emb[1] = 'r';
               // Arcanes
-              if (logShow[2] === 1) {
+              if (logShow[2] === 1)
+              {
                 var i;
                 var model = new RegExp(L._Get('sAmbushArc'), 'g');
                 var arc = L._Get('sArcTal');
-                while ((i = model.exec(msgContent)) != null) {
-                  if (i[2] == att) {
+                while ((i = model.exec(msgContent)) != null)
+                {
+                  if (i[2] == att)
+                  {
                     emb[4].push([arc.indexOf(i[3]), Number(i[4])]);
                   }
-                  else if (i[2] == def) {
+                  else if (i[2] == def)
+                  {
                     emb[5].push([arc.indexOf(i[3]), Number(i[4])]);
                   }
                 }
               }
               // Talismans
-              if (logShow[2] == 1) {
+              if (logShow[2] == 1)
+              {
                 var i, model = new RegExp(L._Get('sAmbushTal'), 'g'),
                   tal = L._Get('sArcTal');
-                while ((i = model.exec(msgContent)) != null) {
+                while ((i = model.exec(msgContent)) != null)
+                {
                   var y, model2 = new RegExp(L._Get('sAmbushTal2'), 'g');
-                  while ((y = model2.exec(i[1])) != null) {
+                  while ((y = model2.exec(i[1])) != null)
+                  {
                     if (i[2] == att) emb[4].push([tal.indexOf(y[2]), Number(y[3])]);
                     else if (i[2] == def) emb[5].push([tal.indexOf(y[2]), Number(y[3])]);
                   }
                 }
               }
               // Evolutions
-              if (logShow[3] == 1) {
+              if (logShow[3] == 1)
+              {
                 var i, model = new RegExp(L._Get('sAmbushEvo'), 'g'),
                   evo = L._Get('sEvo');
-                while ((i = model.exec(msgContent)) != null) {
+                while ((i = model.exec(msgContent)) != null)
+                {
                   var y, model2 = new RegExp(L._Get('sAmbushEvo2'), 'g');
-                  while ((y = model2.exec(i[1])) != null) {
+                  while ((y = model2.exec(i[1])) != null)
+                  {
                     if (i[2] == att) emb[6].push([evo.indexOf(y[2]), Number(y[3])]);
                     else if (i[2] == def) emb[7].push([evo.indexOf(y[2]), Number(y[3])]);
                   }
                 }
               }
               // Caracs - sauvegarde l'ensemble - titres 43-55
-              if (logShow[4] == 1) {
+              if (logShow[4] == 1)
+              {
                 var table = DOM._GetFirstNodeInnerHTML("//table[@class='fight']");
-                if (table != null) {
-                  for (var i = 0; i < 13; i++) {
+                if (table != null)
+                {
+                  for (var i = 0; i < 13; i++)
+                  {
                     var r = new RegExp(L._Get('sAmbushTest11', L._Get('sColTitle')[i + 43])).exec(table);
-                    if (r != null) {
+                    if (r != null)
+                    {
                       emb[8][i] = i == 1 ? r[1] : Number(r[1]);
                       emb[9][i] = i == 1 ? r[2] : Number(r[2]);
                     }
@@ -2936,10 +3526,12 @@ if (debug) console.debug('pMsgList', ttable, theader, tlist);
                 }
               }
               // Objets
-              if (logShow[1] == 1) {
+              if (logShow[1] == 1)
+              {
                 var i, model = new RegExp(L._Get('sAmbushTest12'), 'g'),
                   obj = L._Get('sObjet');
-                while ((i = model.exec(msgContent)) != null) {
+                while ((i = model.exec(msgContent)) != null)
+                {
                   if (i[2] == att && divShow[4] == 1) emb[10].push(obj.indexOf(i[3]));
                   else if (i[2] == def && divShow[5] == 1) emb[11].push(obj.indexOf(i[3]));
                 }
@@ -2947,12 +3539,15 @@ if (debug) console.debug('pMsgList', ttable, theader, tlist);
               UpdateHistory(att == player ? ID : att, def == player ? ID : def, qsMid, null, emb);
             }
           }
-        } else if (p == 'pMsgFriendList' && PREF._Get(p, 'sh') == 1) {
+        }
+        else if (p == 'pMsgFriendList' && PREF._Get(p, 'sh') == 1)
+        {
           var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
             ttable = DOM._GetFirstNode("(./ancestor::table)[last()]", theader),
             tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
           if (debug) console.debug('pMsgFriendList', ttable, theader, tlist);
-          if (ttable != null && theader != null) {
+          if (ttable != null && theader != null)
+          {
             var newTableIU = {
                 'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }, ],
                 'table': ['table', { 'id': 'BWE' + p + 'table', 'style': 'width: 300px; margin-top: 20px;' }, , ,
@@ -2967,12 +3562,15 @@ if (debug) console.debug('pMsgList', ttable, theader, tlist);
             MixteTable(theader, tlist, p);
             ttable.setAttribute('style', 'display:none');
           }
-        } else if (p == 'pRank' && PREF._Get(p, 'sh') == 1) {
+        }
+        else if (p == 'pRank' && PREF._Get(p, 'sh') == 1)
+        {
           var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='rank hoverTable']"),
             theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
             tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
           if (debug) console.debug('pRank', ttable, theader, tlist);
-          if (ttable != null && theader != null) {
+          if (ttable != null && theader != null)
+          {
             var newTableIU = {
                 'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }, ],
                 'table': ['table', { 'id': 'BWE' + p + 'table', 'style': 'width:95%;' }, , , 'div'],
@@ -2985,11 +3583,14 @@ if (debug) console.debug('pMsgList', ttable, theader, tlist);
             MixteTable(theader, tlist, p);
             ttable.setAttribute('style', 'display:none');
           }
-        } else if (p == 'pRootSettings' || p == 'pSettingsAi' || p == 'pSettingsAcc' || p == 'pSettingsVac' ||
-          p == 'pSettingsDelchar') {
+        }
+        else if (p == 'pRootSettings' || p == 'pSettingsAi' || p == 'pSettingsAcc' || p == 'pSettingsVac' ||
+          p == 'pSettingsDelchar')
+        {
           var nodeOptions = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='top-options']");
           if (debug) console.debug('pSettings', nodeOptions);
-          if (nodeOptions != null) {
+          if (nodeOptions != null)
+          {
             var titleMenuIU = {
                 '1': ['div', , [' - [ '], , nodeOptions],
                 '2': ['a', { 'href': '#', 'onclick': 'return false;' },
@@ -3004,7 +3605,8 @@ if (debug) console.debug('pMsgList', ttable, theader, tlist);
               nodeTitle = IU._CreateElements(titleMenuIU);
           }
         }
-      } else alert(L._Get("sUnknowID"));
+      }
+      else alert(L._Get("sUnknowID"));
     }
   }
   if (debug) console.debug('BWEend - time %oms', Date.now() - debugTime);
