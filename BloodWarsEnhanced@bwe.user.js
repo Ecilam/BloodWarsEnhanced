@@ -1,10 +1,10 @@
 // coding: utf-8 (sans BOM)
 // ==UserScript==
-// @author		Ecilam
-// @name		Blood Wars Enhanced
-// @version		2017.06.26
-// @namespace	BWE
-// @description	Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
+// @author      Ecilam
+// @name        Blood Wars Enhanced
+// @version     2017.06.28
+// @namespace   BWE
+// @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
 // @homepageURL https://github.com/Ecilam/BloodWarsEnhanced
@@ -18,9 +18,9 @@
 (function()
 {
   "use strict";
-
+  
+  var debug = false; // @type {Boolean} Active l'affichage des messages sur la console de débogages.
   var debugTime = Date.now(); // @type {Date} permet de mesurer le temps d'execution du script.
-  var debug = false; // @type {Boolean} Active l'affichage des messages sur la console de dÃ©bogages.
 
   function _Type(v)
   {
@@ -52,7 +52,7 @@
 
   /**
    * @method clone
-   * CrÃ©Ã© une copie de l'objet
+   * Créé une copie de l'objet
    * @param {Object} obj
    * @return {Object} newObjet
    */
@@ -1143,7 +1143,11 @@
         // mise à jour des listes si nécessaire
         for (var i in prefs)
         {
-          if (exist(prefs[i]['list']) && prefs[i]['list'].length != defPrefs[i]['list'].length)
+          if (!exist(defPrefs[i])) 
+          {
+            delete prefs[i];
+          }
+          else if (exist(prefs[i]['list']) && prefs[i]['list'].length != defPrefs[i]['list'].length)
           {
             for (var j = 0; j < defPrefs[i]['list'].length; j++)
             {
@@ -1158,8 +1162,8 @@
               }
               if (y == false) prefs[i]['list'].push(defPrefs[i]['list'][j]);
             }
-            LS._SetVar(index + ID, prefs);
           }
+          LS._SetVar(index + ID, prefs);
         }
       },
       _Get: function(grp, key)
@@ -1987,6 +1991,61 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     var list = DOM._GetNodes("./tr", table['tbody']);
     FctTriA(tri[0], tri[1], p, table['tbody'], list);
   }
+  function observerList()
+  {
+    var ttable = document.getElementById('messagesTable');
+    if (ttable !== null)
+    {
+      var tlist = DOM._GetNodes("./tbody/tr[not(@class='hidden')]", ttable);
+      var theader = DOM._GetFirstNode('./thead/tr', ttable);
+      if (theader !== null && PREF._Get(p, 'sh') === 1)
+      {
+        var oldTable = DOM._GetFirstNode("//div[@id='BWE" + p + "div']");
+        if (oldTable !== null) oldTable.parentNode.removeChild(oldTable);
+        var newTableIU = {
+            'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }, ],
+            'table': ['table', { 'id': 'BWE' + p + 'table', 'class': 'BWETabMsg', 'style': 'width:100%;' }, , , 'div'],
+            'thead': ['thead', , , , 'table'],
+            'tr': ['tr', { 'id': 'BWE' + p + 'header', 'class': 'tblheader' }, , , 'thead'],
+            'tbody': ['tbody', { 'id': 'BWE' + p + 'body' }, , , 'table']
+          },
+          newTable = IU._CreateElements(newTableIU);
+        ttable.parentNode.parentNode.insertBefore(newTable['div'], ttable.parentNode.nextSibling);
+        MixteTable(theader, tlist, p);
+        var divInv = DOM._GetLastNode("./parent::form/input[@class='button']", ttable);
+        if (divInv !== null)
+        {
+          newTable['div'].parentNode.insertBefore(divInv, newTable['div'].nextSibling);
+        }
+        var divAjax = document.getElementById('loadAjaxMessages');
+        if (divAjax !== null)
+        {
+          newTable['div'].parentNode.insertBefore(divAjax, newTable['div'].nextSibling);
+        }
+        ttable.classList.add('hidden');
+      }
+      if (PREF._Get('div', 'chLo') === 1)
+      {
+        for (var i = 0; i < tlist.snapshotLength; i++)
+        {
+          var node = tlist.snapshotItem(i);
+          var msg = DOM._GetFirstNodeTextContent("./td[2]/a", '', node).trim();
+          var msgDate = DOM._GetFirstNodeTextContent("./td[4]", '', node).trim();
+          var msgId = DOM._GetFirstNode("./td[1]/input", node);
+          var v = new RegExp("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})").exec(msgDate);
+          msgDate = (v != null) ? new Date(v[1], v[2] - 1, v[3], v[4], v[5], v[6]) : null;
+          if (msg !== '' && msgDate !== null && msgId !== null)
+          {
+            var msgId = msgId.getAttribute('id').replace('msgid_', '');
+            var m1 = new RegExp(L._Get('sAmbushMsg1')).exec(msg);
+            var m2 = new RegExp(L._Get('sAmbushMsg2')).exec(msg);
+            if (m1 != null) UpdateHistory(m1[1], ID, msgId, msgDate, null);
+            else if (m2 != null) UpdateHistory(ID, m2[1], msgId, msgDate, null);
+          }
+        }
+      }
+    }
+  }
   // Alimente un tableau déjà créé au format suivant :
   // - table ('id':'BWE'+p+'table')
   // - head (child de table) -> tr ('id':'BWE'+p+'header')
@@ -2085,22 +2144,17 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       // body
       for (var j = 0; j < list.snapshotLength; j++)
       {
-        var oldTR = list.snapshotItem(j),
-          newTR = IU._CreateElement('tr', { 'class': 'BWETR' + (j % 2 == 0 ? '' : ' BWEeven') }, [], {},
-            newBody),
-          name = id != null ? DOM._GetFirstNodeTextContent(idx[p][0] + '/text()', '', oldTR).trim() : '',
-          v = {};
-        if (name != '')
+        var oldTR = list.snapshotItem(j);
+        var newTR = IU._CreateElement('tr', { 'class': 'BWETR' + (j % 2 == 0 ? '' : ' BWEeven') }, [], {}, newBody);
+        var name = id !== null ? DOM._GetFirstNodeTextContent(idx[p][0] + '/text()', '', oldTR).trim() : '';
+        var v = {};
+        if (name !== '')
         {
           v = LS._GetVar('BWE:P:' + name, {});
-          var niv = idx[p][1] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][1] + "]", null, oldTR) :
-            null,
-            pts = idx[p][2] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][2] + "]", null, oldTR) :
-            null,
-            race = idx[p][3] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][3] + "]", null, oldTR) :
-            null,
-            sexe = idx[p][4] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][4] + "]", null, oldTR) :
-            null;
+          var niv = idx[p][1] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][1] + "]", null, oldTR) : null;
+          var pts = idx[p][2] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][2] + "]", null, oldTR) : null;
+          var race = idx[p][3] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][3] + "]", null, oldTR) : null;
+          var sexe = idx[p][4] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][4] + "]", null, oldTR) : null;
           if (niv != null) v['N'] = niv;
           if (pts != null)
           {
@@ -2108,9 +2162,9 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
             if (!exist(v['N']) || (exist(v['N']) && v['N'] < GetLvl(v['P'])[0])) v['N'] = GetLvl(v['P'])[
               2];
           }
-          if (race != null) v['R'] = L._Get('sRaces').indexOf(race);
-          if (sexe != null) v['S'] = sexe;
-          if (p == 'pRank' && name == player)
+          if (race !== null) v['R'] = L._Get('sRaces').indexOf(race);
+          if (sexe !== null) v['S'] = sexe;
+          if (p === 'pRank' && name === player)
           {
             var rank = DOM._GetFirstNodeTextContent("./td[1]", null, oldTR);
             if (rank != null) v['C'] = Number(rank);
@@ -2121,7 +2175,8 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         }
         for (var i = 0; i < newCol.length; i++)
         {
-          var newTD, col = newCol[i][0];
+          var newTD;
+          var col = newCol[i][0];
           if (newCol[i][2] != -1)
           { // colonne existante
             var td = DOM._GetFirstNode("./td[" + newCol[i][2] + "]", oldTR);
@@ -2168,8 +2223,10 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
             else if (col == 62)
             {
               var check = DOM._GetFirstNode("./input", td);
-              if (check != null) IU._addEvent(newTD, 'change', function(e, i) { i.checked = e.target.checked; },
-                check);
+              if (check !== null)
+              {
+                IU._addEvent(newTD, 'change', function(e, i) { i.checked = e.target.checked; }, check);
+              }
             }
           }
           else
@@ -2535,14 +2592,17 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       var newNode = node;
       for (var j = 0; j < list.length; j++)
       {
-        if (_Type(list[j][1]) == 'Array')
+        if (exist(list[j]))
         {
-          newNode = IU._CreateElement('optgroup', { 'label': L._Get("sTitresList")[list[j][0]] }, [], {},
-            node);
-          createList(list[j][1], newNode);
+          if (_Type(list[j][1]) == 'Array')
+          {
+            newNode = IU._CreateElement('optgroup', { 'label': L._Get("sTitresList")[list[j][0]] }, [], {},
+              node);
+            createList(list[j][1], newNode);
+          }
+          else IU._CreateElement('option', { 'value': list[j][1] }, [L._Get("sTitresList")[list[j][0]]], {},
+            newNode);
         }
-        else IU._CreateElement('option', { 'value': list[j][1] }, [L._Get("sTitresList")[list[j][0]]], {},
-          newNode);
       }
     }
     var r = DOM._GetNodes("./a", nodeOptions);
@@ -2955,15 +3015,6 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     {
       overDiv.style.visibility = 'hidden';
     }
-    /*    window.addEventListener("beforeunload",
-          function () {
-            var overDiv = document.getElementById("overDiv");
-            if (!isNull(overDiv) && overDiv.style.visibility === 'visible') {
-    if (debug) console.debug('BWEunload', overDiv);
-
-            }
-            return;
-          });*/
     var p = DATAS._GetPage(),
       player = DATAS._PlayerName(),
       IDs = LS._GetVar('BWE:IDS', {});
@@ -3165,7 +3216,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
                   "//div[@id='content-mid']/div[@id='tw_table']//table[@class='hoverTable']"),
                 theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
                 tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-              if (debug) console.debug('pTownview', ttable, target, theader, tlist);
+if (debug) console.debug('pTownview', ttable, target, theader, tlist);
               if (ttable != null && theader != null)
               {
                 observer.disconnect();
@@ -3328,43 +3379,16 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
         }
         else if (p == 'pMsgList' || p == 'pMsgSaveList' || p == 'pMsgSendList')
         {
-          var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
-            ttable = DOM._GetFirstNode("(./ancestor::table)[last()]", theader),
-            tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-          if (PREF._Get('div', 'chLo') == 1)
+          var ttable = document.getElementById('messagesTable');
+          if (ttable !== null)
           {
-            for (var i = 0; i < tlist.snapshotLength; i++)
+            var tbody = DOM._GetFirstNode('./tbody', ttable);
+            if (tbody !== null)
             {
-              var node = tlist.snapshotItem(i);
-              var msg = DOM._GetFirstNodeTextContent("./td[2]/a", '', node).trim();
-              var msgDate = DOM._GetFirstNodeTextContent("./td[4]", '', node).trim();
-              var msgId = DOM._GetFirstNode("./td[1]/input", node);
-              var v = new RegExp("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})").exec(msgDate);
-              msgDate = (v != null) ? new Date(v[1], v[2] - 1, v[3], v[4], v[5], v[6]) : null;
-              if (msg !== '' && msgDate !== null && msgId !== null)
-              {
-                var msgId = msgId.getAttribute('id').replace('msgid_', '');
-                var m1 = new RegExp(L._Get('sAmbushMsg1')).exec(msg);
-                var m2 = new RegExp(L._Get('sAmbushMsg2')).exec(msg);
-if (debug) console.debug('msgId, m1, m2 : ', msgId, m1, m2);
-                if (m1 != null) UpdateHistory(m1[1], ID, msgId, msgDate, null);
-                else if (m2 != null) UpdateHistory(ID, m2[1], msgId, msgDate, null);
-              }
+              observerList();
+              var observer = new MutationObserver(observerList);
+              observer.observe(tbody, { childList: true, attributes: true, subtree: true });
             }
-          }
-          if (ttable != null && theader != null && PREF._Get(p, 'sh') == 1)
-          {
-            var newTableIU = {
-                'div': ['div', { 'id': 'BWE' + p + 'div', 'align': 'center' }, ],
-                'table': ['table', { 'id': 'BWE' + p + 'table', 'class': 'BWETabMsg', 'style': 'width:100%;' }, , , 'div'],
-                'thead': ['thead', , , , 'table'],
-                'tr': ['tr', { 'id': 'BWE' + p + 'header', 'class': 'tblheader' }, , , 'thead'],
-                'tbody': ['tbody', { 'id': 'BWE' + p + 'body' }, , , 'table']
-              },
-              newTable = IU._CreateElements(newTableIU);
-            ttable.parentNode.insertBefore(newTable['div'], ttable.nextSibling);
-            MixteTable(theader, tlist, p);
-            ttable.setAttribute('style', 'display:none');
           }
         }
         else if (p == 'pMsg' || p == 'pMsgSave')
