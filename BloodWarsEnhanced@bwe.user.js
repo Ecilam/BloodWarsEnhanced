@@ -2,17 +2,17 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2017.06.28
+// @version     2017.08.10
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
 // @homepageURL https://github.com/Ecilam/BloodWarsEnhanced
 // @supportURL  https://github.com/Ecilam/BloodWarsEnhanced/issues
-// @include     /^http:\/\/r[0-9]*\.fr\.bloodwars\.net\/.*$/
-// @include     /^http:\/\/r[0-9]*\.bloodwars\.net\/.*$/
-// @include     /^http:\/\/r[0-9]*\.bloodwars\.interia\.pl\/.*$/
-// @include     /^http:\/\/beta[0-9]*\.bloodwars\.net\/.*$/
+// @include     /^https:\/\/r[0-9]*\.fr\.bloodwars\.net\/.*$/
+// @include     /^https:\/\/r[0-9]*\.bloodwars\.net\/.*$/
+// @include     /^https:\/\/r[0-9]*\.bloodwars\.interia\.pl\/.*$/
+// @include     /^https:\/\/beta[0-9]*\.bloodwars\.net\/.*$/
 // @grant       none
 // ==/UserScript==
 (function()
