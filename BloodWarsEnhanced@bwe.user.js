@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2017.08.10
+// @version     2017.08.10a
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -698,10 +698,10 @@
       "sIEResult": ["$1 résultat(s)", "$1 results", "$1 wyników"]
     };
     var langue; // 0 = français par défaut, 1 = anglais, 2 = polonais
-    if (/^http\:\/\/r[0-9]*\.fr\.bloodwars\.net/.test(location.href)) langue = 0;
-    else if (/^http\:\/\/r[0-9]*\.bloodwars\.net/.test(location.href)) langue = 1;
-    else if (/^http\:\/\/r[0-9]*\.bloodwars\.interia\.pl/.test(location.href) ||
-      /^http\:\/\/beta[0-9]*\.bloodwars\.net/.test(location.href)) langue = 2;
+    if (/^https\:\/\/r[0-9]*\.fr\.bloodwars\.net/.test(location.href)) langue = 0;
+    else if (/^https\:\/\/r[0-9]*\.bloodwars\.net/.test(location.href)) langue = 1;
+    else if (/^https\:\/\/r[0-9]*\.bloodwars\.interia\.pl/.test(location.href) ||
+      /^https\:\/\/beta[0-9]*\.bloodwars\.net/.test(location.href)) langue = 2;
     else langue = 0;
     return {
       //public stuff
