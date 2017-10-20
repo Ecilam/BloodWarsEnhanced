@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2017.08.10a
+// @version     2017.10.20
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -2215,11 +2215,6 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
                 }
               }
             }
-            else if (col == 26)
-            {
-              newTD.className = "";
-              newTD.style.color = td.style.color;
-            }
             else if (col == 62)
             {
               var check = DOM._GetFirstNode("./input", td);
@@ -3018,7 +3013,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     var p = DATAS._GetPage(),
       player = DATAS._PlayerName(),
       IDs = LS._GetVar('BWE:IDS', {});
-    if (debug) console.debug('BWEstart: ', player, IDs, p);
+if (debug) console.debug('BWEstart: ', player, IDs, p);
     // Pages gérées par le script
     if (['null', 'pServerDeco', 'pServerUpdate', 'pServerOther'].indexOf(p) == -1 && player != null)
     {
@@ -3057,7 +3052,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
           var ttable = DOM._GetFirstNode(
             "//div[@id='content-mid']/div[@style='float: left; width: 49%;']/fieldset[1]/table");
           var trList = DOM._GetNodes("./tbody/tr", ttable);
-          if (debug) console.debug('pProfile', prof, name, ttable, trList);
+if (debug) console.debug('pProfile', prof, name, ttable, trList);
           if (name != null && ttable != null && trList.snapshotLength == 14)
           {
             // récupère les données
@@ -3183,7 +3178,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
             allnode = DOM._GetNodes(
               "./div[(@class='bldprogress' or @class='strefaheader' or @class='building' or @class='hr720' or @class='hr620')]",
               target);
-          if (debug) console.debug('pBuild', target, builds, allnode);
+if (debug) console.debug('pBuild', target, builds, allnode);
           if (target != null)
           {
             var newTableIU = {
@@ -3277,7 +3272,7 @@ if (debug) console.debug('pTownview', ttable, target, theader, tlist);
             var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='sortable hoverTable']"),
               theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
               tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-            if (debug) console.debug('pAliance', ttable, theader, tlist);
+if (debug) console.debug('pAliance', ttable, theader, tlist);
             if (ttable != null && theader != null)
             {
               var newTableIU = {
@@ -3315,7 +3310,7 @@ if (debug) console.debug('pTownview', ttable, target, theader, tlist);
           var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='hoverTable']"),
             theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
             tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-          if (debug) console.debug('pAlianceList', ttable, theader, tlist);
+if (debug) console.debug('pAlianceList', ttable, theader, tlist);
           if (ttable != null && theader != null)
           {
             var newTableIU = {
@@ -3331,18 +3326,15 @@ if (debug) console.debug('pTownview', ttable, target, theader, tlist);
             ttable.setAttribute('style', 'display:none');
           }
         }
-        else if (p == 'pMkstone' || p == 'pUpgitem' || p == 'pMixitem' || p == 'pDestitem' || p ==
-          'pTatoo')
+        else if (p == 'pMkstone' || p == 'pUpgitem' || p == 'pMixitem' || p == 'pDestitem' || p == 'pTatoo')
         {
           if (PREF._Get('div', 'chSt') == 1)
           {
-            var cost = new Array(['disp_stone_blood', 1], ['disp_stone_heart', 10], ['disp_stone_life', 30], [
-                'disp_stone_change', 60], ['disp_stone_soul', 120]),
-              sum = 0;
+            var cost = new Array(['disp_stone_blood', 1], ['disp_stone_heart', 10], ['disp_stone_life', 30], ['disp_stone_change', 60], ['disp_stone_soul', 120]);
+            var sum = 0;
             for (var i = 0; i < cost.length; i++)
             {
-              var r = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//span[@id='" + cost[i][0] +
-                "']", null);
+              var r = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//span[@id='" + cost[i][0] + "']", null);
               if (r != null) sum = sum + (cost[i][1] * parseInt(r));
             }
             var r = DOM._GetFirstNode("//div[@id='content-mid']//fieldset[@class='profile mixer']");
@@ -3569,7 +3561,7 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
           var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
             ttable = DOM._GetFirstNode("(./ancestor::table)[last()]", theader),
             tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-          if (debug) console.debug('pMsgFriendList', ttable, theader, tlist);
+if (debug) console.debug('pMsgFriendList', ttable, theader, tlist);
           if (ttable != null && theader != null)
           {
             var newTableIU = {
@@ -3592,7 +3584,7 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
           var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='rank hoverTable']"),
             theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
             tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-          if (debug) console.debug('pRank', ttable, theader, tlist);
+if (debug) console.debug('pRank', ttable, theader, tlist);
           if (ttable != null && theader != null)
           {
             var newTableIU = {
@@ -3612,7 +3604,7 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
           p == 'pSettingsDelchar')
         {
           var nodeOptions = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='top-options']");
-          if (debug) console.debug('pSettings', nodeOptions);
+if (debug) console.debug('pSettings', nodeOptions);
           if (nodeOptions != null)
           {
             var titleMenuIU = {
@@ -3633,5 +3625,5 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
       else alert(L._Get("sUnknowID"));
     }
   }
-  if (debug) console.debug('BWEend - time %oms', Date.now() - debugTime);
+if (debug) console.debug('BWEend - time %oms', Date.now() - debugTime);
 })();
