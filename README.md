@@ -17,7 +17,7 @@ Pour tout contact passer par mon [topic](http://forum.fr.bloodwars.net/index.php
 ### INSTALLATION
 
 1. Installer l'extension adaptée à votre navigateur :
-  * Firefox => [Greasemonkey](https://addons.mozilla.org/fr/firefox/addon/greasemonkey/).
+  * <s>Firefox => [Greasemonkey](https://addons.mozilla.org/fr/firefox/addon/greasemonkey/)</s>.
   * Firefox, Google Chrome, Microsoft Edge, Opera next et autres => [Tampermonkey](http://tampermonkey.net/). Je ne peux garantir que mes scripts fonctionnent avec tous les navigateurs proposés par TamperMonkey. Il faudra tester de votre côté.
 2. Cliquer sur ce [lien](https://raw.githubusercontent.com/Ecilam/BloodWarsEnhanced/master/BloodWarsEnhanced@bwe.user.js) pour que l'extension vous propose de l'installer.
 
