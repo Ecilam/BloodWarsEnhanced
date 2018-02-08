@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2017.10.20
+// @version     2018.02.08
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -1875,16 +1875,17 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     };
     var head = IU._CreateElements(headIU);
     var bldPgr = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='bldprogress']");
-    var bldNameUp = DOM._GetFirstNodeTextContent("./self::div[contains(.,'" + L._Get('sBuildPrgUp') + "')]/text()[1]",
-      "", bldPgr);
-    var bldNameDown = DOM._GetFirstNodeTextContent("./span[contains(.,'" + L._Get('sBuildPrgDown') + "')]/text()[1]",
-      "", bldPgr);
+    var bldNameUp = DOM._GetFirstNodeTextContent("./self::div[contains(.,'" + L._Get('sBuildPrgUp') + "')]/span[@class='bldheader']", "", bldPgr);
+    var bldNameDown = DOM._GetFirstNodeTextContent("./span[contains(.,'" + L._Get('sBuildPrgDown') + "')]/text()[1]", "", bldPgr);
+    var bldPgrTime = DOM._GetFirstNodeTextContent("./span[@id='bld_action']", "", bldPgr);
     var bldPgrStop = DOM._GetFirstNode("./span[@id='bld_action_a']/a", bldPgr);
+if (debug) console.debug('BuildTable1 : ', bldPgr, bldNameUp, bldNameDown, bldPgrTime, bldPgrStop);
     for (var i = 0; i < list.snapshotLength; i++)
     {
       var nodeZone = DOM._GetFirstNode("./preceding-sibling::div[@class='strefaheader'][1]", list.snapshotItem(i));
       var content = DOM._GetFirstNode("(.//table)[last()]//td[2]", list.snapshotItem(i));
       var title = DOM._GetFirstNode(".//span[@class='bldheader']", list.snapshotItem(i));
+if (debug) console.debug('BuildTable2 : ', nodeZone, content, title);
       if (title != null && content != null && nodeZone != null)
       {
         var zone = nodeZone != null ? (new RegExp(L._Get('sBuildZone')).exec(nodeZone.textContent)) : null;
@@ -1892,10 +1893,8 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         var lvl = nodeLvl !== null ? nodeLvl.textContent : '0';
         var inUp = bldNameUp.indexOf(title.textContent) !== -1;
         var inDown = bldNameDown.indexOf(title.textContent) !== -1;
-        var upOk = DOM._GetFirstNode(".//a[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" +
-          L._Get('sBuildUpOk') + "')) and @class='enabled']", content);
-        var upNo = DOM._GetFirstNode(".//span[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" +
-          L._Get('sBuildUpOk') + "')) and @class='disabled']", content);
+        var upOk = DOM._GetFirstNode(".//a[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" + L._Get('sBuildUpOk') + "')) and @class='enabled']", content);
+        var upNo = DOM._GetFirstNode(".//span[(contains(.,'" + L._Get('sBuildNewOk') + "') or contains(.,'" + L._Get('sBuildUpOk') + "')) and @class='disabled']", content);
         var downOk = DOM._GetFirstNode(".//a[contains(.,'" + L._Get('sBuildDownOk') + "')]", list.snapshotItem(i));
         var nodeLol = DOM._GetFirstNode(".//span[contains(.,'" + L._Get('sBuildlol') + "')]", content);
         var lol = nodeLol != null ? new RegExp("([0-9 ]+) " + L._Get('sBuildlol')).exec(nodeLol.textContent) : null;
@@ -1904,9 +1903,8 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         var nodeSang = DOM._GetFirstNode(".//span[contains(.,'" + L._Get('sBuildSang') + "')]", content);
         var sang = nodeSang != null ? (new RegExp("([0-9 ]+) " + L._Get('sBuildSang')).exec(nodeSang.textContent)) : null;
         var t = new RegExp(L._Get('sBuildTime') + L._Get('sTriOLTest')).exec(content.innerHTML);
-        var time = t != null ? (t[1] ? L._Get('sLogTime4', t[1]) + ' ' : '') + (t[2] ? ('0' + t[2]).slice(-2) :
-          '00') + ':' + (t[3] ? ('0' + t[3]).slice(-2) : '00') + ':' + (t[4] ? ('0' + t[4]).slice(-2) : '00') : '?';
-        if (debug) console.debug('BuildTable', DATAS._Time(), t, time);
+        var time = t != null ? (t[1] ? L._Get('sLogTime4', t[1]) + ' ' : '') + (t[2] ? ('0' + t[2]).slice(-2) : '00') + ':' + (t[3] ? ('0' + t[3]).slice(-2) : '00') + ':' + (t[4] ? ('0' + t[4]).slice(-2) : '00') : '?';
+if (debug) console.debug('BuildTable3 : ', zone, nodeLvl, lvl, inUp, inDown, upOk, upNo, downOk, nodeLol, lol, nodeMdo, mdo, nodeSang, sang, DATAS._Time(), t, time);
         var overT = content.innerHTML.replace(new RegExp('[\x00-\x1F]', 'g'), '').replace(new RegExp(
           '([\'"])', 'g'), '\\\$1');
         var ligneIU = {
@@ -1936,7 +1934,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
               [(mdo != null ? mdo[1] : "")], , 'tr'
             ],
           'td7': ['td', { 'class': 'BWERight' + (upOk == null && upNo == null ? ' disabled' : '') },
-              [(upOk == null && upNo == null ? L._Get('sBuildMaxLvl') : time)], , 'tr'
+              [(upOk == null && upNo == null ? L._Get('sBuildMaxLvl') : (inUp || inDown ? bldPgrTime : time))], , 'tr'
             ],
           'td8': ['td', { 'class': 'BWEMiddle' }, , , 'tr'],
           'td9': ['td', { 'class': 'BWEMiddle' }, , , 'tr']
@@ -1977,8 +1975,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
           var observer = new MutationObserver(function(mutations)
           {
             var tTime = DOM._GetFirstNode("//td[@id='BWEBuildTime']");
-            var bldPgrTime = DOM._GetFirstNodeTextContent(
-              "//div[@id='content-mid']/div[@class='bldprogress']/span[@id='bld_action']", "");
+            var bldPgrTime = DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='bldprogress']/span[@id='bld_action']", "");
             if (tTime != null) tTime.textContent = bldPgrTime;
           });
           observer.observe(bldPgr, { childList: true, subtree: true, characterData: true });
