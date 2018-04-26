@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2018.02.08
+// @version     2018.04.26
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -427,9 +427,6 @@
         " (([^:,]+) lvl ([0-9]+))+",
         " (([^:,]+) poz. ([0-9]+))+"
       ],
-      "sAmbushTest11": [
-        "<td[^<>]+><b>([^<>]+)<\\/b><\\/td><td[^<>]+>$1<\\/td><td[^<>]+><b>([^<>]+)<\\/b>"
-      ],
       "sAmbushTest12": ["(<b>([^<>]+)<\\/b> utilise l`objet[^<>]+<span.+>([^<>]+)<\\/span>\\.)+",
         "(<b>([^<>]+)<\\/b> uses item[^<>]+<span.+>([^<>]+)<\\/span>\\.)+",
         "(<b>([^<>]+)<\\/b> używa przedmiotu[^<>]+<span.+>([^<>]+)<\\/span>\\.)+"
@@ -576,7 +573,8 @@
           "LISTE D`AMIS", // 72
           "Zone", "Bâtiment", "Niveau", "Sang", "Argent", "Population", "Temps", "Actions", // 73-80
           "Ecart", // 81
-          "<Données>" // 82 - suite v. 1.7.9 beta
+          "<Données>", // 82 - suite v. 1.7.9 beta
+          "CHANCE", "INITIATIVE" // 83-84 ajout de caractéristiques (cf 43-55)
         ],
         ["RACE", "SEX", "ADDRESS", "CLAN", "<empty>", "LEVEL", "POINTS", "LVL (PTS)", "GROUP",
           "STATUS", "Standing", "Date of entry", "Last logged", "Provenance", "HISTORY",
@@ -593,7 +591,8 @@
           "FRIENDLIST",
           "Zone", "Building", "Level", "Blood", "Money", "People", "Time", "Action",
           "Gap",
-          "<Data>"
+          "<Data>",
+          "LUCK", "INITIATIVE"
         ],
         ["RASA", "PŁEĆ", "ADRES", "KLAN", "<pusty>", "POZIOM", "PUNKTY", "POZ (PKT)", "GRUPA",
           "STATUS", "Miejsce w rankingu", "Data dołączenia", "Ostatnie logowanie", "Pochodzenie",
@@ -612,7 +611,8 @@
           "LISTA PRZYJACIÓŁ",
           "Strefa", "Budowy", "Poziom", "Krew", "Pieniądze", "Ludzie", "Czas", "Akcja",
           "Luka",
-          "<Dane>"
+          "<Dane>",
+          "SZCZĘŚCIE", "INICJATYWA"
         ]
       ],
       // Menus
@@ -1114,7 +1114,9 @@
             [52, 1],
             [53, 0],
             [54, 0],
-            [55, 0]
+            [55, 0],
+            [83, 0],
+            [84, 0]
           ]
         },
         'hres':
@@ -1494,29 +1496,33 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
             }
             else if (col == 4)
             { // Caractéristiques
-              var table = IU._CreateElement('table', {}, [], {}, newTD),
-                ch = PREF._Get('hch', 'list'),
-                chA = h[j][2][8],
-                chB = h[j][2][9];
+              var table = IU._CreateElement('table', {}, [], {}, newTD);
+              var ch = PREF._Get('hch', 'list');
+              var chA = h[j][2][8];
+              var chB = h[j][2][9];
               for (var y = 0; y < ch.length; y++)
               {
-                var index = ch[y][0] - 43,
-                  cA = exist(chA[index]) && chA[index] != null ? chA[index] : '',
-                  cB = exist(chB[index]) && chB[index] != null ? chB[index] : '';
+                var index = ch[y][0] - (ch[y][0] < 56 ? 43 : 71);
+                var cA = '';
+                var cB = '';
+                if (ch[y][0] === 55) // agi+per
+                {
+                  if (exist(chA[4]) && Number.isInteger(chA[4]) && exist(chA[9]) && Number.isInteger(chA[9])) cA = chA[4] + chA[9];
+                  if (exist(chB[4]) && Number.isInteger(chB[4]) && exist(chB[9]) && Number.isInteger(chB[9])) cB = chB[4] + chB[9];
+                }
+                else
+                {
+                  if (exist(chA[index]) && chA[index] !== null) cA = chA[index];
+                  if (exist(chB[index]) && chB[index] !== null) cB = chB[index];
+                }
                 if (ch[y][1] == 1 && (cA != '' || cB != ''))
                 {
                   IU._CreateElements(
                   {
                     'tr': ['tr', , , , table],
-                    'td1': ['td', { 'class': 'BWEbold' },
-                      [L._Get('sColTitle')[ch[y][0]]], , 'tr'
-                    ],
-                    'td2': ['td', { 'class': 'atkHit BWERight BWELogTD2' },
-                      [exist(chA[index]) ? chA[index] : ''], , 'tr'
-                    ],
-                    'td3': ['td', { 'class': 'defHit BWERight BWELogTD2' },
-                      [exist(chB[index]) ? chB[index] : ''], , 'tr'
-                    ]
+                    'td1': ['td', { 'class': 'BWEbold' }, [L._Get('sColTitle')[ch[y][0]]], , 'tr'],
+                    'td2': ['td', { 'class': 'atkHit BWERight BWELogTD2' }, [cA], , 'tr'],
+                    'td3': ['td', { 'class': 'defHit BWERight BWELogTD2' }, [cB], , 'tr']
                   });
                 }
               }
@@ -1879,13 +1885,11 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     var bldNameDown = DOM._GetFirstNodeTextContent("./span[contains(.,'" + L._Get('sBuildPrgDown') + "')]/text()[1]", "", bldPgr);
     var bldPgrTime = DOM._GetFirstNodeTextContent("./span[@id='bld_action']", "", bldPgr);
     var bldPgrStop = DOM._GetFirstNode("./span[@id='bld_action_a']/a", bldPgr);
-if (debug) console.debug('BuildTable1 : ', bldPgr, bldNameUp, bldNameDown, bldPgrTime, bldPgrStop);
     for (var i = 0; i < list.snapshotLength; i++)
     {
       var nodeZone = DOM._GetFirstNode("./preceding-sibling::div[@class='strefaheader'][1]", list.snapshotItem(i));
       var content = DOM._GetFirstNode("(.//table)[last()]//td[2]", list.snapshotItem(i));
       var title = DOM._GetFirstNode(".//span[@class='bldheader']", list.snapshotItem(i));
-if (debug) console.debug('BuildTable2 : ', nodeZone, content, title);
       if (title != null && content != null && nodeZone != null)
       {
         var zone = nodeZone != null ? (new RegExp(L._Get('sBuildZone')).exec(nodeZone.textContent)) : null;
@@ -1904,7 +1908,6 @@ if (debug) console.debug('BuildTable2 : ', nodeZone, content, title);
         var sang = nodeSang != null ? (new RegExp("([0-9 ]+) " + L._Get('sBuildSang')).exec(nodeSang.textContent)) : null;
         var t = new RegExp(L._Get('sBuildTime') + L._Get('sTriOLTest')).exec(content.innerHTML);
         var time = t != null ? (t[1] ? L._Get('sLogTime4', t[1]) + ' ' : '') + (t[2] ? ('0' + t[2]).slice(-2) : '00') + ':' + (t[3] ? ('0' + t[3]).slice(-2) : '00') + ':' + (t[4] ? ('0' + t[4]).slice(-2) : '00') : '?';
-if (debug) console.debug('BuildTable3 : ', zone, nodeLvl, lvl, inUp, inDown, upOk, upNo, downOk, nodeLol, lol, nodeMdo, mdo, nodeSang, sang, DATAS._Time(), t, time);
         var overT = content.innerHTML.replace(new RegExp('[\x00-\x1F]', 'g'), '').replace(new RegExp(
           '([\'"])', 'g'), '\\\$1');
         var ligneIU = {
@@ -3494,8 +3497,7 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
               // Talismans
               if (logShow[2] == 1)
               {
-                var i, model = new RegExp(L._Get('sAmbushTal'), 'g'),
-                  tal = L._Get('sArcTal');
+                var i, model = new RegExp(L._Get('sAmbushTal'), 'g'), tal = L._Get('sArcTal');
                 while ((i = model.exec(msgContent)) != null)
                 {
                   var y, model2 = new RegExp(L._Get('sAmbushTal2'), 'g');
@@ -3509,8 +3511,7 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
               // Evolutions
               if (logShow[3] == 1)
               {
-                var i, model = new RegExp(L._Get('sAmbushEvo'), 'g'),
-                  evo = L._Get('sEvo');
+                var i, model = new RegExp(L._Get('sAmbushEvo'), 'g'), evo = L._Get('sEvo');
                 while ((i = model.exec(msgContent)) != null)
                 {
                   var y, model2 = new RegExp(L._Get('sAmbushEvo2'), 'g');
@@ -3521,19 +3522,22 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
                   }
                 }
               }
-              // Caracs - sauvegarde l'ensemble - titres 43-55
+              // Caracs - sauvegarde l'ensemble - titres 43-54 et 83-84 (hors age+per)
               if (logShow[4] == 1)
               {
-                var table = DOM._GetFirstNodeInnerHTML("//table[@class='fight']");
+                var table = DOM._GetFirstNode("//table[@class='fight']/tbody");
                 if (table != null)
                 {
-                  for (var i = 0; i < 13; i++)
+                  var sCarac = L._Get('sColTitle').slice(43, 55).concat(L._Get('sColTitle').slice(83, 85));
+                  for (var i = 0; i < sCarac.length; i++)
                   {
-                    var r = new RegExp(L._Get('sAmbushTest11', L._Get('sColTitle')[i + 43])).exec(table);
+                    var r = DOM._GetFirstNode("./tr/td[contains(., '"+ sCarac[i] +"')]", table);
                     if (r != null)
                     {
-                      emb[8][i] = i == 1 ? r[1] : Number(r[1]);
-                      emb[9][i] = i == 1 ? r[2] : Number(r[2]);
+                      var a = DOM._GetFirstNodeTextContent("./preceding-sibling::td/b", '', r);
+                      var b = DOM._GetFirstNodeTextContent("./following-sibling::td/b", '', r);
+                      emb[8][i] = i == 1 ? a : Number(a);
+                      emb[9][i] = i == 1 ? b : Number(b);
                     }
                   }
                 }
