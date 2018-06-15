@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2018.04.26
+// @version     2018.06.16
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2016, Ecilam
@@ -2145,7 +2145,10 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       for (var j = 0; j < list.snapshotLength; j++)
       {
         var oldTR = list.snapshotItem(j);
-        var newTR = IU._CreateElement('tr', { 'class': 'BWETR' + (j % 2 == 0 ? '' : ' BWEeven') }, [], {}, newBody);
+        var newTR = IU._CreateElement('tr', { 'class': oldTR.className }, [], {}, newBody);
+        newTR.classList.remove('even');
+        newTR.classList.add('BWETR');
+        if (j % 2 === 0 ) newTR.classList.add('BWEeven');
         var name = id !== null ? DOM._GetFirstNodeTextContent(idx[p][0] + '/text()', '', oldTR).trim() : '';
         var v = {};
         if (name !== '')
