@@ -30,7 +30,6 @@ Pour tout contact passer par mon [topic](http://forum.fr.bloodwars.net/index.php
 * Mécanisme d'aide à la création de groupe (désactivé par défaut).
 * Afficher/masquer les zones d'informations des clans en cliquant sur leur titre.
 * Mémorisations de certaines données pour affichage sur d'autres pages (sexe,race...).
-* Puit des âmes : affiche le total des pierres.
 * Multicompte supporté (voir réglement du jeu).
 
 Les Préférences du jeu vous proposent 2 menus supplémentaires :
