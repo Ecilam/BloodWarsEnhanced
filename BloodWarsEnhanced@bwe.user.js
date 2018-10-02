@@ -2,10 +2,10 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2018.06.16
+// @version     2018.10.02
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
-// @copyright   2011-2016, Ecilam
+// @copyright   2011-2018, Ecilam
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
 // @homepageURL https://github.com/Ecilam/BloodWarsEnhanced
 // @supportURL  https://github.com/Ecilam/BloodWarsEnhanced/issues
@@ -15,19 +15,11 @@
 // @include     /^https:\/\/beta[0-9]*\.bloodwars\.net\/.*$/
 // @grant       none
 // ==/UserScript==
-(function()
+(function ()
 {
   "use strict";
-  
-  var debug = false; // @type {Boolean} Active l'affichage des messages sur la console de débogages.
-  var debugTime = Date.now(); // @type {Date} permet de mesurer le temps d'execution du script.
-
-  function _Type(v)
-  {
-    var type = Object.prototype.toString.call(v);
-    return type.slice(8, type.length - 1);
-  }
-
+  var debugTime = Date.now();
+  var debug = false;
   /**
    * @method exist
    * Test l'existence d'une valeur
@@ -38,7 +30,6 @@
   {
     return (v !== undefined && typeof v !== 'undefined');
   }
-
   /**
    * @method isNull
    * Test si une valeur est Null
@@ -49,7 +40,6 @@
   {
     return (v === null && typeof v === 'object');
   }
-
   /**
    * @method clone
    * Créé une copie de l'objet
@@ -69,24 +59,34 @@
     }
     return newObjet;
   }
-
   /******************************************************
-   * OBJET JSONS - JSON
+   * OBJET Jsons - JSON
    * - stringification des données
    ******************************************************/
-  var JSONS = (function()
+  var Jsons = (function ()
   {
     function reviver(key, v)
     {
-      if (_Type(v) == 'String')
+      if (typeof v === 'string')
       {
         var a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(v);
-        if (a != null) return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
+        if (!isNull(a)) return new Date(Date.UTC(Number(a[1]), Number(a[2]) - 1, Number(a[3]), Number(a[4]), Number(a[5]), Number(a[6])));
       }
       return v;
     }
     return {
-      _Decode: function(v)
+      init: function ()
+      {
+        if (!JSON) throw new Error("Erreur : le service JSON n\'est pas disponible.");
+        else return this;
+      },
+      /**
+       * @method decode
+       * Désérialise une chaîne JSON.
+       * @param {JSON} v - chaîne JSON à décoder.
+       * @return {?*} r la valeur décodée sinon null.
+       */
+      decode: function (v)
       {
         var r = null;
         try
@@ -95,52 +95,90 @@
         }
         catch (e)
         {
-          console.error('JSONS_Decode error :', v, e);
+          console.error('Jsons.decode error :', v, e);
         }
         return r;
       },
-      _Encode: function(v)
+      /**
+       * @method encode
+       * Sérialise un objet au format JSON.
+       * @param {*} v - la valeur à encoder.
+       * @return {JSON} une chaîne au format JSON.
+       */
+      encode: function (v)
       {
         return JSON.stringify(v);
       }
     };
-  })();
-
+  })().init();
   /******************************************************
-   * OBJET LS - Datas Storage
-   * - basé sur localStorage
+   * OBJET LS - Local Storage - basé sur localStorage
    * Note : localStorage est lié au domaine
    ******************************************************/
-  var LS = (function()
+  var LS = (function ()
   {
-    var LS = window.localStorage;
     return {
-      _GetVar: function(key, defaut)
+      init: function ()
       {
-        var v = LS.getItem(key); // if key does not exist return null 
-        return ((v != null) ? JSONS._Decode(v) : defaut);
+        if (!window.localStorage) throw new Error("Erreur : le service localStorage n\'est pas disponible.");
+        else return this;
       },
-      _SetVar: function(key, v)
+      /**
+       * @method get
+       * Retourne la valeur de key ou sinon la valeur par défaut.
+       * @param {String} key - la clé recherchée.
+       * @param {*} defVal - valeur par défaut.
+       * @return {*} val|defVal
+       */
+      get: function (key, defVal)
       {
-        LS.setItem(key, JSONS._Encode(v));
-        return v;
+        var val = window.localStorage.getItem(key); // return null if no key
+        return (!isNull(val) ? Jsons.decode(val) : defVal);
       },
-      _Delete: function(key)
+      /**
+       * @method set
+       * Ajoute/remplace la valeur de la clé concernée.
+       * @param {String} key - la clé.
+       * @param {*} val
+       * @return {*} val
+       */
+      set: function (key, val)
       {
-        LS.removeItem(key);
+        window.localStorage.setItem(key, Jsons.encode(val));
+        return val;
+      },
+      /**
+       * @method del
+       * Efface la clé.
+       * @param {String} key - la clé.
+       * @return {String} key
+       */
+      del: function (key)
+      {
+        window.localStorage.removeItem(key);
         return key;
       },
-      _Length: function()
+      /**
+       * @method size
+       * Taille des données.
+       * @return {Number}
+       */
+      size: function()
       {
-        return LS.length;
+        return window.localStorage.length;
       },
-      _Key: function(index)
+      /**
+       * @method key
+       * Nom de la valeur situénombre de données.
+       * @param {number} index - entier représentant le numéro de la clé voulue (0 à length).
+       * @return {String} 
+       */
+      key: function(index)
       {
-        return LS.key(index);
+        return window.localStorage.key(index);
       }
     };
-  })();
-
+  })().init();
   /******************************************************
    * OBJET DOM - Fonctions DOM & QueryString
    * -  DOM : fonctions d'accès aux noeuds du document
@@ -236,7 +274,7 @@
           var r = document.createElement(type);
           for (var key in attributes)
           {
-            if (_Type(attributes[key]) != 'Boolean') r.setAttribute(key, attributes[key]);
+            if (typeof attributes[key] !== 'boolean') r.setAttribute(key, attributes[key]);
             else if (attributes[key] == true) r.setAttribute(key, key.toString());
           }
           for (var key in events)
@@ -245,7 +283,7 @@
           }
           for (var i = 0; i < content.length; i++)
           {
-            if (_Type(content[i]) === 'Object') r.appendChild(content[i]);
+            if (typeof content[i] === 'object') r.appendChild(content[i]);
             else r.textContent += content[i];
           }
           if (node != null) node.appendChild(r);
@@ -452,8 +490,6 @@
         "<b>$1<\\/b> gains <b>([0-9]+)<\\/b> evolution pts\\!",
         "<b>$1<\\/b> zdobywa <b>([0-9]+)<\\/b> pkt ewolucji\\!"
       ],
-      // pMkstone et autres
-      "sTotal": ["Total: ", "Total: ", "łączny: "],
       // pAmbushRoot
       "sAtkScript": [
         "registerTimer\\('atkTimeLeft', ([0-9]+)\\)(?:(?!addMsgId)[^])*addMsgId\\(([0-9]+)\\)"
@@ -714,8 +750,7 @@
       {
         var r = locStr[key];
         if (!exist(r)) throw new Error("L::Error:: la clé n'existe pas : " + key);
-        if (exist(r[langue])) r = r[langue];
-        else r = r[0];
+        r = exist(r[langue]) ? r[langue] : r[0];
         for (var i = arguments.length - 1; i >= 1; i--)
         {
           var reg = new RegExp("\\$" + i, "g");
@@ -738,15 +773,11 @@
       return stats != null ? stats.getAttribute('onmouseover') : null;
     }
     var playerExpBar = GetPlayerExpBar();
-    var serverTime = window.serverTime;
-    var serverOffset = window.serverOffset;
     var clientTimeData = new Date();
     var clientTime = Math.floor(clientTimeData.getTime() / 1000);
     var clientOffset = clientTimeData.getTimezoneOffset() * 60;
-    var diff = exist(serverTime) && exist(serverOffset) ? (serverTime - clientTime + serverOffset +
-      clientOffset) * 1000 : null;
+    var diff = exist(window.serverTime) && exist(window.serverOffset) ? (window.serverTime - clientTime + window.serverOffset + clientOffset) * 1000 : null;
     var gameTime = diff !== null ? new Date(clientTimeData.getTime() + diff) : null;
-
     return {
       /* données du serveur */
       _Time: function()
@@ -1133,7 +1164,7 @@
         // Aide Embucasde
         'AE': { 'sh': 0, 'nMin': '', 'nMax': '', 'aMin': '', 'aMax': '', 'cMin': '', 'cMax': '', 'acMin': '', 'acMax': '' },
         // Divers : stones, nbre de ligne du log,collecte log
-        'div': { 'chDe': 1, 'chSt': 1, 'nbLo': 4, 'chLo': 1 }
+        'div': { 'chDe': 1, 'nbLo': 4, 'chLo': 1 }
       };
     var ID = null,
       prefs = {};
@@ -1141,7 +1172,7 @@
       _Init: function(id)
       {
         ID = id;
-        prefs = LS._GetVar(index + ID, {});
+        prefs = LS.get(index + ID, {});
         // mise à jour des listes si nécessaire
         for (var i in prefs)
         {
@@ -1165,7 +1196,7 @@
               if (y == false) prefs[i]['list'].push(defPrefs[i]['list'][j]);
             }
           }
-          LS._SetVar(index + ID, prefs);
+          LS.set(index + ID, prefs);
         }
       },
       _Get: function(grp, key)
@@ -1185,13 +1216,13 @@
         {
           if (!exist(prefs[grp])) prefs[grp] = {};
           prefs[grp][key] = v;
-          LS._SetVar(index + ID, prefs);
+          LS.set(index + ID, prefs);
         }
       },
       _Raz: function()
       {
         prefs = {};
-        LS._Delete(index + ID);
+        LS.del(index + ID);
       }
     };
   })();
@@ -1290,9 +1321,9 @@
   function UpdateHistory(att, def, msgId, msgDate, emb)
   {
 if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, msgDate, emb);
-    var h = LS._GetVar('BWE:L:' + att + ':' + def, []),
+    var h = LS.get('BWE:L:' + att + ':' + def, []),
       a = msgId,
-      b = (_Type(msgDate) == 'Date') ? msgDate.getTime() : null,
+      b = (Object.prototype.toString.call(msgDate) === '[object Date]') ? msgDate.getTime() : null,
       c = emb;
     for (var i = 0; i < PREF._Get('div', 'nbLo'); i++)
     {
@@ -1322,7 +1353,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       }
     }
     if (h.length > PREF._Get('div', 'nbLo')) h = h.slice(0, PREF._Get('div', 'nbLo'));
-    if (h.length > 0) LS._SetVar('BWE:L:' + att + ':' + def, h);
+    if (h.length > 0) LS.set('BWE:L:' + att + ':' + def, h);
   }
 
   function CreateHistory(att, def, node)
@@ -1351,7 +1382,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         }
       }
       var j = 0,
-        h = LS._GetVar('BWE:L:' + i[0] + ':' + i[1], []);
+        h = LS.get('BWE:L:' + i[0] + ':' + i[1], []);
       while (exist(h[j]) && j < nbLog)
       {
         var overlib = IU._CreateElement('tr', { 'class': (j % 2 == 0 ? 'even' : '') }, [], {}, histo[
@@ -1573,7 +1604,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       i[2].onmouseover();
     }
     var actuTime = DATAS._Time(),
-      h = LS._GetVar('BWE:L:' + att + ':' + def, []),
+      h = LS.get('BWE:L:' + att + ':' + def, []),
       nbLog = PREF._Get('div', 'nbLo');
     if (actuTime !== null && exist(h[0]) && exist(h[0][1]) && nbLog > 0)
     {
@@ -1712,7 +1743,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
           ]
         },
         grpNode = IU._CreateElements(grpIU);
-      var grp = LS._GetVar('BWE:G:' + ID, { 'A': [], 'B': [] });
+      var grp = LS.get('BWE:G:' + ID, { 'A': [], 'B': [] });
       for (var i = 0; i < grp[grId].length; i++)
       {
         appendGrpRow(grpNode['tbody'], grp[grId][i], grId);
@@ -1728,7 +1759,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
 
   function checkGrp(e, i)
   { // i[0] = name, i[1] = id
-    var grp = LS._GetVar('BWE:G:' + ID, { 'A': [], 'B': [] }),
+    var grp = LS.get('BWE:G:' + ID, { 'A': [], 'B': [] }),
       grId = grp['A'].indexOf(i[0]) > -1 ? 'A' : grp['B'].indexOf(i[0]) > -1 ? 'B' : '',
       tri = PREF._Get('grp', 'tri');
     if (grId != '')
@@ -1756,7 +1787,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       grp[i[1]].push(i[0]);
       grId = i[1];
     }
-    LS._SetVar('BWE:G:' + ID, grp);
+    LS.set('BWE:G:' + ID, grp);
     var checkA = DOM._GetFirstNode("//input[@id='" + encodeURIComponent('BWEcheckA_' + i[0]) + "']"),
       checkB = DOM._GetFirstNode("//input[@id='" + encodeURIComponent('BWEcheckB_' + i[0]) + "']");
     if (checkA != null) checkA.checked = grId == 'A' ? true : false;
@@ -1765,7 +1796,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
 
   function appendGrpRow(tbody, name, grId)
   {
-    var v = LS._GetVar('BWE:P:' + name, {}),
+    var v = LS.get('BWE:P:' + name, {}),
       races = L._Get('sRaces'),
       race = exist(v['R']) && exist(races[v['R']]) ? races[v['R']] : '-';
     var trIU = {
@@ -2153,7 +2184,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         var v = {};
         if (name !== '')
         {
-          v = LS._GetVar('BWE:P:' + name, {});
+          v = LS.get('BWE:P:' + name, {});
           var niv = idx[p][1] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][1] + "]", null, oldTR) : null;
           var pts = idx[p][2] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][2] + "]", null, oldTR) : null;
           var race = idx[p][3] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][3] + "]", null, oldTR) : null;
@@ -2174,7 +2205,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
           }
           var uid = /^\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNode(idx[p][0], oldTR).getAttribute('href'));
           if (uid != null) v['U'] = uid[1];
-          LS._SetVar('BWE:P:' + name, v);
+          LS.set('BWE:P:' + name, v);
         }
         for (var i = 0; i < newCol.length; i++)
         {
@@ -2265,7 +2296,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
               if (name == '') { newTD.textContent = '-'; }
               else
               {
-                var grp = LS._GetVar('BWE:G:' + ID, { 'A': [], 'B': [] });
+                var grp = LS.get('BWE:G:' + ID, { 'A': [], 'B': [] });
                 IU._CreateElements(
                 {
                   'checkA': ['input',
@@ -2503,9 +2534,9 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
 
     function createColList()
     {
-      var liste = nodeMenu['select1'].options[nodeMenu['select1'].selectedIndex].value,
-        col = PREF._Get(liste, 'list'),
-        colDef = PREF._GetDef(liste, 'list');
+      var liste = nodeMenu['select1'].options[nodeMenu['select1'].selectedIndex].value;
+      var col = PREF._Get(liste, 'list');
+      var colDef = PREF._GetDef(liste, 'list');
       DOM._CleanNode(nodeMenu['tbody1']);
       if (PREF._Get(liste, 'sh') != null)
       {
@@ -2533,26 +2564,9 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       for (var j = 0; j < col.length; j++)
       {
         var cellIU = {
-            'tr': ['tr',
-            {
-              'class': (j % 2 == 1 ? 'even' : ''),
-              'onmouseout': "this.className=" + (j % 2 ==
-                1 ? "'even';" : "'';"),
-              'onmouseover': "this.className='selectedItem';"
-            }, , , nodeMenu[
-              'tbody1']],
-            'td1': ['td', { 'class': 'BWEPrefTD1' },
-              [j], , 'tr'
-            ],
-            'td2': ['td',
-              {
-                'class': 'BWEPrefTD2 ' + (col[j][1] == 1 ? 'defHit' : 'atkHit'),
-                'style': 'text-decoration:' +
-                  (col[j][1] == 1 ? 'none' : 'line-through')
-              },
-              [L._Get('sColTitle')[col[j][0]]], { 'click': [clickCol, [liste, j]] }, 'tr'
-            ]
-          },
+            'tr': ['tr', { 'class': (j % 2 == 1 ? 'even' : ''), 'onmouseout': "this.className=" + (j % 2 == 1 ? "'even';" : "'';"), 'onmouseover': "this.className='selectedItem';" }, , , nodeMenu['tbody1']],
+            'td1': ['td', {'class': 'BWEPrefTD1'}, [j], , 'tr'],
+            'td2': ['td', {'class': 'BWEPrefTD2 ' + (col[j][1] == 1 ? 'defHit' : 'atkHit'), 'style': 'text-decoration:' + (col[j][1] == 1 ? 'none' : 'line-through')}, [L._Get('sColTitle')[col[j][0]]], { 'click': [clickCol, [liste, j]] }, 'tr']},
           cell = IU._CreateElements(cellIU);
         if (exist(colDef[0][3]))
         {
@@ -2592,14 +2606,12 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       {
         if (exist(list[j]))
         {
-          if (_Type(list[j][1]) == 'Array')
+          if (Array.isArray(list[j][1]))
           {
-            newNode = IU._CreateElement('optgroup', { 'label': L._Get("sTitresList")[list[j][0]] }, [], {},
-              node);
+            newNode = IU._CreateElement('optgroup', { 'label': L._Get("sTitresList")[list[j][0]] }, [], {}, node);
             createList(list[j][1], newNode);
           }
-          else IU._CreateElement('option', { 'value': list[j][1] }, [L._Get("sTitresList")[list[j][0]]], {},
-            newNode);
+          else IU._CreateElement('option', { 'value': list[j][1] }, [L._Get("sTitresList")[list[j][0]]], {}, newNode);
         }
       }
     }
@@ -2609,11 +2621,11 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     nodeTitle['4'].className = '';
     var menuIU = {
         'menudiv': ['div', { 'align': 'center', 'style': 'margin-top: 15px;' }],
-        'div1': ['div', , [((typeof(GM_info) == 'object') ? GM_info.script.name : '?') + ' : '], ,
+        'div1': ['div', , [((typeof GM_info === 'object') ? GM_info.script.name : '?') + ' : '], ,
           'menudiv'
         ],
         'a1': ['a', { 'href': 'https://github.com/Ecilam/BloodWarsEnhanced', 'TARGET': '_blank' },
-          [((typeof(GM_info) == 'object') ? GM_info.script.version : '?')], , 'div1'
+          [((typeof GM_info === 'object') ? GM_info.script.version : '?')], , 'div1'
         ],
         'br2': ['br', , , , 'menudiv'],
         'table0': ['table', { 'style': 'width:100%;', 'class': 'BWEMenu' }, , , 'menudiv'],
@@ -2682,7 +2694,6 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       menuDiv = [
         ["check", 0, ['div', 'chDe']],
         ["check", 1, ['pMsgFriendList', 'sh']],
-        ["check", 2, ['div', 'chSt']],
         ["inputN", 3, ['div', 'nbLo']],
         ["check", 4, ['div', 'chLo']],
         ["check", 5, ['AE', 'sh']],
@@ -2755,7 +2766,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     function selectLSChange(e)
     {
       if (nodeMenu['selectLS'].selectedIndex >= 0)
-        nodeMenu['divLS'].textContent = JSONS._Encode(LS._GetVar(decodeURIComponent(nodeMenu['selectLS'].options[
+        nodeMenu['divLS'].textContent = Jsons.encode(LS.get(decodeURIComponent(nodeMenu['selectLS'].options[
           nodeMenu['selectLS'].selectedIndex].value), ""));
     }
 
@@ -2765,7 +2776,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       {
         var index = nodeMenu['selectLS'].selectedIndex,
           key = decodeURIComponent(nodeMenu['selectLS'].options[index].value);
-        LS._Delete(key);
+        LS.del(key);
         r.splice(index, 1);
         LSList.splice(LSList.indexOf(key), 1);
         nodeMenu['selectLS'].remove(index);
@@ -2784,8 +2795,8 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         LSList = [],
           r = [];
         while (nodeMenu['selectLS'].length > 0) nodeMenu['selectLS'].remove(0);
-        for (var i = LS._Length() - 1; i >= 0; i--)
-          if (LS._Key(i).indexOf('BWE:') == 0) LS._Delete(LS._Key(i));
+        for (var i = LS.size() - 1; i >= 0; i--)
+          if (LS.key(i).indexOf('BWE:') == 0) LS.del(LS.key(i));
         nodeMenu['divIE'].textContent = '';
         PREF._Raz();
       }
@@ -2817,12 +2828,12 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     function outputLog()
     {
       var output = '';
-      for (var i = 0; i < LS._Length(); i++)
+      for (var i = 0; i < LS.size(); i++)
       {
-        var key = LS._Key(i),
+        var key = LS.key(i),
           r = new RegExp('^BWE:L:(' + ID + '(:(?!' + ID + '$)(.+$))|(((?!' + ID + ':)(.+:))' + ID + '$))').exec(
             key);
-        if (r != null) output += key + '=' + JSONS._Encode(LS._GetVar(key, []));
+        if (r != null) output += key + '=' + Jsons.encode(LS.get(key, []));
       }
       nodeMenu['divIE'].textContent = encodeURIComponent(output);
     }
@@ -2838,11 +2849,11 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         var att = i[1],
           def = i[2],
           log = i[3],
-          r = JSONS._Decode(log);
+          r = Jsons.decode(log);
         for (var j = 0; j < r.length; j++)
         {
           UpdateHistory(att, def, r[j][0], new Date(r[j][1]), r[j][2]);
-          if (LS._GetVar('BWE:L:' + att + ':' + def, null) != null && LSList.indexOf('BWE:L:' + att + ':' +
+          if (LS.get('BWE:L:' + att + ':' + def, null) != null && LSList.indexOf('BWE:L:' + att + ':' +
               def) == -1) LSList.push('BWE:L:' + att + ':' + def);
           x++;
           nodeMenu['td3_2_1'].textContent = L._Get('sIEResult', x);
@@ -2988,9 +2999,9 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     // LS
     var LSList = [],
       r = [];
-    for (var i = 0; i < LS._Length(); i++)
+    for (var i = 0; i < LS.size(); i++)
     {
-      var key = LS._Key(i);
+      var key = LS.key(i);
       LSList.push(key); //if(key.indexOf('BWE:')==0)
     }
     triLSList();
@@ -3002,9 +3013,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
    ******************************************************/
   // vérification des services
   var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
-  if (!JSON) throw new Error("Erreur : le service JSON n\'est pas disponible.");
-  else if (!MutationObserver) throw new Error("Erreur : le service MutationObserver n\'est pas disponible.");
-  else if (!window.localStorage) throw new Error("Erreur : le service localStorage n\'est pas disponible.");
+  if (!MutationObserver) throw new Error("Erreur : le service MutationObserver n\'est pas disponible.");
   else
   {
     // fix : suite chargement en defer de overlib par BW, masque le tooltip au chargement
@@ -3015,7 +3024,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     }
     var p = DATAS._GetPage(),
       player = DATAS._PlayerName(),
-      IDs = LS._GetVar('BWE:IDS', {});
+      IDs = LS.get('BWE:IDS', {});
 if (debug) console.debug('BWEstart: ', player, IDs, p);
     // Pages gérées par le script
     if (['null', 'pServerDeco', 'pServerUpdate', 'pServerOther'].indexOf(p) == -1 && player != null)
@@ -3033,7 +3042,7 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
             for (var i in IDs)
               if (IDs[i] == ID) delete IDs[i]; // en cas de changement de nom
             IDs[player] = ID;
-            LS._SetVar('BWE:IDS', IDs);
+            LS.set('BWE:IDS', IDs);
           }
         }
       }
@@ -3044,10 +3053,10 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
         PREF._Init(ID);
         SetCSS();
         //Update player datas
-        var plDatas = LS._GetVar('BWE:P:' + player, {});
+        var plDatas = LS.get('BWE:P:' + player, {});
         plDatas['N'] = DATAS._PlayerLevel();
         plDatas['P'] = Number(DATAS._PlayerXP());
-        LS._SetVar('BWE:P:' + player, plDatas);
+        LS.set('BWE:P:' + player, plDatas);
         if ((p == 'pOProfile' || p == 'pProfile') && PREF._Get(p, 'sh') == 1)
         {
           var prof = DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='profile-hdr']", null);
@@ -3059,7 +3068,7 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
           if (name != null && ttable != null && trList.snapshotLength == 14)
           {
             // récupère les données
-            var v = LS._GetVar('BWE:P:' + name[1], {}),
+            var v = LS.get('BWE:P:' + name[1], {}),
               uid = /.*\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNodeTextContent(
                 "//div[@id='content-mid']/div/a[@target='_blank']", null)),
               race = DOM._GetFirstNodeTextContent("./td[2]", null, trList.snapshotItem(0)),
@@ -3071,7 +3080,7 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
             if (sexe != null) v['S'] = sexe == L._Get("sSexeHomme") ? L._Get("sSexeH") : L._Get("sSexeF");
             if (niv != null) v['N'] = niv;
             if (pts != null) v['P'] = Number(pts);
-            LS._SetVar('BWE:P:' + name[1], v);
+            LS.set('BWE:P:' + name[1], v);
             // nouveau tableau
             var newTableIU = {
                 'table': ['table', { 'id': 'BWE' + p + 'table', 'style': 'margin: 10px;', 'cellspacing': '0' }],
@@ -3104,7 +3113,7 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
                   else if (line == 8)
                   {
                     var show = PREF._Get('grp', 'sh') == 1,
-                      grp = LS._GetVar('BWE:G:' + ID, { 'A': [], 'B': [] }),
+                      grp = LS.get('BWE:G:' + ID, { 'A': [], 'B': [] }),
                       grpIU = {
                         'tr0': ['tr', { 'style': 'display:' + (show ? 'table-row;' : 'none;') }, , ,
                           newTable['tbody']
@@ -3197,8 +3206,6 @@ if (debug) console.debug('pBuild', target, builds, allnode);
               newTable = IU._CreateElements(newTableIU);
             target.insertBefore(newTable['div'], target.childNodes[0]);
             BuildTable(newTable, builds);
-            //            for (var i = 0; i < allnode.snapshotLength; i++) { allnode.snapshotItem(i).setAttribute('style',
-            //                'display:none'); }
           }
         }
         else if (p == 'pTownview' && PREF._Get(p, 'sh') == 1)
@@ -3327,32 +3334,6 @@ if (debug) console.debug('pAlianceList', ttable, theader, tlist);
             ttable.parentNode.insertBefore(newTable['div'], ttable.nextSibling);
             MixteTable(theader, tlist, p);
             ttable.setAttribute('style', 'display:none');
-          }
-        }
-        else if (p == 'pMkstone' || p == 'pUpgitem' || p == 'pMixitem' || p == 'pDestitem' || p == 'pTatoo')
-        {
-          if (PREF._Get('div', 'chSt') == 1)
-          {
-            var cost = new Array(['disp_stone_blood', 1], ['disp_stone_heart', 10], ['disp_stone_life', 30], ['disp_stone_change', 60], ['disp_stone_soul', 120]);
-            var sum = 0;
-            for (var i = 0; i < cost.length; i++)
-            {
-              var r = DOM._GetFirstNodeTextContent("//div[@id='content-mid']//span[@id='" + cost[i][0] + "']", null);
-              if (r != null) sum = sum + (cost[i][1] * parseInt(r));
-            }
-            var r = DOM._GetFirstNode("//div[@id='content-mid']//fieldset[@class='profile mixer']");
-            if (r != null)
-            {
-              var totalIU = {
-                  'div1': ['div', { 'align': 'center' }],
-                  'div2': ['div', { 'style': 'padding:2px;' },
-                    [L._Get("sTotal")], , 'div1'
-                  ],
-                  'b': ['b', , [sum], , 'div2']
-                },
-                total = IU._CreateElements(totalIU);
-              r.parentNode.insertBefore(total['div1'], r.nextSibling);
-            }
           }
         }
         else if (p == 'pAmbushRoot' && PREF._Get('div', 'chLo') == 1)
