@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2018.10.02
+// @version     2018.10.18
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2018, Ecilam
@@ -23,7 +23,7 @@
   /**
    * @method exist
    * Test l'existence d'une valeur
-   * @param {*} v la valeur Ã  tester
+   * @param {*} v la valeur à tester
    * @return {Boolean} faux si 'undefined'
    */
   function exist(v)
@@ -33,7 +33,7 @@
   /**
    * @method isNull
    * Test si une valeur est Null
-   * @param {*} v la valeur Ã  tester
+   * @param {*} v la valeur à tester
    * @return {Boolean} vrai si Null
    */
   function isNull(v)
@@ -3370,7 +3370,7 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
         else if (p == 'pMsg' || p == 'pMsgSave')
         {
           // Analyse le message d'embuscade
-          var msgContent = DOM._GetFirstNodeInnerHTML("//div[@class='msg-content ']", null);
+          var msgContent = DOM._GetFirstNodeInnerHTML("//div[@class='msg-content']", null);
           if (msgContent != null && PREF._Get('div', 'chLo') == 1)
           {
             // embuscade
