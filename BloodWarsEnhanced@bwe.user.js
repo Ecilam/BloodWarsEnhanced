@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2018.10.18
+// @version     2018.10.19
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2018, Ecilam
@@ -423,9 +423,9 @@
         "<a[^<>]+>([^<>]+)<\\/a> ambushed <a[^<>]+>([^<>]+)<\\/a> !",
         "<a[^<>]+>([^<>]+)<\\/a> urządził[a]? zasadzkę na <a[^<>]+>([^<>]+)<\\/a> !"
       ],
-      "sAmbushTest2": ["Chance de réussite de l`embuscade: ([0-9]+,[0-9]+) %",
-        "Chance of successful ambush ([0-9]+,[0-9]+) %",
-        "Szansa na udaną zasadzkę: ([0-9]+,[0-9]+) %"
+      "sAmbushTest2": ["Chance de réussite de l`embuscade: ([0-9]+(?:,[0-9]{2}|)) %",
+        "Chance of successful ambush ([0-9]+(?:,[0-9]{2}|)) %",
+        "Szansa na udaną zasadzkę: ([0-9]+(?:,[0-9]{2}|)) %"
       ],
       "sAmbushTest3": ["$1 a préparé un plan minutieux",
         "$1 prepared an elaborate plan",
