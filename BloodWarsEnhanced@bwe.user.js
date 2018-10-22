@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2018.10.19
+// @version     2018.10.22
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2018, Ecilam
@@ -477,14 +477,14 @@
         "<b>$1<\\/b> wgryza się w szyję pokonanego wroga i wysysa <b>([0-9]+)<\\/b> pkt doświadczenia\\."
       ],
       "sAmbushTest14": [
-        "(?:<b>|)$1(?:<\\/b>|) mord le vampire vaincu dans la nuque, lui suce (?:<b>|)([0-9]+)(?:<\\/b>|) pts de progrès et obtient (?:<b>|)([0-9]+)(?:<\\/b>|) pts d`honneur\\.",
-        "<b>$1<\\/b> bit into the enemy`s neck and sucked out <b>([0-9]+)<\\/b> experience pts and gained <b>([0-9]+)<\\/b> honour pts\\.",
-        "<b>$1</b> wgryza się w szyję pokonanego wroga i wysysa <b>([0-9]+)<\\/b> pkt doświadczenia oraz otrzymuje <b>([0-9]+)<\\/b> pkt reputacji\\."
+        "(?:<b>|)$1(?:<\\/b>|) mord le vampire vaincu dans la nuque, lui suce (?:<b>|)([0-9 ]+)(?:<\\/b>|) pts de progrès et obtient (?:<b>|)([0-9 ]+)(?:<\\/b>|) pts d`honneur\\.",
+        "(?:<b>|)$1(?:<\\/b>|) bit into the enemy`s neck and sucked out (?:<b>|)([0-9 ]+)(?:<\\/b>|) experience pts and gained (?:<b>|)([0-9 ]+)(?:<\\/b>|) honour pts\\.",
+        "(?:<b>|)$1(?:<\\/b>|) wgryza się w szyję pokonanego wroga i wysysa (?:<b>|)([0-9 ]+)(?:<\\/b>|) pkt doświadczenia oraz otrzymuje (?:<b>|)([0-9 ]+)(?:<\\/b>|) pkt reputacji\\."
       ],
       "sAmbushTest15": [
-        "(?:<b>|)$1(?:<\\/b>|) paie une rançon d`un montant de (?:<b>|)([0-9]+) LOL(?:<\\/b>|), (?:<b>|)([0-9]+)(?:<\\/b>|) litre\\(s\\) de sang et.+lui livre (?:<b>|)([0-9]+)(?:<\\/b>|) hommes comme esclaves\\.",
-        "<b>$1<\\/b> paid ransom of <b>([0-9]+) Lgo<\\/b>, <b>([0-9]+)<\\/b> litres of blood and gave <b>([0-9]+)<\\/b> prisoners\\.",
-        "<b>$1<\\/b> płaci okup w wysokości <b>([0-9]+) PLN<\\/b>, <b>([0-9]+)<\\/b> litrów krwi oraz oddaje <b>([0-9]+)<\\/b> ludzi w niewolę\\."
+        "(?:<b>|)$1(?:<\\/b>|) paie une rançon d`un montant de (?:<b>|)([0-9 ]+) LOL(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litre\\(s\\) de sang et.+lui livre (?:<b>|)([0-9 ]+)(?:<\\/b>|) hommes comme esclaves\\.",
+        "(?:<b>|)$1(?:<\\/b>|) paid ransom of (?:<b>|)([0-9 ]+) Lgo(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litres of blood and gave (?:<b>|)([0-9 ]+)(?:<\\/b>|) prisoners\\.",
+        "(?:<b>|)$1(?:<\\/b>|) płaci okup w wysokości (?:<b>|)([0-9 ]+) PLN(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litrów krwi oraz oddaje (?:<b>|)([0-9 ]+)(?:<\\/b>|) ludzi w niewolę\\."
       ],
       "sAmbushTest16": ["<b>$1<\\/b> reçoit <b>([0-9]+)<\\/b> pts d`évolution\\!",
         "<b>$1<\\/b> gains <b>([0-9]+)<\\/b> evolution pts\\!",
@@ -3410,19 +3410,19 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
                   { // embu réussie
                     // ressources (pdp,pdh,lol,sang,pop,évo)
                     var r = new RegExp(L._Get('sAmbushTest13', att)).exec(msgContent);
-                    if (r != null && GaShow[0] == 1) emb[12][0] = Number(r[1]);
+                    if (r !== null && GaShow[0] === 1) emb[12][0] = Number(r[1]);
                     var r = new RegExp(L._Get('sAmbushTest14', att)).exec(msgContent);
-                    if (r != null)
+                    if (r !== null)
                     {
-                      if (GaShow[0] == 1) emb[12][0] = Number(r[1]);
-                      if (GaShow[1] == 1) emb[12][1] = Number(r[2]);
+                      if (GaShow[0] === 1) emb[12][0] = Number(r[1]);
+                      if (GaShow[1] === 1) emb[12][1] = Number(r[2]);
                     }
                     var r = new RegExp(L._Get('sAmbushTest15', def)).exec(msgContent);
-                    if (r != null)
+                    if (r !== null)
                     {
-                      if (GaShow[3] == 1) emb[12][3] = Number(r[1]);
-                      if (GaShow[4] == 1) emb[12][4] = Number(r[2]);
-                      if (GaShow[5] == 1) emb[12][5] = Number(r[3]);
+                      if (GaShow[3] === 1) emb[12][3] = Number(r[1].replace(/[ ]/g, ""));
+                      if (GaShow[4] === 1) emb[12][4] = Number(r[2].replace(/[ ]/g, ""));
+                      if (GaShow[5] === 1) emb[12][5] = Number(r[3].replace(/[ ]/g, ""));
                     }
                     var r = new RegExp(L._Get('sAmbushTest16', att)).exec(msgContent);
                     if (r != null && GaShow[2] == 1) emb[12][2] = Number(r[1]);
