@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2018.10.22
+// @version     2018.11.30
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2018, Ecilam
@@ -171,7 +171,7 @@
        * @method key
        * Nom de la valeur situénombre de données.
        * @param {number} index - entier représentant le numéro de la clé voulue (0 à length).
-       * @return {String} 
+       * @return {String}
        */
       key: function(index)
       {
@@ -335,9 +335,9 @@
     var locStr = { // key:[français,anglais,polonais]
       //DATAS
       "sNiveau": ["NIVEAU ([0-9]+)", "LEVEL ([0-9]+)", "POZIOM ([0-9]+)"],
-      "sXP": ["EXPÉRIENCE: <strong>([0-9 ]+)<\\/strong> \\/ ([0-9 ]+)",
-        "EXPERIENCE: <strong>([0-9 ]+)<\\/strong> \\/ ([0-9 ]+)",
-        "DOŚWIADCZENIE: <strong>([0-9 ]+)<\\/strong> \\/ ([0-9 ]+)"
+      "sXP": ["EXPÉRIENCE:[^<]+<strong>([0-9 ]+)<\\/strong>[^\\/]+\\/[^0-9]+([0-9 ]+)",
+        "EXPERIENCE:[^<]+<strong>([0-9 ]+)<\\/strong>[^\\/]+\\/[^0-9]+([0-9 ]+)",
+        "DOŚWIADCZENIE:[^<]+<strong>([0-9 ]+)<\\/strong>[^\\/]+\\/[^0-9]+([0-9 ]+)"
       ],
       "sDeconnecte": ["Vous avez été déconnecté en raison d`une longue inactivité.",
         "You have been logged out because of inactivity.",
@@ -792,15 +792,20 @@
       _PlayerLevel: function()
       {
         var playerLevel = new RegExp(L._Get('sNiveau')).exec(playerExpBar);
-        if (playerLevel != null) playerLevel = parseInt((playerLevel[1]).replace(new RegExp(' ', 'g'),
-          ''));
+        if (playerLevel !== null) playerLevel = parseInt((playerLevel[1]).replace(/\s/g, ''));
         return playerLevel;
       },
       _PlayerXP: function()
       {
         var playerXP = new RegExp(L._Get('sXP')).exec(playerExpBar);
-        if (playerXP != null) playerXP = parseInt((playerXP[1]).replace(/ /g, ""));
+        if (playerXP !== null) playerXP = parseInt((playerXP[1]).replace(/\s/g, ''));
         return playerXP;
+      },
+      _PlayerXPlimit: function()
+      {
+        var playerXPlimit = new RegExp(L._Get('sXP')).exec(playerExpBar);
+        if (playerXPlimit !== null) playerXPlimit = parseInt(playerXPlimit[2].replace(/\s/g, ''));
+        return playerXPlimit;
       },
       /* Données diverses	*/
       _GetPage: function()
@@ -1176,7 +1181,7 @@
         // mise à jour des listes si nécessaire
         for (var i in prefs)
         {
-          if (!exist(defPrefs[i])) 
+          if (!exist(defPrefs[i]))
           {
             delete prefs[i];
           }
@@ -1796,18 +1801,16 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
 
   function appendGrpRow(tbody, name, grId)
   {
-    var v = LS.get('BWE:P:' + name, {}),
-      races = L._Get('sRaces'),
-      race = exist(v['R']) && exist(races[v['R']]) ? races[v['R']] : '-';
+    var v = LS.get('BWE:P:' + name, {});
     var trIU = {
       'tr01': ['tr', { 'id': encodeURIComponent('BWEgrp' + grId + 'tr_' + name) }, , , tbody],
       'td010': ['td', { 'class': 'BWELeft' }, , , 'tr01'],
       'a0100': ['a', (exist(v['U']) ? { 'href': '?a=profile&uid=' + v['U'] } : {}), [name], , 'td010'],
       'td011': ['td', { 'class': 'BWELeft' },
-        [race], , 'tr01'
+        [(exist(v['R']) && exist(L._Get('sRaces')[v['R']]) ? L._Get('sRaces')[v['R']] : '-')], , 'tr01'
       ],
       'td012': ['td', { 'class': 'BWELeft' },
-        [(exist(v['N']) && exist(v['P'])) ? v['N'] + ' (' + v['P'] + ')' : '-'], , 'tr01'
+        [exist(v['P']) ? L._Get('sNivFormat', (exist(v['N']) && Number.isInteger(v['N']) ? v['N'] : GetLvl(v['P'])[2]), v['P']) : '-'], , 'tr01'
       ],
       'td013': ['td', , , , 'tr01'],
       'div013': ['div', { 'class': 'BWEGrpChg' },
@@ -1829,8 +1832,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       ptssum = 0;
     for (var i = 0; i < list.snapshotLength; i++)
     {
-      var r = new RegExp(L._Get('sTriPtsTest')).exec(DOM._GetFirstNodeTextContent("./td[3]", null, list.snapshotItem(
-        i)));
+      var r = new RegExp(L._Get('sTriPtsTest')).exec(DOM._GetFirstNodeTextContent("./td[3]", null, list.snapshotItem(i)));
       if (r != null)
       {
         lvlsum += Number(parseInt(r[1]));
@@ -2103,25 +2105,44 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         FctTriA(tri[0], tri[1], i[1], tbody, list);
       }
     }
-
     function GetLvl(v)
     {
-      if (!isNaN(v) && parseInt(v) == Number(v))
+  /*    if (!isNaN(v) && parseInt(v) == Number(v))
       {
         var lvl = Math.floor(Math.log(1.1 * v) / Math.log(1.1)),
           lvlSup = Math.floor(Math.log(0.0011 * (v * 1000 + 999)) / Math.log(1.1));
         return new Array(lvl, lvlSup, (lvl != lvlSup ? lvl + "-" + lvlSup : lvl));
       }
-      else return new Array('-', '-', '-');
+      else return new Array('-', '-', '-');*/
+      var min = 0;
+      var max = 0;
+      for (var i = 1; i < leveling.length; i++)
+      {
+        if (exist(leveling[i]) && !isNull(leveling[i]))
+        {
+          if (v >= Math.floor(leveling[i][0] / 1000) && v <= Math.floor(leveling[i][1] / 1000))
+          {
+            if (min === 0)
+            {
+              min = i;
+            }
+            if (max < i)
+            {
+              max = i;
+            }
+          }
+        }
+      }
+      return new Array(min !==0 ? min : '?', max !== 0 ? max : '?', min !==0 ? min !== max ? min + '-' + max : min : '?');
     }
-    var newHead = DOM._GetFirstNode("//tr[@id='BWE" + p + "header']"),
-      newBody = DOM._GetFirstNode("//tbody[@id='BWE" + p + "body']");
+    var newHead = DOM._GetFirstNode("//tr[@id='BWE" + p + "header']");
+    var newBody = DOM._GetFirstNode("//tbody[@id='BWE" + p + "body']");
     if (newHead != null && newBody != null)
     {
-      var newCol = clone(PREF._Get(p, 'list')),
-        tri = PREF._Get(p, 'tri'),
-        id = ['pTownview', 'pRank', 'pOAliance', 'pAliance'].indexOf(p) == -1 ? null : p,
-        idx = {
+      var newCol = clone(PREF._Get(p, 'list'));
+      var tri = PREF._Get(p, 'tri');
+      var id = ['pTownview', 'pRank', 'pOAliance', 'pAliance'].indexOf(p) == -1 ? null : p;
+      var idx = {
           'pTownview': ["./td[2]/a", null, 4, 6, 7], // name,niv,pts,race,sexe
           'pRank': ["./td[2]/a/b", null, 8, 3, 4],
           'pOAliance': ["./td[2]/a", 6, 7, null, null],
@@ -2183,21 +2204,39 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         var name = id !== null ? DOM._GetFirstNodeTextContent(idx[p][0] + '/text()', '', oldTR).trim() : '';
         var v = {};
         if (name !== '')
-        {
+        { // récupère les données disponibles
           v = LS.get('BWE:P:' + name, {});
-          var niv = idx[p][1] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][1] + "]", null, oldTR) : null;
-          var pts = idx[p][2] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][2] + "]", null, oldTR) : null;
           var race = idx[p][3] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][3] + "]", null, oldTR) : null;
           var sexe = idx[p][4] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][4] + "]", null, oldTR) : null;
-          if (niv != null) v['N'] = niv;
-          if (pts != null)
+          var niv = idx[p][1] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][1] + "]", null, oldTR) : null;
+          var pts = idx[p][2] != null ? DOM._GetFirstNodeTextContent("./td[" + idx[p][2] + "]", null, oldTR) : null;
+          if (!isNull(race)) v['R'] = L._Get('sRaces').indexOf(race);
+          if (!isNull(sexe)) v['S'] = sexe;
+          if (!isNull(pts))
           {
-            v['P'] = Number(pts);
-            if (!exist(v['N']) || (exist(v['N']) && v['N'] < GetLvl(v['P'])[0])) v['N'] = GetLvl(v['P'])[
-              2];
+            pts = parseInt(pts.replace(/\s/g,''));
+            if (exist(v['P']) && pts > v['P']) delete v['N'];
+            v['P'] = pts;
+            if (!isNull(niv))
+            {
+              v['N'] = parseInt(niv.replace(/\s/g,''));
+              if (exist(leveling[v['N']]) && !isNull(leveling[v['N']]))
+              {
+                if ((v['P']+1)*1000 < leveling[v['N']][0])
+                {
+                  leveling[v['N']] = [v['P']*1000, leveling[v['N']][1]];
+                }
+                else if (v['P']*1000 > leveling[v['N']][1])
+                {
+                  leveling[v['N']] = [leveling[v['N']][0], v['P']*1000];
+                }
+              }
+              else
+              {
+                leveling[v['N']] = [v['P']*1000, v['P']*1000];
+              }
+            }
           }
-          if (race !== null) v['R'] = L._Get('sRaces').indexOf(race);
-          if (sexe !== null) v['S'] = sexe;
           if (p === 'pRank' && name === player)
           {
             var rank = DOM._GetFirstNodeTextContent("./td[1]", null, oldTR);
@@ -2220,7 +2259,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
               newTD.removeAttribute('width');
               newTD.removeAttribute('style');
             }
-            if (col == 24)
+            if (col == 24) // <ATTAQUER>
             {
               newTD.setAttribute('width', '18px');
               if (name != '' && PREF._Get('AE', 'sh') == 1)
@@ -2230,20 +2269,12 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
                 {
                   if (exist(v['P']))
                   {
-                    var lvl = GetLvl(v['P'])[0],
-                      olvl = DATAS._PlayerLevel(),
-                      cla = p == 'pRank' ? Number(DOM._GetFirstNodeTextContent("./td[1]", 0, oldTR)) : null,
-                      oCla = exist(plDatas['C']) ? plDatas['C'] : null,
-                      checkNiv = (PREF._Get('AE', 'nMin') != '' ? lvl >= Number(PREF._Get('AE', 'nMin')) :
-                        true) && (PREF._Get('AE', 'nMax') != '' ? lvl <= Number(PREF._Get('AE', 'nMax')) :
-                        true) && (PREF._Get('AE', 'aMin') != '' ? lvl >= (olvl - (olvl * Number(PREF._Get(
-                        'AE', 'aMin')) / 100)) : true) && (PREF._Get('AE', 'aMax') != '' ? lvl <= (olvl + (
-                        olvl * Number(PREF._Get('AE', 'aMax')) / 100)) : true),
-                      checkCla = p == 'pRank' && cla != 0 && oCla != null && (PREF._Get('AE', 'cMin') != '' ?
-                        cla >= Number(PREF._Get('AE', 'cMin')) : true) && (PREF._Get('AE', 'cMax') != '' ?
-                        cla <= Number(PREF._Get('AE', 'cMax')) : true) && (PREF._Get('AE', 'acMin') != '' ?
-                        cla >= (oCla - Number(PREF._Get('AE', 'acMin'))) : true) && (PREF._Get('AE',
-                        'acMax') != '' ? cla <= (oCla + Number(PREF._Get('AE', 'acMax'))) : true);
+                    var lvl = exist(v['N']) ? v['N'] : GetLvl(v['P'])[0];
+                    var olvl = DATAS._PlayerLevel();
+                    var cla = p == 'pRank' ? Number(DOM._GetFirstNodeTextContent("./td[1]", 0, oldTR)) : null;
+                    var oCla = exist(playerD['C']) ? playerD['C'] : null;
+                    var checkNiv = (PREF._Get('AE', 'nMin') != '' ? lvl >= Number(PREF._Get('AE', 'nMin')) : true) && (PREF._Get('AE', 'nMax') != '' ? lvl <= Number(PREF._Get('AE', 'nMax')) : true) && (PREF._Get('AE', 'aMin') != '' ? lvl >= (olvl - (olvl * Number(PREF._Get('AE', 'aMin')) / 100)) : true) && (PREF._Get('AE', 'aMax') != '' ? lvl <= (olvl + (olvl * Number(PREF._Get('AE', 'aMax')) / 100)) : true);
+                    var checkCla = p == 'pRank' && cla != 0 && oCla != null && (PREF._Get('AE', 'cMin') != '' ? cla >= Number(PREF._Get('AE', 'cMin')) : true) && (PREF._Get('AE', 'cMax') != '' ? cla <= Number(PREF._Get('AE', 'cMax')) : true) && (PREF._Get('AE', 'acMin') != '' ? cla >= (oCla - Number(PREF._Get('AE', 'acMin'))) : true) && (PREF._Get('AE', 'acMax') != '' ? cla <= (oCla + Number(PREF._Get('AE', 'acMax'))) : true);
                     if (checkNiv && (p != 'pRank' || checkCla)) img.className = 'BWEblink';
                   }
                 }
@@ -2259,39 +2290,37 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
             }
           }
           else
-          { // colonne à créer
+          { // Colonnes à créer
             newTD = IU._CreateElement('td', {}, [], {}, newTR);
             if (col == 0)
             {
               var races = L._Get('sRaces');
               newTD.textContent = exist(v['R']) && exist(races[v['R']]) ? races[v['R']] : '-';
             }
-            else if (col == 1)
+            else if (col == 1) // SEXE
             {
               newTD.textContent = exist(v['S']) ? v['S'] : '-';
               newTD.className = 'BWELeft ' + (exist(v['S']) ? v['S'] == L._Get('sSexeH') ? 'BWEsexH' :
                 'BWEsexF' : '');
             }
-            else if (col == 5)
+            else if (col == 5) // NIVEAU
             {
-              newTD.textContent = exist(v['P']) ? GetLvl(v['P'])[2] : '-';
+              newTD.textContent = exist(v['P']) ? (exist(v['N']) && Number.isInteger(v['N']) ? v['N'] : GetLvl(v['P'])[2]) : '-';
             }
-            else if (col == 7)
+            else if (col == 7) // NIV (PTS)
             {
-              newTD.textContent = exist(v['P']) ? L._Get('sNivFormat', (exist(v['N']) ? v['N'] : GetLvl(v[
-                'P'])[2]), v['P']) : '-';
+              newTD.textContent = exist(v['P']) ? L._Get('sNivFormat', (exist(v['N']) && Number.isInteger(v['N']) ? v['N'] : GetLvl(v['P'])[2]), v['P']) : '-';
             }
-            if (col == 17 || col == 18 || col == 19)
+            if (col == 17 || col == 18 || col == 19) // <En ligne> <Expéditions> <Roi de la Colline>
             {
-              var img = DOM._GetFirstNode("./td[3]/img[" + (col == 17 ? 1 : (col == 18 ? 2 : 3)) + "]",
-                oldTR);
+              var img = DOM._GetFirstNode("./td[3]/img[" + (col == 17 ? 1 : (col == 18 ? 2 : 3)) + "]", oldTR);
               if (img != null)
               {
                 newTD.className = "";
                 newTD.appendChild(img.cloneNode(true));
               }
             }
-            else if (col == 21)
+            else if (col == 21) // Groupe A-B
             {
               if (name == '') { newTD.textContent = '-'; }
               else
@@ -2328,24 +2357,24 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
                 });
               }
             }
-            else if (col == 22)
+            else if (col == 22) // <SEXE - icône>
             {
               newTD.textContent = exist(v['S']) ? v['S'] : '-';
               newTD.className = exist(v['S']) ? (v['S'] == L._Get('sSexeH') ? 'BWEsexH' : 'BWEsexF') : '';
             }
-            else if (col == 23)
+            else if (col == 23) // Historique ATT
             {
               if (name == '') newTD.textContent = '-';
               else CreateHistory(ID, name, newTD);
             }
-            else if (col == 25)
+            else if (col == 25) // Historique DEF
             {
               if (name == '') newTD.textContent = '-';
               else CreateHistory(name, ID, newTD);
             }
-            else if (col == 81)
+            else if (col == 81) // Ecart
             {
-              var r = exist(v['P']) ? v['P'] - Math.floor(plDatas['P'] / 1000) : null;
+              var r = exist(v['P']) && !isNull(playerXp) ? v['P'] - Math.floor(playerXp / 1000) : null;
               newTD.textContent = r != null ? (r > 0 ? '+' : '') + r : '-';
             }
           }
@@ -2690,7 +2719,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
           [16, 'hres']
         ]]
       ],
-      // Array:[type,n°titre,array:['ensemble','key']] 
+      // Array:[type,n°titre,array:['ensemble','key']]
       menuDiv = [
         ["check", 0, ['div', 'chDe']],
         ["check", 1, ['pMsgFriendList', 'sh']],
@@ -3022,9 +3051,9 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     {
       overDiv.style.visibility = 'hidden';
     }
-    var p = DATAS._GetPage(),
-      player = DATAS._PlayerName(),
-      IDs = LS.get('BWE:IDS', {});
+    var p = DATAS._GetPage();
+    var player = DATAS._PlayerName();
+    var IDs = LS.get('BWE:IDS', {});
 if (debug) console.debug('BWEstart: ', player, IDs, p);
     // Pages gérées par le script
     if (['null', 'pServerDeco', 'pServerUpdate', 'pServerOther'].indexOf(p) == -1 && player != null)
@@ -3052,34 +3081,58 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
         var ID = IDs[player];
         PREF._Init(ID);
         SetCSS();
-        //Update player datas
-        var plDatas = LS.get('BWE:P:' + player, {});
-        plDatas['N'] = DATAS._PlayerLevel();
-        plDatas['P'] = Number(DATAS._PlayerXP());
-        LS.set('BWE:P:' + player, plDatas);
+        //Update datas
+        var leveling = LS.get('BWE:LVL', []);
+        var playerD = LS.get('BWE:P:' + player, {});
+        var playerLvl = DATAS._PlayerLevel();
+        var playerXp = DATAS._PlayerXP();
+        var playerXpL = DATAS._PlayerXPlimit();
+        if (!isNull(playerLvl) && !isNull(playerXp) && !isNull(playerXpL))
+        {
+          playerD['N'] = playerLvl;
+          playerD['P'] = Math.floor(playerXp / 1000);
+          LS.set('BWE:P:' + player, playerD);
+          leveling[playerLvl + 1] = [playerXpL, (exist(leveling[playerLvl + 1]) && !isNull(leveling[playerLvl + 1])) ? leveling[playerLvl + 1][1] : playerXpL];
+          leveling[playerLvl] = [(exist(leveling[playerLvl]) && !isNull(leveling[playerLvl])) ? (playerXp < leveling[playerLvl][0] ? playerXp : leveling[playerLvl][0]) : playerXp, playerXpL-1];
+        }
         if ((p == 'pOProfile' || p == 'pProfile') && PREF._Get(p, 'sh') == 1)
         {
           var prof = DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='profile-hdr']", null);
           var name = new RegExp(L._Get('sNameTest')).exec(prof);
-          var ttable = DOM._GetFirstNode(
-            "//div[@id='content-mid']/div[@style='float: left; width: 49%;']/fieldset[1]/table");
+          var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div[@style='float: left; width: 49%;']/fieldset[1]/table");
           var trList = DOM._GetNodes("./tbody/tr", ttable);
-if (debug) console.debug('pProfile', prof, name, ttable, trList);
           if (name != null && ttable != null && trList.snapshotLength == 14)
           {
             // récupère les données
-            var v = LS.get('BWE:P:' + name[1], {}),
-              uid = /.*\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNodeTextContent(
-                "//div[@id='content-mid']/div/a[@target='_blank']", null)),
-              race = DOM._GetFirstNodeTextContent("./td[2]", null, trList.snapshotItem(0)),
-              sexe = DOM._GetFirstNodeTextContent("./td[2]", null, trList.snapshotItem(1)),
-              niv = DOM._GetFirstNodeTextContent("./td[2]", null, trList.snapshotItem(5)),
-              pts = DOM._GetFirstNodeTextContent("./td[2]", null, trList.snapshotItem(6));
-            if (uid != null) v['U'] = uid[1];
-            if (race != null) v['R'] = L._Get('sRaces').indexOf(race);
-            if (sexe != null) v['S'] = sexe == L._Get("sSexeHomme") ? L._Get("sSexeH") : L._Get("sSexeF");
-            if (niv != null) v['N'] = niv;
-            if (pts != null) v['P'] = Number(pts);
+            var v = LS.get('BWE:P:' + name[1], {});
+            var uid = /.*\?a=profile&uid=(\d*)$/.exec(DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div/a[@target='_blank']", null));
+            var race = DOM._GetFirstNodeTextContent("./td[2]", null, trList.snapshotItem(0));
+            var sexe = DOM._GetFirstNodeTextContent("./td[2]", null, trList.snapshotItem(1));
+            var niv = DOM._GetFirstNodeTextContent("./td[2]", null, trList.snapshotItem(5));
+            var pts = DOM._GetFirstNodeTextContent("./td[2]", null, trList.snapshotItem(6));
+            if (!isNull(uid)) v['U'] = uid[1];
+            if (!isNull(race)) v['R'] = L._Get('sRaces').indexOf(race);
+            if (!isNull(sexe)) v['S'] = sexe == L._Get("sSexeHomme") ? L._Get("sSexeH") : L._Get("sSexeF");
+            if (!isNull(niv) && !isNull(pts))
+            {
+              v['N'] = parseInt(niv.replace(/\s/g,''));
+              v['P'] = parseInt(pts.replace(/\s/g,''));
+              if (exist(leveling[v['N']]) && !isNull(leveling[v['N']]))
+              {
+                if ((v['P']+1)*1000 < leveling[v['N']][0])
+                {
+                  leveling[v['N']] = [v['P']*1000, leveling[v['N']][1]];
+                }
+                else if (v['P']*1000 > leveling[v['N']][1])
+                {
+                  leveling[v['N']] = [leveling[v['N']][0], v['P']*1000];
+                }
+              }
+              else
+              {
+                leveling[v['N']] = [v['P']*1000, v['P']*1000];
+              }
+            }
             LS.set('BWE:P:' + name[1], v);
             // nouveau tableau
             var newTableIU = {
@@ -3115,24 +3168,16 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
                     var show = PREF._Get('grp', 'sh') == 1,
                       grp = LS.get('BWE:G:' + ID, { 'A': [], 'B': [] }),
                       grpIU = {
-                        'tr0': ['tr', { 'style': 'display:' + (show ? 'table-row;' : 'none;') }, , ,
-                          newTable['tbody']
-                        ],
+                        'tr0': ['tr', { 'style': 'display:' + (show ? 'table-row;' : 'none;') }, , , newTable['tbody']],
                         'td00': ['td', { 'id': 'BWEgrpA', 'colspan': '2' }, , , 'tr0'],
-                        'tr1': ['tr', { 'style': 'display:' + (show ? 'table-row;' : 'none;') }, , ,
-                          newTable['tbody']
-                        ],
+                        'tr1': ['tr', { 'style': 'display:' + (show ? 'table-row;' : 'none;') }, , , newTable['tbody']],
                         'td10': ['td', { 'id': 'BWEgrpB', 'colspan': '2' }, , , 'tr1']
                       },
                       grpTR = IU._CreateElements(grpIU);
-                    newTR['td1'].setAttribute('style', 'color:' + (show ? 'lime;' : 'red;') +
-                      ';cursor: pointer;');
-                    IU._addEvent(newTR['td1'], 'click', showHideGr, [newTR['td1'], grpTR['tr0'], grpTR[
-                      'tr1']]);
+                    newTR['td1'].setAttribute('style', 'color:' + (show ? 'lime;' : 'red;') + ';cursor: pointer;');
+                    IU._addEvent(newTR['td1'], 'click', showHideGr, [newTR['td1'], grpTR['tr0'], grpTR['tr1']]);
                     var grTDIU = {
-                        'labelA': ['label', { 'for': encodeURIComponent('BWEcheckA_' + name[1]) },
-                          ['A'], , newTR['td2']
-                        ],
+                        'labelA': ['label', { 'for': encodeURIComponent('BWEcheckA_' + name[1]) }, ['A'], , newTR['td2']],
                         'checkA': ['input',
                           {
                             'class': 'BWEInput',
@@ -3185,12 +3230,9 @@ if (debug) console.debug('pProfile', prof, name, ttable, trList);
         }
         else if (p == 'pBuild' && PREF._Get(p, 'sh') == 1)
         {
-          var target = DOM._GetFirstNode("//div[@id='content-mid']"),
-            builds = DOM._GetNodes("./div[@class='building']", target),
-            allnode = DOM._GetNodes(
-              "./div[(@class='bldprogress' or @class='strefaheader' or @class='building' or @class='hr720' or @class='hr620')]",
-              target);
-if (debug) console.debug('pBuild', target, builds, allnode);
+          var target = DOM._GetFirstNode("//div[@id='content-mid']");
+          var builds = DOM._GetNodes("./div[@class='building']", target);
+          var allnode = DOM._GetNodes("./div[(@class='bldprogress' or @class='strefaheader' or @class='building' or @class='hr720' or @class='hr620')]", target);
           if (target != null)
           {
             var newTableIU = {
@@ -3210,18 +3252,16 @@ if (debug) console.debug('pBuild', target, builds, allnode);
         }
         else if (p == 'pTownview' && PREF._Get(p, 'sh') == 1)
         {
-          var target = DOM._GetFirstNode("//div[@id='content-mid']/div[@id='tw_table']"),
-            ttable = DOM._GetFirstNode(".//table[@class='hoverTable']", target);
+          var target = DOM._GetFirstNode("//div[@id='content-mid']/div[@id='tw_table']");
+          var ttable = DOM._GetFirstNode(".//table[@class='hoverTable']", target);
           if (target != null && ttable != null)
           {
             // recréé le tableau en cas de changement
             var observer = new MutationObserver(function(mutations)
             {
-              var ttable = DOM._GetFirstNode(
-                  "//div[@id='content-mid']/div[@id='tw_table']//table[@class='hoverTable']"),
-                theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
-                tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-if (debug) console.debug('pTownview', ttable, target, theader, tlist);
+              var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div[@id='tw_table']//table[@class='hoverTable']");
+              var theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable);
+              var tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
               if (ttable != null && theader != null)
               {
                 observer.disconnect();
@@ -3264,9 +3304,7 @@ if (debug) console.debug('pTownview', ttable, target, theader, tlist);
             }
             if (exist(td.snapshotItem(1)))
             {
-              var td2prev = DOM._GetFirstNode(
-                "//div[@id='content-mid']//td[@style='padding-top: 10px; padding-bottom: 4px; vertical-align: top;']/b"
-              );
+              var td2prev = DOM._GetFirstNode("//div[@id='content-mid']//td[@style='padding-top: 10px; padding-bottom: 4px; vertical-align: top;']/b");
               if (td2prev != null)
               {
                 var show = PREF._Get(p, 'sh2') == 1;
@@ -3279,10 +3317,9 @@ if (debug) console.debug('pTownview', ttable, target, theader, tlist);
           // liste des vampires
           if (PREF._Get(p, 'sh') == 1)
           {
-            var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='sortable hoverTable']"),
-              theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
-              tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-if (debug) console.debug('pAliance', ttable, theader, tlist);
+            var ttable = DOM._GetFirstNode("//div[@id='content-mid']//table[@class='sortable hoverTable']");
+            var theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable);
+            var tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
             if (ttable != null && theader != null)
             {
               var newTableIU = {
@@ -3317,10 +3354,9 @@ if (debug) console.debug('pAliance', ttable, theader, tlist);
         }
         else if (p == 'pAlianceList' && PREF._Get(p, 'sh') == 1)
         {
-          var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='hoverTable']"),
-            theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
-            tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-if (debug) console.debug('pAlianceList', ttable, theader, tlist);
+          var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='hoverTable']");
+          var theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable);
+          var tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
           if (ttable != null && theader != null)
           {
             var newTableIU = {
@@ -3339,14 +3375,11 @@ if (debug) console.debug('pAlianceList', ttable, theader, tlist);
         else if (p == 'pAmbushRoot' && PREF._Get('div', 'chLo') == 1)
         {
           var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//span[@id='atkTimeLeft']/parent::div/parent::div");
-          //          var atkaction = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']/td/a[@class='clanOwner']");
           var ambushScript = DOM._GetFirstNodeInnerHTML("//div[@id='content-mid']/script[contains(., 'atkTimeLeft')]", null);
-if (debug) console.debug('pAmbushRoot', atkaction, ambushScript);
           if (!isNull(atkaction) && !isNull(ambushScript))
           {
             var playerVS = DOM._GetLastNode("./table/tbody/tr[@class='tblheader']/td/a[@class='players']", atkaction);
             var r = new RegExp(L._Get('sAtkScript')).exec(ambushScript);
-if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
             if (!isNull(DATAS._Time()) && !isNull(playerVS) && !isNull(r))
             {
               UpdateHistory(ID, playerVS.textContent, r[2], new Date(DATAS._Time().getTime() + Number(r[1]) * 1000), null);
@@ -3377,18 +3410,18 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
             var r = new RegExp(L._Get('sAmbushTest1')).exec(msgContent);
             if (r != null)
             {
-              var att = r[1],
-                def = r[2],
+              var att = r[1];
+              var def = r[2];
                 //[%,réussite,PV att,PV def,aa,ad,ea,ed,ca,cd,pa,pd,ressources]
-                emb = ['', '', '', '', [], [], [], [], [], [], [], [], []],
-                qsMid = DOM._QueryString("mid");
+              var emb = ['', '', '', '', [], [], [], [], [], [], [], [], []];
+              var qsMid = DOM._QueryString("mid");
               // liste des éléments à récupérer suivant les options
-              var logShow = [],
-                divShow = [],
-                GaShow = [],
-                logCol = PREF._Get('hlog', 'list'), // 31-36
-                div = PREF._Get('hdiv', 'list'), // 37-42
-                Ga = PREF._Get('hres', 'list'); //56-61
+              var logShow = [];
+              var divShow = [];
+              var GaShow = [];
+              var logCol = PREF._Get('hlog', 'list'); // 31-36
+              var div = PREF._Get('hdiv', 'list'); // 37-42
+              var Ga = PREF._Get('hres', 'list'); //56-61
               for (var i = 0; i < logCol.length; i++) { logShow[logCol[i][0] - 31] = logCol[i][1]; }
               for (var i = 0; i < div.length; i++) { divShow[div[i][0] - 37] = div[i][1]; }
               for (var i = 0; i < Ga.length; i++) { GaShow[Ga[i][0] - 56] = Ga[i][1]; }
@@ -3400,9 +3433,9 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
               if (r != null)
               {
                 // résultat
-                var r1 = new RegExp(L._Get('sAmbushTest4')).exec(msgContent),
-                  r2 = new RegExp(L._Get('sAmbushTest5', def)).exec(msgContent),
-                  r3 = new RegExp(L._Get('sAmbushTest6')).exec(msgContent);
+                var r1 = new RegExp(L._Get('sAmbushTest4')).exec(msgContent);
+                var r2 = new RegExp(L._Get('sAmbushTest5', def)).exec(msgContent);
+                var r3 = new RegExp(L._Get('sAmbushTest6')).exec(msgContent);
                 if (r1 != null)
                 {
                   emb[1] = 'v';
@@ -3543,10 +3576,9 @@ if (debug) console.debug('pAmbushRoot', DATAS._Time(), playerVS, r);
         }
         else if (p == 'pMsgFriendList' && PREF._Get(p, 'sh') == 1)
         {
-          var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']"),
-            ttable = DOM._GetFirstNode("(./ancestor::table)[last()]", theader),
-            tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-if (debug) console.debug('pMsgFriendList', ttable, theader, tlist);
+          var theader = DOM._GetFirstNode("//div[@id='content-mid']//tr[@class='tblheader']");
+          var ttable = DOM._GetFirstNode("(./ancestor::table)[last()]", theader);
+          var tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
           if (ttable != null && theader != null)
           {
             var newTableIU = {
@@ -3566,10 +3598,9 @@ if (debug) console.debug('pMsgFriendList', ttable, theader, tlist);
         }
         else if (p == 'pRank' && PREF._Get(p, 'sh') == 1)
         {
-          var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='rank hoverTable']"),
-            theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable),
-            tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
-if (debug) console.debug('pRank', ttable, theader, tlist);
+          var ttable = DOM._GetFirstNode("//div[@id='content-mid']/div/table[@class='rank hoverTable']");
+          var theader = DOM._GetFirstNode(".//tr[@class='tblheader']", ttable);
+          var tlist = DOM._GetNodes(".//tr[not(@class='tblheader')]", ttable);
           if (ttable != null && theader != null)
           {
             var newTableIU = {
@@ -3585,11 +3616,9 @@ if (debug) console.debug('pRank', ttable, theader, tlist);
             ttable.setAttribute('style', 'display:none');
           }
         }
-        else if (p == 'pRootSettings' || p == 'pSettingsAi' || p == 'pSettingsAcc' || p == 'pSettingsVac' ||
-          p == 'pSettingsDelchar')
+        else if (p == 'pRootSettings' || p == 'pSettingsAi' || p == 'pSettingsAcc' || p == 'pSettingsVac' || p == 'pSettingsDelchar')
         {
           var nodeOptions = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='top-options']");
-if (debug) console.debug('pSettings', nodeOptions);
           if (nodeOptions != null)
           {
             var titleMenuIU = {
@@ -3606,6 +3635,7 @@ if (debug) console.debug('pSettings', nodeOptions);
               nodeTitle = IU._CreateElements(titleMenuIU);
           }
         }
+        LS.set('BWE:LVL', leveling);
       }
       else alert(L._Get("sUnknowID"));
     }
