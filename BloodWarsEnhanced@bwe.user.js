@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2018.11.30
+// @version     2018.12.04
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2018, Ecilam
@@ -159,6 +159,14 @@
         return key;
       },
       /**
+       * @method clear
+       * Efface l'ensemble des données.
+       */
+      clear: function ()
+      {
+        window.localStorage.clear();
+      },
+      /**
        * @method size
        * Taille des données.
        * @return {Number}
@@ -169,8 +177,8 @@
       },
       /**
        * @method key
-       * Nom de la valeur situénombre de données.
-       * @param {number} index - entier représentant le numéro de la clé voulue (0 à length).
+       * Nom de la valeur.
+       * @param {number} index - entier représentant le numéro de la clé voulue (0 à size-1).
        * @return {String}
        */
       key: function(index)
@@ -482,7 +490,7 @@
         "(?:<b>|)$1(?:<\\/b>|) wgryza się w szyję pokonanego wroga i wysysa (?:<b>|)([0-9 ]+)(?:<\\/b>|) pkt doświadczenia oraz otrzymuje (?:<b>|)([0-9 ]+)(?:<\\/b>|) pkt reputacji\\."
       ],
       "sAmbushTest15": [
-        "(?:<b>|)$1(?:<\\/b>|) paie une rançon d`un montant de (?:<b>|)([0-9 ]+) LOL(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litre\\(s\\) de sang et.+lui livre (?:<b>|)([0-9 ]+)(?:<\\/b>|) hommes comme esclaves\\.",
+        "(?:<b>|)$1(?:<\\/b>|) paie une rançon d`un montant de (?:<b>|)([0-9 ]+) LOL(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:litre(?:\\(s\\)|s) de sang|)(?:<\\/b>|)(?: litre\\(s\\) de sang|) et.+lui livre (?:<b>|)([0-9 ]+) de main-d`œuvre(?:<\\/b>|) hommes comme esclaves\\.",
         "(?:<b>|)$1(?:<\\/b>|) paid ransom of (?:<b>|)([0-9 ]+) Lgo(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litres of blood and gave (?:<b>|)([0-9 ]+)(?:<\\/b>|) prisoners\\.",
         "(?:<b>|)$1(?:<\\/b>|) płaci okup w wysokości (?:<b>|)([0-9 ]+) PLN(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litrów krwi oraz oddaje (?:<b>|)([0-9 ]+)(?:<\\/b>|) ludzi w niewolę\\."
       ],
@@ -537,19 +545,19 @@
           "Chambre supplémentaire", "Le sang du démon", "Mutation ADN", "Eclairé", "Sixième sens",
           "Absorption", "Développement Harmonieux", "Mana Purifiée", "Mémoire Ancestrale",
           "Puissance", "Légèreté de l`être", "Piromancie", "Lien avec Gaia", "Hydromancie",
-          "Forme Astrale", "L`empreinte du démon"
+          "Forme Astrale", "L`empreinte du démon", "Muscles renforcés"
         ],
         ["Wings", "Carapace", "Claws/Fangs/Quills", "Venom glands", "Hardened tendons",
           "Additional cavity", "Daemon blood", "Mutated DNA", "Enlightened", "Sixth sense",
           "Absorption", "Harmonious development", "Mana contamination", "Memory of the ancestors",
           "Might", "Lightness of being", "Pyromancy", "Bond Gaea", "Hydromancy", "Astral form",
-          "Demonic mark"
+          "Demonic mark", "Enhanced muscles"
         ],
         ["Skrzydla", "Pancerz", "Kly/Pazury/Kolce", "Gruczoly jadowe", "Wzmocnione sciegna",
           "Dodatkowa komora", "Krew demona", "Mutacja DNA", "Oswiecony", "Szósty zmysl",
           "Absorpcja", "Harmonijny rozwój", "Skażenie Maną", "Pamięć przodków", "Potęga",
           "Lekkość bytu", "Piromancja", "Więź z Gają", "Hydromancja", "Forma astralna",
-          "Piętno demona"
+          "Piętno demona", "Wzmocnione mięśnie"
         ]
       ],
       "sObjet": [
@@ -701,14 +709,14 @@
       ],
       "sDefaut": ["Par défaut", "By default", "Zaocznie"],
       "sAlertMsg": [
-        "ATTENTION! Cette page vous permet d'effacer les données du Script. A utiliser avec précaution.",
-        "WARNING! This page allows you to delete data script. Use with caution.",
-        "UWAGA! Ta strona pozwala usunąć skrypt danych. Stosować z ostrożnością."
+        "ATTENTION! Cette page vous permet d'effacer les données LocalStorage. A utiliser avec précaution.",
+        "WARNING! This page allows you to delete data LocalStorage. Use with caution.",
+        "UWAGA! Ta strona pozwala usunąć LocalStorage danych. Stosować z ostrożnością."
       ],
       "sTitleLS": ["BASE DE DONNEES - LOCALSTORAGE", "DATABASE - LOCALSTORAGE",
         "BAZY DANYCH - LOCALSTORAGE"
       ],
-      "sDelete": ["Supprime", "Delete", "Usuwa"],
+      "sDelete": ["Supprimer", "Delete", "Usuwa"],
       "sRAZ": ["RAZ", "RAZ", "RESET"],
       "sRazChkLS": ["Voulez vraiment effacer l'ensemble des données Localstorage ?",
         "Really want to erase all data localStorage?",
@@ -1181,7 +1189,7 @@
         // mise à jour des listes si nécessaire
         for (var i in prefs)
         {
-          if (!exist(defPrefs[i]))
+          if (!exist(defPrefs[i])) 
           {
             delete prefs[i];
           }
@@ -2116,24 +2124,28 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       else return new Array('-', '-', '-');*/
       var min = 0;
       var max = 0;
-      for (var i = 1; i < leveling.length; i++)
+      for (var i = 1, j = lvls.length; i < lvls.length; i++)
       {
-        if (exist(leveling[i]) && !isNull(leveling[i]))
+        if (exist(lvls[i]) && !isNull(lvls[i]))
         {
-          if (v >= Math.floor(leveling[i][0] / 1000) && v <= Math.floor(leveling[i][1] / 1000))
+          if (v * 1000 + 999 < lvls[i][1] && max === 0)
           {
-            if (min === 0)
-            {
-              min = i;
-            }
-            if (max < i)
-            {
-              max = i;
-            }
+            max = i - (v * 1000 + 999 >= lvls[i][0] ? 0 : 1);
           }
         }
+        if (exist(lvls[j-i]) && !isNull(lvls[j-i]))
+        {
+          if (lvls[j-i][0] <= v * 1000 && (min === 0 || (min !== 0 && lvls[j-i][1] >= v* 1000)))
+          {
+            min = j-i;
+          }
+        }
+        else if (j-i === 1 && v === 1)
+        {
+          min = 0;
+        }
       }
-      return new Array(min !==0 ? min : '?', max !== 0 ? max : '?', min !==0 ? min !== max ? min + '-' + max : min : '?');
+      return new Array(min , max , min !== max ? (min !==0 ? min : '1') + '-' + (max !== 0 ? max : '?') : min !==0 ? min : '?');
     }
     var newHead = DOM._GetFirstNode("//tr[@id='BWE" + p + "header']");
     var newBody = DOM._GetFirstNode("//tbody[@id='BWE" + p + "body']");
@@ -2220,20 +2232,20 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
             if (!isNull(niv))
             {
               v['N'] = parseInt(niv.replace(/\s/g,''));
-              if (exist(leveling[v['N']]) && !isNull(leveling[v['N']]))
+              if (exist(lvls[v['N']]) && !isNull(lvls[v['N']]))
               {
-                if ((v['P']+1)*1000 < leveling[v['N']][0])
+                if (v['P'] * 1000 + 999 < lvls[v['N']][0])
                 {
-                  leveling[v['N']] = [v['P']*1000, leveling[v['N']][1]];
+                  lvls[v['N']] = [v['P']*1000, lvls[v['N']][1]];
                 }
-                else if (v['P']*1000 > leveling[v['N']][1])
+                else if (v['P']*1000 > lvls[v['N']][1])
                 {
-                  leveling[v['N']] = [leveling[v['N']][0], v['P']*1000];
+                  lvls[v['N']] = [lvls[v['N']][0], v['P']*1000];
                 }
               }
               else
               {
-                leveling[v['N']] = [v['P']*1000, v['P']*1000];
+                lvls[v['N']] = [v['P']*1000, v['P']*1000];
               }
             }
           }
@@ -2273,7 +2285,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
                     var olvl = DATAS._PlayerLevel();
                     var cla = p == 'pRank' ? Number(DOM._GetFirstNodeTextContent("./td[1]", 0, oldTR)) : null;
                     var oCla = exist(playerD['C']) ? playerD['C'] : null;
-                    var checkNiv = (PREF._Get('AE', 'nMin') != '' ? lvl >= Number(PREF._Get('AE', 'nMin')) : true) && (PREF._Get('AE', 'nMax') != '' ? lvl <= Number(PREF._Get('AE', 'nMax')) : true) && (PREF._Get('AE', 'aMin') != '' ? lvl >= (olvl - (olvl * Number(PREF._Get('AE', 'aMin')) / 100)) : true) && (PREF._Get('AE', 'aMax') != '' ? lvl <= (olvl + (olvl * Number(PREF._Get('AE', 'aMax')) / 100)) : true);
+                    var checkNiv = (PREF._Get('AE', 'nMin') != '' ? lvl >0 && lvl >= Number(PREF._Get('AE', 'nMin')) : true) && (PREF._Get('AE', 'nMax') != '' ? lvl > 0 && lvl <= Number(PREF._Get('AE', 'nMax')) : true) && (PREF._Get('AE', 'aMin') != '' ? lvl > 0 && lvl >= (olvl - (olvl * Number(PREF._Get('AE', 'aMin')) / 100)) : true) && (PREF._Get('AE', 'aMax') != '' ? lvl > 0 && lvl <= (olvl + (olvl * Number(PREF._Get('AE', 'aMax')) / 100)) : true);
                     var checkCla = p == 'pRank' && cla != 0 && oCla != null && (PREF._Get('AE', 'cMin') != '' ? cla >= Number(PREF._Get('AE', 'cMin')) : true) && (PREF._Get('AE', 'cMax') != '' ? cla <= Number(PREF._Get('AE', 'cMax')) : true) && (PREF._Get('AE', 'acMin') != '' ? cla >= (oCla - Number(PREF._Get('AE', 'acMin'))) : true) && (PREF._Get('AE', 'acMax') != '' ? cla <= (oCla + Number(PREF._Get('AE', 'acMax'))) : true);
                     if (checkNiv && (p != 'pRank' || checkCla)) img.className = 'BWEblink';
                   }
@@ -2719,7 +2731,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
           [16, 'hres']
         ]]
       ],
-      // Array:[type,n°titre,array:['ensemble','key']]
+      // Array:[type,n°titre,array:['ensemble','key']] 
       menuDiv = [
         ["check", 0, ['div', 'chDe']],
         ["check", 1, ['pMsgFriendList', 'sh']],
@@ -2795,16 +2807,17 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     function selectLSChange(e)
     {
       if (nodeMenu['selectLS'].selectedIndex >= 0)
-        nodeMenu['divLS'].textContent = Jsons.encode(LS.get(decodeURIComponent(nodeMenu['selectLS'].options[
-          nodeMenu['selectLS'].selectedIndex].value), ""));
+      {
+if (debug) console.debug('selectLSChange ',nodeMenu['selectLS'].selectedIndex);
+        nodeMenu['divLS'].textContent = Jsons.encode(LS.get(decodeURIComponent(nodeMenu['selectLS'].options[nodeMenu['selectLS'].selectedIndex].value), ""));
+      }
     }
-
     function delLS(e)
     {
       if (nodeMenu['selectLS'].selectedIndex >= 0)
       {
-        var index = nodeMenu['selectLS'].selectedIndex,
-          key = decodeURIComponent(nodeMenu['selectLS'].options[index].value);
+        var index = nodeMenu['selectLS'].selectedIndex;
+        var key = decodeURIComponent(nodeMenu['selectLS'].options[index].value);
         LS.del(key);
         r.splice(index, 1);
         LSList.splice(LSList.indexOf(key), 1);
@@ -2812,32 +2825,36 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         nodeMenu['divLS'].textContent = "";
         nodeMenu['td1_2_0'].textContent = L._Get('sResult', r.length, LSList.length);
         nodeMenu['divIE'].textContent = '';
+        if (index < nodeMenu['selectLS'].length)
+        {
+          nodeMenu['selectLS'].selectedIndex = index;
+          selectLSChange();
+        }
       }
     }
-
     function razLS(e)
     {
       if (confirm(L._Get("sRazChkLS")))
       {
         nodeMenu['divLS'].textContent = "";
-        nodeMenu['td1_2_0'].textContent = L._Get('sResult', 0, 0);
-        LSList = [],
-          r = [];
-        while (nodeMenu['selectLS'].length > 0) nodeMenu['selectLS'].remove(0);
-        for (var i = LS.size() - 1; i >= 0; i--)
-          if (LS.key(i).indexOf('BWE:') == 0) LS.del(LS.key(i));
         nodeMenu['divIE'].textContent = '';
+        nodeMenu['td1_2_0'].textContent = L._Get('sResult', 0, 0);
+        LSList = [];
+        r = [];
+        while (nodeMenu['selectLS'].length > 0) nodeMenu['selectLS'].remove(0);
+        LS.clear();
         PREF._Raz();
       }
     }
-
     function triLSList(e)
     {
       while (nodeMenu['selectLS'].length > 0) nodeMenu['selectLS'].remove(0);
       nodeMenu['divLS'].textContent = "";
       r = [];
       for (var i = 0; i < LSList.length; i++)
+      {
         if (LSList[i].toLowerCase().indexOf(nodeMenu['LSsearch'].value.toLowerCase()) != -1) r.push(i);
+      }
       r.sort(function(a, b)
       {
         var x = LSList[a].toLowerCase(),
@@ -2845,15 +2862,13 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         return x < y ? -1 : x == y ? 0 : 1;
       });
       nodeMenu['td1_2_0'].textContent = L._Get('sResult', r.length, LSList.length);
-      for (var i = 0; i < r.length; i++) IU._CreateElement('option',
+      for (var i = 0; i < r.length; i++)
       {
-        'value': encodeURIComponent(LSList[r[
-          i]])
-      }, [LSList[r[i]]], {}, nodeMenu['selectLS']);
+      IU._CreateElement('option', { 'value': encodeURIComponent(LSList[r[i]]) }, [LSList[r[i]]], {}, nodeMenu['selectLS']);
+      }
       nodeMenu['selectLS'].selectedIndex = 0;
       selectLSChange();
     }
-
     function outputLog()
     {
       var output = '';
@@ -2866,7 +2881,6 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       }
       nodeMenu['divIE'].textContent = encodeURIComponent(output);
     }
-
     function importLog(e)
     {
       var input = decodeURIComponent(nodeMenu['textIE'].value),
@@ -3016,9 +3030,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         'td3_2_1': ['td', { 'colspan': '2' }, , , 'tr3_2']
       },
       nodeMenu = IU._CreateElements(menuIU);
-    var oldDiv = DOM._GetNodes(
-      "//div[@id='content-mid']/*[preceding-sibling::div[@class='top-options']]"
-    );
+    var oldDiv = DOM._GetNodes("//div[@id='content-mid']/*[preceding-sibling::div[@class='top-options']]");
     for (var i = 0; i < oldDiv.snapshotLength; i++)
     {
       oldDiv.snapshotItem(i).parentNode.removeChild(oldDiv.snapshotItem(i));
@@ -3026,12 +3038,11 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     nodeOptions.parentNode.insertBefore(nodeMenu['menudiv'], nodeOptions.nextSibling);
     nodeOptions.parentNode.insertBefore(IU._CreateElement('div', { 'class': 'hr720' }), nodeOptions.nextSibling);
     // LS
-    var LSList = [],
-      r = [];
+    var LSList = [];
+    r = [];
     for (var i = 0; i < LS.size(); i++)
     {
-      var key = LS.key(i);
-      LSList.push(key); //if(key.indexOf('BWE:')==0)
+      LSList.push(LS.key(i));
     }
     triLSList();
   }
@@ -3082,7 +3093,7 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
         PREF._Init(ID);
         SetCSS();
         //Update datas
-        var leveling = LS.get('BWE:LVL', []);
+        var lvls = LS.get('BWE:LVL', []);
         var playerD = LS.get('BWE:P:' + player, {});
         var playerLvl = DATAS._PlayerLevel();
         var playerXp = DATAS._PlayerXP();
@@ -3092,8 +3103,8 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
           playerD['N'] = playerLvl;
           playerD['P'] = Math.floor(playerXp / 1000);
           LS.set('BWE:P:' + player, playerD);
-          leveling[playerLvl + 1] = [playerXpL, (exist(leveling[playerLvl + 1]) && !isNull(leveling[playerLvl + 1])) ? leveling[playerLvl + 1][1] : playerXpL];
-          leveling[playerLvl] = [(exist(leveling[playerLvl]) && !isNull(leveling[playerLvl])) ? (playerXp < leveling[playerLvl][0] ? playerXp : leveling[playerLvl][0]) : playerXp, playerXpL-1];
+          lvls[playerLvl + 1] = [playerXpL, (exist(lvls[playerLvl + 1]) && !isNull(lvls[playerLvl + 1])) ? lvls[playerLvl + 1][1] : playerXpL];
+          lvls[playerLvl] = [(exist(lvls[playerLvl]) && !isNull(lvls[playerLvl])) ? (playerXp < lvls[playerLvl][0] ? playerXp : lvls[playerLvl][0]) : playerXp, playerXpL-1];         
         }
         if ((p == 'pOProfile' || p == 'pProfile') && PREF._Get(p, 'sh') == 1)
         {
@@ -3117,20 +3128,20 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
             {
               v['N'] = parseInt(niv.replace(/\s/g,''));
               v['P'] = parseInt(pts.replace(/\s/g,''));
-              if (exist(leveling[v['N']]) && !isNull(leveling[v['N']]))
+              if (exist(lvls[v['N']]) && !isNull(lvls[v['N']]))
               {
-                if ((v['P']+1)*1000 < leveling[v['N']][0])
+                if (v['P'] *1000 + 999 < lvls[v['N']][0])
                 {
-                  leveling[v['N']] = [v['P']*1000, leveling[v['N']][1]];
+                  lvls[v['N']] = [v['P']*1000, lvls[v['N']][1]];
                 }
-                else if (v['P']*1000 > leveling[v['N']][1])
+                else if (v['P']*1000 > lvls[v['N']][1])
                 {
-                  leveling[v['N']] = [leveling[v['N']][0], v['P']*1000];
+                  lvls[v['N']] = [lvls[v['N']][0], v['P']*1000];
                 }
               }
               else
               {
-                leveling[v['N']] = [v['P']*1000, v['P']*1000];
+                lvls[v['N']] = [v['P']*1000, v['P']*1000];
               }
             }
             LS.set('BWE:P:' + name[1], v);
@@ -3635,7 +3646,7 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
               nodeTitle = IU._CreateElements(titleMenuIU);
           }
         }
-        LS.set('BWE:LVL', leveling);
+        LS.set('BWE:LVL', lvls);
       }
       else alert(L._Get("sUnknowID"));
     }
