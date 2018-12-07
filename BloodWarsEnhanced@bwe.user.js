@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2018.12.06
+// @version     2018.12.07
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2018, Ecilam
@@ -15,6 +15,10 @@
 // @include     /^https:\/\/beta[0-9]*\.bloodwars\.net\/.*$/
 // @grant       none
 // ==/UserScript==
+/* TODO
+- tableau des niveaux à compléter
+- prise en compte des tableaux Adversaires suggérés et Liste d'objectifs de la partie embuscade
+*/
 (function ()
 {
   "use strict";
@@ -877,6 +881,7 @@
           {
             var qsOpt = DOM._QueryString("opt");
             if (qsOpt == null) p = "pAmbushRoot";
+            else if (qsOpt == "atk") p = "pAmbushAtk";
           }
           // Page des messages
           else if (qsA == "msg")
@@ -1310,6 +1315,7 @@
         ".BWEPrefTD2{white-space: nowrap;cursor: pointer;padding: 1px;text-align: left;}",
         ".BWEPrefTD3{width: 10px;white-space: nowrap;padding: 1px;text-align: left;}",
         ".BWEPrefTD3 a{cursor: pointer;}",
+        ".BWEHeaderList{color:#FFF; background-color:gray;}",
         ".BWEHelp{border:0;vertical-align:middle;padding:3px 5px;}",
         ".BWEAEButError{color:#FFF;background-color:red;}",
         ".BWEMenu,.BWETabMsg{margin-left:auto;margin-right:auto;padding:0;border-collapse:collapse;}",
@@ -1347,7 +1353,10 @@
   3453,
   3798,
   4178, // 16
+  4595,
+  5055,
   0,
+  0, // 20
   0,
   0,
   0,
@@ -1357,6 +1366,7 @@
   0,
   0,
   0,
+  0, // 30
   0,
   0,
   0,
@@ -1366,6 +1376,7 @@
   0,
   0,
   0,
+  0, // 40
   0,
   0,
   0,
@@ -1375,6 +1386,7 @@
   0,
   0,
   0,
+  0, // 50
   0,
   0,
   0,
@@ -1384,6 +1396,7 @@
   0,
   0,
   0,
+  0, // 60
   0,
   0,
   0,
@@ -1393,6 +1406,7 @@
   0,
   0,
   0,
+  0, // 70
   0,
   0,
   0,
@@ -1401,6 +1415,8 @@
   0,
   0,
   0,
+  1692893,
+  0, // 80
   0,
   0,
   0,
@@ -1410,32 +1426,22 @@
   0,
   0,
   0,
+  0, // 90
   0,
   0,
   0,
   0,
   0,
+  8556677,
   0,
   0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  13700890, // 101
-  0, 
-  0,
-  0,
-  18739603, // 105
+  11388936,
+  12527830, // 100
+  13700890,
+  14908356, 
+  16150458,
+  17427469,
+  18739603,
   20087116,
   21470256,
   22889272,
@@ -1458,10 +1464,10 @@
   52751903,
   54861386,
   57011830,
-  59203521, // 129
+  59203521,
+  0, // 129
   0,
-  0,
-  66028976, // 132
+  66028976,
   68388564,
   70790863,
   73236000,
@@ -1469,8 +1475,8 @@
   78257026,
   80833180,
   83453561,
-  86118479, // 140
-  0,
+  86118479,
+  0, // 140
   91583175,
   94383583,
   97229788,
@@ -1518,16 +1524,16 @@
   262693172,
   267843884,
   273056845,
-  278332491, // 188
+  278332491,
+  0, // 189
+  289073594,
+  0, // 191
+  300070740,
+  0, // 193
   0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  328707529, // 197
+  317054425,
+  0, // 196
+  328707529,
   334634667,
   340629489,
   346692496,
@@ -1567,34 +1573,31 @@
   596999976,
   605774334,
   614636306,
-  623586506, // 237
-  0,
+  623586506,
+  0, // 238
   641754063,
   650972668,
   660281997,
   669682685,
   679175372,
-  688760702, // 244
+  688760702,
+  0, // 245
   0,
+  718079055,
+  0, // 248
   0,
-  718079055, // 247
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
+  0, // 250
   0,
   0,
   0,
   0,
   0,
+  0, // 255
+  822101827,
+  0, // 257
   0,
-  0,
-  0,
-  0,
-  0,
-  0,
+  855268711,
+  0, // 261
   0,
   0,
   0,
@@ -1602,8 +1605,11 @@
   0,
   0,
   0,
-  997524781, // 272
-  0
+  0,
+  0,
+  0, // 271
+  997524781,
+  1010098175
   ];
   
   /******************************************************
@@ -2928,7 +2934,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         {
           if (Array.isArray(list[j][1]))
           {
-            newNode = IU._CreateElement('optgroup', { 'label': L._Get("sTitresList")[list[j][0]] }, [], {}, node);
+            newNode = IU._CreateElement('optgroup', { 'class': "BWEHeaderList", 'label': L._Get("sTitresList")[list[j][0]] }, [], {}, node);
             createList(list[j][1], newNode);
           }
           else IU._CreateElement('option', { 'value': list[j][1] }, [L._Get("sTitresList")[list[j][0]]], {}, newNode);
@@ -3687,6 +3693,10 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
               UpdateHistory(ID, playerVS.textContent, r[2], new Date(DATAS._Time().getTime() + Number(r[1]) * 1000), null);
             }
           }
+        }
+        else if (p == 'pAmbushAtk')
+        {
+          // todo
         }
         else if (p == 'pMsgList' || p == 'pMsgSaveList' || p == 'pMsgSendList')
         {
