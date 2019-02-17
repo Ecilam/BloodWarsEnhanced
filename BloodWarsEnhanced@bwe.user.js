@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2019.02.16
+// @version     2019.02.17
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2018, Ecilam
@@ -1336,7 +1336,7 @@
   /******************************************************
    * Ressources
    ******************************************************/
-  var fixLvls = [ 20190127, // version
+  var fixLvls = [ 20190217, // version
 // vérifiés
   1000, // 1
   1100,
@@ -1631,6 +1631,9 @@
   0,
   1241989429, // 290
   0,
+  0,
+  0,
+  1301794514
   
   ];
   
