@@ -9,7 +9,7 @@ Ensemble de Userscripts améliorant le jeu [Blood Wars](http://www.fr.bloodwars.
 
 Ce script est compatible avec les serveurs Anglais/Français/Polonais et les navigateurs Firefox, Google Chrome, Microsoft Edge, Opera next et d'autres.
 
-Testé principalement sur Firefox + Greasemonkey sur serveur R3FR.
+Testé principalement sur Firefox + Tampermonkey sur serveur R3FR.
 
 Pour tout contact passer par mon [topic](http://forum.fr.bloodwars.net/index.php?page=Thread&threadID=247180) sur le forum BloodWars.
 
