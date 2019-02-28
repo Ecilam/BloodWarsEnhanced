@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2019.02.17
+// @version     2019.02.28
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2018, Ecilam
@@ -265,13 +265,16 @@
         var r = {};
         for (var key in list)
         {
-          var type = exist(list[key][0]) ? list[key][0] : null,
-            attributes = exist(list[key][1]) ? list[key][1] : {},
-            content = exist(list[key][2]) ? list[key][2] : [],
-            events = exist(list[key][3]) ? list[key][3] : {},
-            node = exist(r[list[key][4]]) ? r[list[key][4]] : (exist(list[key][4]) ? list[key][4] :
-              null);
-          if (type != null) r[key] = this._CreateElement(type, attributes, content, events, node);
+          if (list.hasOwnProperty(key))
+          {
+            var type = exist(list[key][0]) ? list[key][0] : null,
+              attributes = exist(list[key][1]) ? list[key][1] : {},
+              content = exist(list[key][2]) ? list[key][2] : [],
+              events = exist(list[key][3]) ? list[key][3] : {},
+              node = exist(r[list[key][4]]) ? r[list[key][4]] : (exist(list[key][4]) ? list[key][4] :
+                null);
+            if (type != null) r[key] = this._CreateElement(type, attributes, content, events, node);
+          }
         }
         return r;
       },
@@ -286,12 +289,18 @@
           var r = document.createElement(type);
           for (var key in attributes)
           {
-            if (typeof attributes[key] !== 'boolean') r.setAttribute(key, attributes[key]);
-            else if (attributes[key] == true) r.setAttribute(key, key.toString());
+            if (attributes.hasOwnProperty(key))
+            {
+              if (typeof attributes[key] !== 'boolean') r.setAttribute(key, attributes[key]);
+              else if (attributes[key] === true) r.setAttribute(key, key.toString());
+            }
           }
           for (var key in events)
           {
-            this._addEvent(r, key, events[key][0], events[key][1]);
+            if (events.hasOwnProperty(key))
+            {
+              this._addEvent(r, key, events[key][0], events[key][1]);
+            }
           }
           for (var i = 0; i < content.length; i++)
           {
@@ -328,9 +337,15 @@
         {
           for (var key in obj.BWEListeners)
           {
-            for (var key2 in obj.BWEListeners[key])
+            if (obj.BWEListeners.hasOwnProperty(key))
             {
-              obj.removeEventListener(key, obj.BWEListeners[key][key2], false);
+              for (var key2 in obj.BWEListeners[key])
+              {
+                if (obj.BWEListeners[key].hasOwnProperty(key2))
+                {
+                  obj.removeEventListener(key, obj.BWEListeners[key][key2], false);
+                }
+              }
             }
           }
           delete obj.BWEListeners;
@@ -1336,7 +1351,7 @@
   /******************************************************
    * Ressources
    ******************************************************/
-  var fixLvls = [ 20190217, // version
+  var fixLvls = [ 20190224, // version
 // vérifiés
   1000, // 1
   1100,
@@ -1508,7 +1523,7 @@
   176099004,
   180145873,
   184247264,
-  188403520,
+  188403559,
   192615142, // 170
   196882400,
   201205723,
@@ -1565,7 +1580,7 @@
   506093377,
   513943258,
   521874282,
-  529887227,
+  529887017,
   537982035,
   546159912,
   554421228,
@@ -1588,14 +1603,14 @@
   708211888,
   718079055,
   0, // 248
-  0,
+  738099848,
   748254812, // 250
   758507055,
   768857257,
   779306104,
   789854287,
   800502501,
-  0, // 256
+  811251446, // 256
   822101827,
   833054354,
   844109742,
@@ -1610,7 +1625,7 @@
   948357485,
   960481933,
   0, // 270
-  0, // 271
+  985064801, // 271
   997524781,
   1010098175,
   0,
@@ -1700,23 +1715,20 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         }
         else
         {
-          IU._CreateElement('th', { 'class': 'BWELogTD' }, [L._Get("sColTitle")[logCol[x][0]]], {},
-            histo['tr']);
+          IU._CreateElement('th', { 'class': 'BWELogTD' }, [L._Get("sColTitle")[logCol[x][0]]], {}, histo['tr']);
         }
       }
-      var j = 0,
-        h = LS.get('BWE:L:' + i[0] + ':' + i[1], []);
+      var j = 0;
+      var h = LS.get('BWE:L:' + i[0] + ':' + i[1], []);
       while (exist(h[j]) && j < nbLog)
       {
-        var overlib = IU._CreateElement('tr', { 'class': (j % 2 == 0 ? 'even' : '') }, [], {}, histo[
-          'table']);
+        var overlib = IU._CreateElement('tr', { 'class': (j % 2 == 0 ? 'even' : '') }, [], {}, histo['table']);
         if (h[j][2] != null && exist(h[j][2][1]))
         {
           for (var x = 0; x < logCol.length; x++)
           {
-            var col = logCol[x][0] - 31,
-              newTD = IU._CreateElement('td', { 'class': 'BWELogTD', 'style': 'vertical-align:top' }, [], {},
-                overlib);
+            var col = logCol[x][0] - 31;
+            var newTD = IU._CreateElement('td', { 'class': 'BWELogTD', 'style': 'vertical-align:top' }, [], {}, overlib);
             if (col == 0)
             { // n°
               var bgcolor = h[j][2][1] == 'r' ? '#707070' :
@@ -1724,8 +1736,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
                 h[j][2][1] == 'v' ? i[0] == ID ? '#2A9F2A' : '#DB0B32' :
                 h[j][2][1] == 'd' ? i[0] == ID ? '#DB0B32' : '#2A9F2A' :
                 'white';
-              newTD.setAttribute('style', 'background-color:' + bgcolor +
-                ';vertical-align:middle;text-align:center;');
+              newTD.setAttribute('style', 'background-color:' + bgcolor + ';vertical-align:middle;text-align:center;');
               newTD.textContent = j;
             }
             else if (col == 1)
@@ -1782,10 +1793,10 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
             }
             else if (col == 2)
             { // Arcanes/talimans
-              var table = IU._CreateElement('table', {}, [], {}, newTD),
-                arcA = h[j][2][4],
-                arcB = h[j][2][5],
-                arc = {};
+              var table = IU._CreateElement('table', {}, [], {}, newTD);
+              var arcA = h[j][2][4];
+              var arcB = h[j][2][5];
+              var arc = {};
               for (var y = 0; y < arcA.length; y++)
               {
                 arc[arcA[y][0]] = [];
@@ -1793,25 +1804,21 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
               }
               for (var y = 0; y < arcB.length; y++)
               {
-                arc[arcB[y][0]] = exist(arc[arcB[y][0]]) ? arc[arcB[
-                  y][0]] : [];
+                arc[arcB[y][0]] = exist(arc[arcB[y][0]]) ? arc[arcB[y][0]] : [];
                 arc[arcB[y][0]][1] = arcB[y][1];
               }
               for (var key in arc)
               {
-                IU._CreateElements(
+                if (arc.hasOwnProperty(key))
                 {
-                  'tr': ['tr', , , , table],
-                  'td1': ['td', { 'class': 'BWEbold' },
-                    [L._Get('sArcTal')[key]], , 'tr'
-                  ],
-                  'td2': ['td', { 'class': 'atkHit BWERight BWELogTD2' },
-                    [exist(arc[key][0]) ? arc[key][0] : ''], , 'tr'
-                  ],
-                  'td3': ['td', { 'class': 'defHit BWERight BWELogTD2' },
-                    [exist(arc[key][1]) ? arc[key][1] : ''], , 'tr'
-                  ]
-                });
+                  IU._CreateElements(
+                  {
+                    'tr': ['tr', {}, [], {}, table],
+                    'td1': ['td', { 'class': 'BWEbold' }, [L._Get('sArcTal')[key]], {}, 'tr'],
+                    'td2': ['td', { 'class': 'atkHit BWERight BWELogTD2' }, [exist(arc[key][0]) ? arc[key][0] : ''], {}, 'tr'],
+                    'td3': ['td', { 'class': 'defHit BWERight BWELogTD2' }, [exist(arc[key][1]) ? arc[key][1] : ''], {}, 'tr']
+                  });
+                }
               }
             }
             else if (col == 3)
@@ -1833,19 +1840,22 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
               }
               for (var key in evo)
               {
-                IU._CreateElements(
+                if (evo.hasOwnProperty(key))
                 {
-                  'tr': ['tr', , , , table],
-                  'td1': ['td', { 'class': 'BWEbold' },
-                    [L._Get('sEvo')[key]], , 'tr'
-                  ],
-                  'td2': ['td', { 'class': 'atkHit BWERight BWELogTD2' },
-                    [exist(evo[key][0]) ? evo[key][0] : ''], , 'tr'
-                  ],
-                  'td3': ['td', { 'class': 'defHit BWERight BWELogTD2' },
-                    [exist(evo[key][1]) ? evo[key][1] : ''], , 'tr'
-                  ]
-                });
+                  IU._CreateElements(
+                  {
+                    'tr': ['tr', , , , table],
+                    'td1': ['td', { 'class': 'BWEbold' },
+                      [L._Get('sEvo')[key]], , 'tr'
+                    ],
+                    'td2': ['td', { 'class': 'atkHit BWERight BWELogTD2' },
+                      [exist(evo[key][0]) ? evo[key][0] : ''], , 'tr'
+                    ],
+                    'td3': ['td', { 'class': 'defHit BWERight BWELogTD2' },
+                      [exist(evo[key][1]) ? evo[key][1] : ''], , 'tr'
+                    ]
+                  });
+                }
               }
             }
             else if (col == 4)
@@ -1904,14 +1914,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         }
         else if (logCol.length >= 1)
         {
-          IU._CreateElement('td',
-            {
-              'class': 'BWELogTD2',
-              'style': 'background-color:white;color:black;',
-              'colspan': logCol
-                .length
-            }, [(new Date(h[j][1])).toLocaleDateString() + ' ' + L._Get('sLogNC')], {},
-            overlib);
+          IU._CreateElement('td', { 'class': 'BWELogTD2', 'style': 'background-color:white;color:black;', 'colspan': logCol.length }, [(new Date(h[j][1])).toLocaleDateString() + ' ' + L._Get('sLogNC')], {}, overlib);
         }
         j++;
       }
@@ -1952,15 +1955,17 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
           h[j][2][1] == 'd' ? att == ID ? '#DB0B32' : '#2A9F2A' :
           'white' : 'white';
         if (j == 0) r['span'].setAttribute('style', 'color:' + bgcolor + ';');
-        IU._CreateElement('div', { 'class': 'BWELog3', 'style': 'background-color:' + bgcolor + ';' }, [], {},
-          r['span2']);
+        IU._CreateElement('div', { 'class': 'BWELog3', 'style': 'background-color:' + bgcolor + ';' }, [], {}, r['span2']);
         if (new Date(h[j][1]).toDateString() == actuTime.toDateString()) actuH++;
         j++;
       }
       if (actuH >= 2) r['span'].textContent = '*' + r['span'].textContent;
       IU._addEvent(node, 'mouseover', CreateOverlib, [att, def, node]);
     }
-    else { IU._CreateElement('span', { 'id': 'BWElog' }, ['-'], {}, node); }
+    else
+    {
+      IU._CreateElement('span', { 'id': 'BWElog' }, ['-'], {}, node);
+    }
   }
   // Gestion des groupes
   // Pages Clan et Profil
