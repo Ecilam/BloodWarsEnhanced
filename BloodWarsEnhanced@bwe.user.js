@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2019.02.28
+// @version     2019.03.01
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @copyright   2011-2018, Ecilam
@@ -366,12 +366,12 @@
         "EXPERIENCE:[^<]+<strong>([0-9 ]+)<\\/strong>[^\\/]+\\/[^0-9]+([0-9 ]+)",
         "DOŚWIADCZENIE:[^<]+<strong>([0-9 ]+)<\\/strong>[^\\/]+\\/[^0-9]+([0-9 ]+)"
       ],
-      "sDeconnecte": ["Vous avez été déconnecté en raison d`une longue inactivité.",
+      "sDeconnecte": ["Vous avez été déconnecté en raison d’une longue inactivité.",
         "You have been logged out because of inactivity.",
         "Nastąpiło wylogowanie z powodu zbyt długiej bezczynności."
       ],
       "sCourtePause": [
-        "Une courte pause est en court en raison de l`actualisation du classement général",
+        "Une courte pause est en court en raison de l’actualisation du classement général",
         "Please wait a moment while the rankings are being updated.",
         "Trwa przerwa związana z aktualizacją rankingu gry."
       ],
@@ -403,10 +403,10 @@
       "sBuildPrgUp": ["Actuellement en construction", "Under construction", "Aktualnie budowany"],
       "sBuildPrgDown": ["Démolition", "Demolition", "wyburzanie"],
       "sBuildNewOk": ["FAIRE CONSTRUIRE", "BUILD", "ZBUDUJ"],
-      "sBuildUpOk": ["DÉVELOPPER JUSQU`AU NIVEAU", "UPGRADE TO LEVEL", "ROZBUDOWA DO POZIOMU"],
+      "sBuildUpOk": ["DÉVELOPPER JUSQU’AU NIVEAU", "UPGRADE TO LEVEL", "ROZBUDOWA DO POZIOMU"],
       "sBuildDownOk": ["DEMOLIR UN NIVEAU DE BATIMENT", "DEMOLISH ONE LEVEL", "WYBURZ JEDEN POZIOM"],
       "sBuildlol": ["LOL", "Lgo", "PLN"],
-      "sBuildMdo": ["de main-d`œuvre", "people", "ludzi"],
+      "sBuildMdo": ["de main-d’œuvre", "people", "ludzi"],
       "sBuildSang": ["litres de sang", "litres of blood", "litrów krwi"],
       "sBuildTime": ["<b>Temps de construction:<\\/b>\\s*", "<b>Time of construction:<\\/b>\\s*",
         "<b>Czas budowy:<\\/b>\\s*"
@@ -417,7 +417,7 @@
       "sNivFormat2": ["$1 ($2)($3)"],
       // Race
       "sRaces": [
-        ["ABSORBEUR", "CAPTEUR D`ESPRIT", "CULTISTE", "DAMNÉ", "SEIGNEUR DES BÊTES"],
+        ["ABSORBEUR", "CAPTEUR D’ESPRIT", "CULTISTE", "DAMNÉ", "SEIGNEUR DES BÊTES"],
         ["ABSORBER", "THOUGHTCATCHER", "CULTIST", "CURSED ONE", "BEASTMASTER"],
         ["SSAK", "ŁAPACZ MYŚLI", "KULTYSTA", "POTĘPIONY", "WŁADCA ZWIERZĄT"]
       ],
@@ -435,7 +435,7 @@
       "sTriPtsTest": ["^([0-9]+)(?:\\-[0-9]+)? \\(([0-9 ]+)\\)$"],
       // pMsgList/pMsgSaveList
       "sTitleIndex": ["Titre du message", "Message title", "Tytuł wiadomości"],
-      "sDateIndex": ["Date d`envoi", "Send date", "Data wysłania"],
+      "sDateIndex": ["Date d’envoi", "Send date", "Data wysłania"],
       "sAmbushMsg1": ["(.+) a préparé une embuscade contre toi!",
         "(.+) ambushed you!",
         "(.+) urządził[a]? na Ciebie zasadzkę!"
@@ -450,7 +450,7 @@
         "<a[^<>]+>([^<>]+)<\\/a> ambushed <a[^<>]+>([^<>]+)<\\/a> !",
         "<a[^<>]+>([^<>]+)<\\/a> urządził[a]? zasadzkę na <a[^<>]+>([^<>]+)<\\/a> !"
       ],
-      "sAmbushTest2": ["Chance de réussite de l`embuscade: ([0-9]+(?:,[0-9]{2}|)) %",
+      "sAmbushTest2": ["Chance de réussite de l’embuscade: ([0-9]+(?:,[0-9]{2}|)) %",
         "Chance of successful ambush ([0-9]+(?:,[0-9]{2}|)) %",
         "Szansa na udaną zasadzkę: ([0-9]+(?:,[0-9]{2}|)) %"
       ],
@@ -462,7 +462,7 @@
         "Thanks to the perfectly prepared ambush ",
         "Dzięki świetnie przeprowadzonej zasadzce "
       ],
-      "sAmbushTest5": ["L`attaque sur <b>$1<\\/b> n`était pas une très bonne idée",
+      "sAmbushTest5": ["L’attaque sur <b>$1<\\/b> n’était pas une très bonne idée",
         "The attack on <b>$1<\\/b> was not a good idea",
         "Atak na <b>$1<\\/b> nie był najlepszym pomysłem"
       ],
@@ -472,11 +472,11 @@
       ],
       "sAmbushTest7": ["([0-9]+) \\/ ([0-9]+)<br>([0-9]+) \\/ ([0-9]+)"],
       "sAmbushArc": [
-        "(<b>([^<>]+)<\\/b>[^<>]+utilise l`arcane[^<>]+<span.+>([^<>]+)<\\/span>[^<>]+niveau[^<>]+<b>([0-9]+)<\\/b>\\.)+",
+        "(<b>([^<>]+)<\\/b>[^<>]+utilise l’arcane[^<>]+<span.+>([^<>]+)<\\/span>[^<>]+niveau[^<>]+<b>([0-9]+)<\\/b>\\.)+",
         "(<b>([^<>]+)<\\/b>[^<>]+uses arcana[^<>]+<span.+>([^<>]+)<\\/span>[^<>]+level[^<>]+<b>([0-9]+)<\\/b>\\.)+",
         "(<b>([^<>]+)<\\/b>[^<>]+używa arkana[^<>]+<span.+>([^<>]+)<\\/span>[^<>]+poziom[^<>]+<b>([0-9]+)<\\/b>\\.)+"
       ],
-      "sAmbushEvo": ["(<b>([^<>]+)<\\/b> utilise l`évolution: (<span[^>]+>[^<>]+<\\/span>[., ]+)+)+",
+      "sAmbushEvo": ["(<b>([^<>]+)<\\/b> utilise l’évolution: (<span[^>]+>[^<>]+<\\/span>[., ]+)+)+",
         "(<b>([^<>]+)<\\/b> uses evolution: (<span[^>]+>[^<>]+<\\/span>[., ]+)+)+",
         "(<b>([^<>]+)<\\/b> korzysta z ewolucji: (<span[^>]+>[^<>]+<\\/span>[., ]+)+)+"
       ],
@@ -492,7 +492,7 @@
         " (([^:,]+) lvl ([0-9]+))+",
         " (([^:,]+) poz. ([0-9]+))+"
       ],
-      "sAmbushTest12": ["(<b>([^<>]+)<\\/b> utilise l`objet[^<>]+<span.+>([^<>]+)<\\/span>\\.)+",
+      "sAmbushTest12": ["(<b>([^<>]+)<\\/b> utilise l’objet[^<>]+<span.+>([^<>]+)<\\/span>\\.)+",
         "(<b>([^<>]+)<\\/b> uses item[^<>]+<span.+>([^<>]+)<\\/span>\\.)+",
         "(<b>([^<>]+)<\\/b> używa przedmiotu[^<>]+<span.+>([^<>]+)<\\/span>\\.)+"
       ],
@@ -500,20 +500,20 @@
       "sPVFormat": ["$1/$2"],
       "sAmbushTest13": [
         "<b>$1<\\/b> mord le vampire vaincu dans la nuque et lui suce <b>([0-9 ]+)<\\/b> pts de progrès\\.",
-        "<b>$1<\\/b> bit into the enemy`s neck and sucked out <b>([0-9 ]+)<\\/b> experience pts\\.",
+        "<b>$1<\\/b> bit into the enemy’s neck and sucked out <b>([0-9 ]+)<\\/b> experience pts\\.",
         "<b>$1<\\/b> wgryza się w szyję pokonanego wroga i wysysa <b>([0-9 ]+)<\\/b> pkt doświadczenia\\."
       ],
       "sAmbushTest14": [
-        "(?:<b>|)$1(?:<\\/b>|) mord le vampire vaincu dans la nuque, lui suce (?:<b>|)([0-9 ]+)(?:<\\/b>|) pts de progrès et obtient (?:<b>|)([0-9 ]+)(?:<\\/b>|) pts d`honneur\\.",
-        "(?:<b>|)$1(?:<\\/b>|) bit into the enemy`s neck and sucked out (?:<b>|)([0-9 ]+)(?:<\\/b>|) experience pts and gained (?:<b>|)([0-9 ]+)(?:<\\/b>|) honour pts\\.",
+        "(?:<b>|)$1(?:<\\/b>|) mord le vampire vaincu dans la nuque, lui suce (?:<b>|)([0-9 ]+)(?:<\\/b>|) pts de progrès et obtient (?:<b>|)([0-9 ]+)(?:<\\/b>|) pts d’honneur\\.",
+        "(?:<b>|)$1(?:<\\/b>|) bit into the enemy’s neck and sucked out (?:<b>|)([0-9 ]+)(?:<\\/b>|) experience pts and gained (?:<b>|)([0-9 ]+)(?:<\\/b>|) honour pts\\.",
         "(?:<b>|)$1(?:<\\/b>|) wgryza się w szyję pokonanego wroga i wysysa (?:<b>|)([0-9 ]+)(?:<\\/b>|) pkt doświadczenia oraz otrzymuje (?:<b>|)([0-9 ]+)(?:<\\/b>|) pkt reputacji\\."
       ],
       "sAmbushTest15": [
-        "(?:<b>|)$1(?:<\\/b>|) paie une rançon d`un montant de (?:<b>|)([0-9 ]+) LOL(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:litre(?:\\(s\\)|s) de sang|)(?:<\\/b>|)(?: litre\\(s\\) de sang|) et.+lui livre (?:<b>|)([0-9 ]+) de main-d`œuvre(?:<\\/b>|) hommes comme esclaves\\.",
+        "(?:<b>|)$1(?:<\\/b>|) paie une rançon d’un montant de (?:<b>|)([0-9 ]+) LOL(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:litre(?:\\(s\\)|s) de sang|)(?:<\\/b>|)(?: litre\\(s\\) de sang|) et.+lui livre (?:<b>|)([0-9 ]+) de main-d’œuvre(?:<\\/b>|) hommes comme esclaves\\.",
         "(?:<b>|)$1(?:<\\/b>|) paid ransom of (?:<b>|)([0-9 ]+) Lgo(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litres of blood and gave (?:<b>|)([0-9 ]+)(?:<\\/b>|) prisoners\\.",
         "(?:<b>|)$1(?:<\\/b>|) płaci okup w wysokości (?:<b>|)([0-9 ]+) PLN(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litrów krwi oraz oddaje (?:<b>|)([0-9 ]+)(?:<\\/b>|) ludzi w niewolę\\."
       ],
-      "sAmbushTest16": ["<b>$1<\\/b> reçoit <b>([0-9 ]+)<\\/b> pts d`évolution\\!",
+      "sAmbushTest16": ["<b>$1<\\/b> reçoit <b>([0-9 ]+)<\\/b> pts d’évolution\\!",
         "<b>$1<\\/b> gains <b>([0-9]+)<\\/b> evolution pts\\!",
         "<b>$1<\\/b> zdobywa <b>([0-9]+)<\\/b> pkt ewolucji\\!"
       ],
@@ -531,19 +531,19 @@
       "sLogNC": ["Analyse nécessaire", "Analysis required", "Analiza wymagane"],
       "sNC": ["INCONNUE", "UNKNOW", "NIEZNANY"],
       "sArcTal": [
-        ["Silence du Sang", "Absorption de la Force", "Le pouvoir du Sang", "Masque d`Adonis",
-          "Masque de Caligula", "La Majesté", "Sang de la Vie", "Voies Félines", "L`Ardeur du Sang",
-          "Le Chasseur de la Nuit", "Le Souffle Mortel", "L`Horreur", "Frénésie Sauvage",
-          "Peau de Bête", "L`Ombre de la Bête",
+        ["Silence du Sang", "Absorption de la Force", "Le pouvoir du Sang", "Masque d’Adonis",
+          "Masque de Caligula", "La Majesté", "Sang de la Vie", "Voies Félines", "L’Ardeur du Sang",
+          "Le Chasseur de la Nuit", "Le Souffle Mortel", "L’Horreur", "Frénésie Sauvage",
+          "Peau de Bête", "L’Ombre de la Bête",
           "Ambition", "Léviathan", "Béhémoth", "Ziz", "Pierre du mal", "Pierre du bien",
-          "Pierre d`espace", "Pierre du temps", "Les Griffes de la nuit", "Vie et mort",
-          "L`abime du silence", "La puissance du pouvoir", "La furie bestiale", "L`aura bestiale",
-          "Le masque du pouvoir", "Le Masque de l`Effroi", "Le chasseur silencieux",
+          "Pierre d’espace", "Pierre du temps", "Les Griffes de la nuit", "Vie et mort",
+          "L’abime du silence", "La puissance du pouvoir", "La furie bestiale", "L’aura bestiale",
+          "Le masque du pouvoir", "Le Masque de l’Effroi", "Le chasseur silencieux",
           "Le chant du sang"
         ],
         ["Silence of Blood", "Power absorption", "Power of Blood", "Mask of Adonis",
-          "Mask of Caligula", "Majesty", "Blood of Life", "Cat`s Paths", "Searing Blood",
-          "Night Hunter", "Breath of Death", "Horror", "Bloodfrenzy", "Beast`s Hide",
+          "Mask of Caligula", "Majesty", "Blood of Life", "Cat’s Paths", "Searing Blood",
+          "Night Hunter", "Breath of Death", "Horror", "Bloodfrenzy", "Beast’s Hide",
           "Shadow of the Beast",
           "Ambition", "Leviathan", "Behemoth", "Ziz", "Stone of evil", "Stone of goodness",
           "Stone of space", "Stone of time", "Claws of the night", "Life and death",
@@ -563,8 +563,8 @@
         ["Les Ailes", "Carapace", "Canines/Griffes/Pointes", "Glandes à venin", "Tendons renforcés",
           "Chambre supplémentaire", "Le sang du démon", "Mutation ADN", "Eclairé", "Sixième sens",
           "Absorption", "Développement Harmonieux", "Mana Purifiée", "Mémoire Ancestrale",
-          "Puissance", "Légèreté de l`être", "Piromancie", "Lien avec Gaia", "Hydromancie",
-          "Forme Astrale", "L`empreinte du démon", "Muscles renforcés"
+          "Puissance", "Légèreté de l’être", "Piromancie", "Lien avec Gaia", "Hydromancie",
+          "Forme Astrale", "L’empreinte du démon", "Muscles renforcés"
         ],
         ["Wings", "Carapace", "Claws/Fangs/Quills", "Venom glands", "Hardened tendons",
           "Additional cavity", "Daemon blood", "Mutated DNA", "Enlightened", "Sixth sense",
@@ -580,13 +580,13 @@
         ]
       ],
       "sObjet": [
-        ["Sang de loup", "Pomme de l`Arbre Ferreux", "Nageoire de requin", "Élixir des sens",
+        ["Sang de loup", "Pomme de l’Arbre Ferreux", "Nageoire de requin", "Élixir des sens",
           "Eau bénite", "Larme de phénix", "Cachet magique", "Coeur de chauve-souris",
-          "Fleur de lotus", "Venin de puce géante", "Sérum d`illumination", "Bouillon de chat noir",
+          "Fleur de lotus", "Venin de puce géante", "Sérum d’illumination", "Bouillon de chat noir",
           "Charbon", "Fourrure de taupe", "Salpêtre", "Essence de jouvence", "Ongle de troll",
           "Belladones", "Oeil de chat", "Absinthe", "Écaille de salamandre", "Eau de source",
-          "Os de martyre", "Élixir d`amour", "Venin de scorpion", "Racine de mandragore",
-          "Poussière d`étoile", "Fiole d`acide", "Soufre", "Diamant noir", "Larme divine",
+          "Os de martyre", "Élixir d’amour", "Venin de scorpion", "Racine de mandragore",
+          "Poussière d’étoile", "Fiole d’acide", "Soufre", "Diamant noir", "Larme divine",
           "Dent de ghoule", "Bouillon de corail", "Coeur de prophète", "Griffe du basilic",
           "Ecailles de démon", "Ailes du scarabée", "Masque de gargouille",
           "Jus de mante religieuse", "Souffle du dragon", "Dent de sorcière", "Grimoire",
@@ -599,10 +599,10 @@
           "Essence of Youth", "Troll Nail", "Deadly Nightshade", "Eye of the Cat", "Absinthe",
           "Salamander Scales", "Spring Water", "Bone of the Martyr", "Love Beverage",
           "Scorpid Venom", "Mandrake Root", "Star Dust", "Vial of Acid", "Sulphur", "Black Diamond",
-          "Divine Tear", "Ghoul`s Tooth", "Coral Concoction", "Heart of a Prophet",
-          "Basilisk`s Claw", "Demon`s Scales", "Beetle Wings", "Gargoyle`s Mask", "Mantis Juice",
-          "Dragon`s Breath", "Tooth of a Witch", "Grimoire", "Black Bile", "Blacksmith`s Finger",
-          "Elderberry Flower", "Beetlejuice", "Drowner`s eye", "Fire from the heart of the earth"
+          "Divine Tear", "Ghoul’s Tooth", "Coral Concoction", "Heart of a Prophet",
+          "Basilisk’s Claw", "Demon’s Scales", "Beetle Wings", "Gargoyle’s Mask", "Mantis Juice",
+          "Dragon’s Breath", "Tooth of a Witch", "Grimoire", "Black Bile", "Blacksmith’s Finger",
+          "Elderberry Flower", "Beetlejuice", "Drowner’s eye", "Fire from the heart of the earth"
         ],
         ["Krew wilka", "Jablko Zelaznego drzewa", "Pletwa rekina", "Eliksir zmyslów",
           "Swiecona woda", "Lza feniksa", "Magiczna pieczec", "Serce nietoperza", "Kwiat lotosu",
@@ -620,7 +620,7 @@
       "sColTitle": //
         [
         ["RACE", "SEXE", "ADRESSE", "CLAN", "<vide>", "NIVEAU", "POINTS", "NIV (PTS)", "GROUPE",
-          "STATUT", "Place au classement", "Date d`inscription", "Dernière connexion", "Provenance",
+          "STATUT", "Place au classement", "Date d’inscription", "Dernière connexion", "Provenance",
           "HISTORIQUE", // 0-14
           "Nom", "En ligne", "<En ligne>", "<Expéditions>", "<Roi de la Colline>", "Grade", "A-B",
           "<SEXE - icône>", "ATT", "<ATTAQUER>", "DEF", // 15-25
@@ -630,10 +630,10 @@
           "NIVEAU", "Pts DE VIE", "Défense", "FORCE", "AGILITÉ", "RÉSISTANCE", "APPARENCE",
           "CHARISME", "RÉPUTATION", "PERCEPTION", "INTELLIGENCE", "SAVOIR", "AGI+PER", // 43-55
           "PdP", "PdH", "Pts évo", "LOL", "Sang", "Pop", // 56-61
-          "<Checkbox>", "Titre du message", "Expéditeur", "Date d`envoi", // 62-65
+          "<Checkbox>", "Titre du message", "Expéditeur", "Date d’envoi", // 62-65
           "<Place au classement>", "Nom du clan", "Tag du clan", "Chef", "Date de la fondation",
           "Membres", // 66-71
-          "LISTE D`AMIS", // 72
+          "LISTE D’AMIS", // 72
           "Zone", "Bâtiment", "Niveau", "Sang", "Argent", "Population", "Temps", "Actions", // 73-80
           "Ecart", // 81
           "<Données>", // 82 - suite v. 1.7.9 beta
