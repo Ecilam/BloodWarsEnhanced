@@ -1,4 +1,4 @@
-var fixLvls = [
+var ptsToLvls = [
   20190330, // version
 // vérifiés
   1000, // 1
