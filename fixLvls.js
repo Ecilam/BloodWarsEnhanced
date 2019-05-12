@@ -1,4 +1,4 @@
-  var fixLvls = [ 20190508, // version
+  var fixLvls = [ 20190512, // version
 // vérifiés
   1000, // 1
   1100,
