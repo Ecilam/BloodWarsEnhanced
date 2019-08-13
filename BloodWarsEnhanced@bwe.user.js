@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2019.04.14
+// @version     2019.08.13
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
@@ -509,9 +509,12 @@
         "(?:<b>|)$1(?:<\\/b>|) wgryza się w szyję pokonanego wroga i wysysa (?:<b>|)([0-9 ]+)(?:<\\/b>|) pkt doświadczenia oraz otrzymuje (?:<b>|)([0-9 ]+)(?:<\\/b>|) pkt reputacji\\."
       ],
       "sAmbushTest15": [
-        "(?:<b>|)$1(?:<\\/b>|) paie une rançon d’un montant de (?:<b>|)([0-9 ]+) LOL(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:litre(?:\\(s\\)|s) de sang|)(?:<\\/b>|)(?: litre\\(s\\) de sang|) et.+lui livre (?:<b>|)([0-9 ]+) de main-d’œuvre(?:<\\/b>|) hommes comme esclaves\\.",
-        "(?:<b>|)$1(?:<\\/b>|) paid ransom of (?:<b>|)([0-9 ]+) Lgo(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litres of blood and gave (?:<b>|)([0-9 ]+)(?:<\\/b>|) prisoners\\.",
-        "(?:<b>|)$1(?:<\\/b>|) płaci okup w wysokości (?:<b>|)([0-9 ]+) PLN(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litrów krwi oraz oddaje (?:<b>|)([0-9 ]+)(?:<\\/b>|) ludzi w niewolę\\."
+        "(?:<b>|)$1(?:<\\/b>|) paie une rançon d’un montant de[^0-9]*([0-9 ]+)[^0-9]*[^0-9]*([0-9 ]+)[^0-9]*[^0-9]*([0-9 ]+)[^0-9]*",
+         //       "(?:<b>|)$1(?:<\\/b>|) paie une rançon d’un montant de (?:<b>|)([0-9 ]+) LOL(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:litre(?:\\(s\\)|s) de sang|)(?:<\\/b>|)(?: litre\\(s\\) de sang|) et.+lui livre (?:<b>|)([0-9 ]+) de main-d’œuvre(?:<\\/b>|) hommes comme esclaves\\.",
+        "(?:<b>|)$1(?:<\\/b>|) paid ransom of[^0-9]*([0-9 ]+)[^0-9]*[^0-9]*([0-9 ]+)[^0-9]*[^0-9]*([0-9 ]+)[^0-9]*",
+        //         "(?:<b>|)$1(?:<\\/b>|) paid ransom of (?:<b>|)([0-9 ]+) Lgo(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litres of blood and gave (?:<b>|)([0-9 ]+)(?:<\\/b>|) prisoners\\.",
+        "(?:<b>|)$1(?:<\\/b>|) płaci okup w wysokości[^0-9]*([0-9 ]+)[^0-9]*[^0-9]*([0-9 ]+)[^0-9]*[^0-9]*([0-9 ]+)[^0-9]*"
+        //        "(?:<b>|)$1(?:<\\/b>|) płaci okup w wysokości (?:<b>|)([0-9 ]+) PLN(?:<\\/b>|), (?:<b>|)([0-9 ]+)(?:<\\/b>|) litrów krwi oraz oddaje (?:<b>|)([0-9 ]+)(?:<\\/b>|) ludzi w niewolę\\."
       ],
       "sAmbushTest16": ["<b>$1<\\/b> reçoit <b>([0-9 ]+)<\\/b> pts d’évolution\\!",
         "<b>$1<\\/b> gains <b>([0-9]+)<\\/b> evolution pts\\!",
