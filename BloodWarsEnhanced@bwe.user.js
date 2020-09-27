@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2019.08.13
+// @version     2020.09.26
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
@@ -12,12 +12,16 @@
 // @include     /^https:\/\/r[0-9]*\.bloodwars\.net\/.*$/
 // @include     /^https:\/\/r[0-9]*\.bloodwars\.interia\.pl\/.*$/
 // @include     /^https:\/\/beta[0-9]*\.bloodwars\.net\/.*$/
-// @require     https://raw.githubusercontent.com/Ecilam/BloodWarsEnhanced/master/fixLvls.js
 // @grant       none
 // ==/UserScript==
 /* TODO
 - tableau des niveaux à compléter
 - prise en compte des tableaux Adversaires suggérés et Liste d'objectifs de la partie embuscade
+- mémorisation des objets de l'armurerie.
+- compatibilité greasemonkey.
+- mémorisation des arcanes/ensembles suivant l'ensemble équipé :
+  * arcanes/ensembles pour expés, rdc.
+  * arcanes uniquement pour
 */
 (function ()
 {
@@ -800,6 +804,7 @@
     function GetPlayerExpBar()
     {
       var stats = DOM._GetFirstNode("//div[@class='stats-player']/div[@class='expbar']");
+if (debug) console.debug('GetPlayerExpBar : ', stats);
       return stats != null ? stats.getAttribute('onmouseover') : null;
     }
     var playerExpBar = GetPlayerExpBar();
@@ -841,8 +846,8 @@
       _GetPage: function()
       {
         var p = 'null',
-          // message Serveur (à approfondir)
-          r = DOM._GetFirstNode("//div[@class='komunikat']");
+        // message Serveur (à approfondir)
+        r = DOM._GetFirstNode("//div[@class='komunikat']");
         if (r != null)
         {
           var r = DOM._GetFirstNodeTextContent(".//u", r);
@@ -2123,39 +2128,36 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
         FctTriA(tri[0], tri[1], i[1], tbody, list);
       }
     }
+    function SetLvls(i)
+    { // Points d'expérience pour passer au niveau n = 1000 * [1.1^(n-1)]
+      //  var lvl = Math.floor(Math.log(1.1 * v/1000) / Math.log(1.1));
+      //  var lvlSup = Math.floor(Math.log(0.0011 * (v * 1000 + 999)) / Math.log(1.1));
+      if (!exist(lvls[i-1]) && i > 0) SetLvls(i-1);
+      if (i < 100) lvls[i] = Math.ceil(1000*Math.pow(1.1, i));
+      else lvls[i] = lvls[i-1]*2-lvls[i-2]+Math.ceil(34166*Math.pow(1.007, i-100));
+    }
+    function FindLvl(v, a, b)
+    {
+      var m = Math.ceil((a+b)/2);
+      if (!exist(lvls[m+1]))
+      {
+        SetLvls(m+1);
+        b = lvls.length;
+      }
+      if (v >= lvls[m] && v < lvls[m+1]) return m+1;
+      else if (v < lvls[m]) return FindLvl(v, a, m-1);
+      else return FindLvl(v, m+1, b);
+
+    }
     function GetLvl(v)
     {
-  /*    if (!isNaN(v) && parseInt(v) == Number(v))
+      if (!isNaN(v) && parseInt(v) == Number(v))
       {
-        var lvl = Math.floor(Math.log(1.1 * v) / Math.log(1.1)),
-          lvlSup = Math.floor(Math.log(0.0011 * (v * 1000 + 999)) / Math.log(1.1));
-        return new Array(lvl, lvlSup, (lvl != lvlSup ? lvl + "-" + lvlSup : lvl));
+        var lvl = FindLvl(v*1000, 0, lvls.length);
+        var lvlsup = FindLvl(v*1000+999, 0, lvls.length);
+        return new Array(lvl, lvlsup, (lvl !== lvlsup ? lvl + "-" + lvlsup : lvl));
       }
-      else return new Array('-', '-', '-');*/
-      var min = 0;
-      var max = 0;
-      for (var i = 1, j = lvls.length; i < lvls.length; i++)
-      {
-        if (exist(lvls[i]) && !isNull(lvls[i]))
-        {
-          if (v * 1000 + 999 < lvls[i][1] && max === 0)
-          {
-            max = i - (v * 1000 + 999 >= lvls[i][0] ? 0 : 1);
-          }
-        }
-        if (exist(lvls[j-i]) && !isNull(lvls[j-i]))
-        {
-          if (lvls[j-i][0] <= v * 1000 && (min === 0 || (min !== 0 && lvls[j-i][1] >= v* 1000)))
-          {
-            min = j-i;
-          }
-        }
-        else if (j-i === 1 && v === 1)
-        {
-          min = 0;
-        }
-      }
-      return new Array(min , max , min !== max ? (min !==0 ? min : '1') + '-' + (max !== 0 ? max : '?') : min !==0 ? min : '?');
+      else return new Array(0, 0, '-');
     }
     var newHead = DOM._GetFirstNode("//tr[@id='BWE" + p + "header']");
     var newBody = DOM._GetFirstNode("//tbody[@id='BWE" + p + "body']");
@@ -2239,25 +2241,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
             pts = parseInt(pts.replace(/\s/g,''));
             if (exist(v['P']) && pts > v['P']) delete v['N'];
             v['P'] = pts;
-            if (!isNull(niv))
-            {
-              v['N'] = parseInt(niv.replace(/\s/g,''));
-              if (exist(lvls[v['N']]) && !isNull(lvls[v['N']]))
-              {
-                if (v['P'] * 1000 + 999 < lvls[v['N']][0])
-                {
-                  lvls[v['N']] = [v['P']*1000, lvls[v['N']][1]];
-                }
-                else if (v['P']*1000 > lvls[v['N']][1])
-                {
-                  lvls[v['N']] = [lvls[v['N']][0], v['P']*1000];
-                }
-              }
-              else
-              {
-                lvls[v['N']] = [v['P']*1000, v['P']*1000];
-              }
-            }
+            if (!isNull(niv)) v['N'] = parseInt(niv.replace(/\s/g,''));
           }
           if (p === 'pRank' && name === player)
           {
@@ -3083,6 +3067,7 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
       {
         var r = DOM._GetFirstNodeTextContent(
           "//div[@id='content-mid']/div[@id='reflink']/span[@class='reflink']", null);
+if (debug) console.debug('BWE id', r);
         if (r != null)
         {
           var r2 = /r\.php\?r=([0-9]+)/.exec(r),
@@ -3104,20 +3089,10 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
         var ID = IDs[player];
         PREF._Init(ID);
         SetCSS();
-        //Update datas
-        var lvls = LS.get('BWE:LVL', []);
-        if (!exist(lvls[0]) || (exist(lvls[0] && (isNull(lvls[0]) || (!isNull(lvls[0]) && lvls[0] < fixLvls[0])))))
-        {
-          lvls[0] = fixLvls[0];
-          for (var i = 1; i < fixLvls.length; i++)
-          {
-            if (fixLvls[i] !== 0)
-            {
-              lvls[i] = [fixLvls[i], (exist(lvls[i]) && !isNull(lvls[i])) ? lvls[i][1] : fixLvls[i]];
-              if (i > 1) lvls[i-1] = [(exist(lvls[i-1]) && !isNull(lvls[i-1])) ? lvls[i-1][0] : fixLvls[i] - 1, fixLvls[i] - 1];
-            }
-          }
-        }
+        // Supprimé suite maj 20200925
+        if (LS.get('BWE:LVL', []).length !==0) LS.del('BWE:LVL');
+        //Get level
+        var lvls = LS.get('BWE:LVLS', []);
         var playerD = LS.get('BWE:P:' + player, {});
         var playerLvl = DATAS._PlayerLevel();
         var playerXp = DATAS._PlayerXP();
@@ -3127,8 +3102,6 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
           playerD['N'] = playerLvl;
           playerD['P'] = Math.floor(playerXp / 1000);
           LS.set('BWE:P:' + player, playerD);
-          lvls[playerLvl + 1] = [playerXpL, (exist(lvls[playerLvl + 1]) && !isNull(lvls[playerLvl + 1])) ? lvls[playerLvl + 1][1] : playerXpL];
-          lvls[playerLvl] = [(exist(lvls[playerLvl]) && !isNull(lvls[playerLvl])) ? (playerXp < lvls[playerLvl][0] ? playerXp : lvls[playerLvl][0]) : playerXp, playerXpL-1];
         }
         if ((p == 'pOProfile' || p == 'pProfile') && PREF._Get(p, 'sh') == 1)
         {
@@ -3152,21 +3125,6 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
             {
               v['N'] = parseInt(niv.replace(/\s/g,''));
               v['P'] = parseInt(pts.replace(/\s/g,''));
-              if (exist(lvls[v['N']]) && !isNull(lvls[v['N']]))
-              {
-                if (v['P'] *1000 + 999 < lvls[v['N']][0])
-                {
-                  lvls[v['N']] = [v['P']*1000, lvls[v['N']][1]];
-                }
-                else if (v['P']*1000 > lvls[v['N']][1])
-                {
-                  lvls[v['N']] = [lvls[v['N']][0], v['P']*1000];
-                }
-              }
-              else
-              {
-                lvls[v['N']] = [v['P']*1000, v['P']*1000];
-              }
             }
             LS.set('BWE:P:' + name[1], v);
             // nouveau tableau
@@ -3658,6 +3616,7 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
         else if (p == 'pRootSettings' || p == 'pSettingsAi' || p == 'pSettingsAcc' || p == 'pSettingsVac' || p == 'pSettingsDelchar')
         {
           var nodeOptions = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='top-options']");
+if (debug) console.debug('BWEend pRootSettings', nodeOptions);
           if (nodeOptions != null)
           {
             var titleMenuIU = {
@@ -3674,7 +3633,7 @@ if (debug) console.debug('BWEstart: ', player, IDs, p);
               nodeTitle = IU._CreateElements(titleMenuIU);
           }
         }
-        LS.set('BWE:LVL', lvls);
+        LS.set('BWE:LVLS', lvls);
       }
       else alert(L._Get("sUnknowID"));
     }
