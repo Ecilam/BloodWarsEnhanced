@@ -2,7 +2,7 @@
 // ==UserScript==
 // @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2020.09.26
+// @version     2021.09.25
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
@@ -1937,10 +1937,10 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
     };
     var head = IU._CreateElements(headIU);
     var bldPgr = DOM._GetFirstNode("//div[@id='content-mid']/div[@class='bldprogress']");
-    var bldNameUp = DOM._GetFirstNodeTextContent("./self::div[contains(.,'" + L._Get('sBuildPrgUp') + "')]/span[@class='bldheader']", "", bldPgr);
-    var bldNameDown = DOM._GetFirstNodeTextContent("./span[contains(.,'" + L._Get('sBuildPrgDown') + "')]/text()[1]", "", bldPgr);
-    var bldPgrTime = DOM._GetFirstNodeTextContent("./span[@id='bld_action']", "", bldPgr);
-    var bldPgrStop = DOM._GetFirstNode("./span[@id='bld_action_a']/a", bldPgr);
+    var bldNameUp = DOM._GetFirstNodeTextContent("./div[contains(.,'" + L._Get('sBuildPrgUp') + "')]/span[@class='bldheader']", "", bldPgr);
+    var bldNameDown = DOM._GetFirstNodeTextContent("./div[contains(.,'" + L._Get('sBuildPrgDown') + "')]/text()[1]", "", bldPgr);
+    var bldPgrTime = DOM._GetFirstNodeTextContent("./div/span[@class='bldtimeleft']", "", bldPgr);
+    var bldPgrStop = DOM._GetFirstNode("./div/span[@id='bld_action_a']/a", bldPgr);
     for (var i = 0; i < list.snapshotLength; i++)
     {
       var nodeZone = DOM._GetFirstNode("./preceding-sibling::div[@class='strefaheader'][1]", list.snapshotItem(i));
@@ -2034,7 +2034,7 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
           var observer = new MutationObserver(function(mutations)
           {
             var tTime = DOM._GetFirstNode("//td[@id='BWEBuildTime']");
-            var bldPgrTime = DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='bldprogress']/span[@id='bld_action']", "");
+            var bldPgrTime = DOM._GetFirstNodeTextContent("//div[@id='content-mid']/div[@class='bldprogress']/div/span[@id='bld_action']", "");
             if (tTime != null) tTime.textContent = bldPgrTime;
           });
           observer.observe(bldPgr, { childList: true, subtree: true, characterData: true });
@@ -2147,7 +2147,6 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       if (v >= lvls[m] && v < lvls[m+1]) return m+1;
       else if (v < lvls[m]) return FindLvl(v, a, m-1);
       else return FindLvl(v, m+1, b);
-
     }
     function GetLvl(v)
     {
