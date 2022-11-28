@@ -1,21 +1,25 @@
 // coding: utf-8 (sans BOM)
 // ==UserScript==
-// @author      Ecilam
 // @name        Blood Wars Enhanced
-// @version     2021.09.25
+// @author      Ecilam
+// @version     2022.11.28
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
 // @homepageURL https://github.com/Ecilam/BloodWarsEnhanced
 // @supportURL  https://github.com/Ecilam/BloodWarsEnhanced/issues
+// @match       https://*.bloodwars.net/*
+// @match       https://*.bloodwars.interia.pl/*
+// @grant       none
+// ==/UserScript==
+
+// Include remplacé par Match suite préconisation
 // @include     /^https:\/\/r[0-9]*\.fr\.bloodwars\.net\/.*$/
 // @include     /^https:\/\/r[0-9]*\.bloodwars\.net\/.*$/
 // @include     /^https:\/\/r[0-9]*\.bloodwars\.interia\.pl\/.*$/
 // @include     /^https:\/\/beta[0-9]*\.bloodwars\.net\/.*$/
-// @grant       none
-// ==/UserScript==
+
 /* TODO
-- tableau des niveaux à compléter
 - prise en compte des tableaux Adversaires suggérés et Liste d'objectifs de la partie embuscade
 - mémorisation des objets de l'armurerie.
 - compatibilité greasemonkey.
@@ -2129,11 +2133,16 @@ if (debug) console.debug('att, def, msgId, msgDate, emb : ', att, def, msgId, ms
       }
     }
     function SetLvls(i)
-    { // Points d'expérience pour passer au niveau n = 1000 * [1.1^(n-1)]
+    { // note : lvls[0] = XP cumulé du niveau 1 soit 1000
+      if (!exist(lvls[i-1]) && i > 0) SetLvls(i-1);
+      // Niv 1 à 100
+      // Points d'expérience pour passer au niveau n = 1000 * [1.1^(n-1)]
       //  var lvl = Math.floor(Math.log(1.1 * v/1000) / Math.log(1.1));
       //  var lvlSup = Math.floor(Math.log(0.0011 * (v * 1000 + 999)) / Math.log(1.1));
-      if (!exist(lvls[i-1]) && i > 0) SetLvls(i-1);
       if (i < 100) lvls[i] = Math.ceil(1000*Math.pow(1.1, i));
+      // Niv 100+
+      // XP du niveau N+1 = XP du niveau N + (XP du niveau N - XP du niveau N-1) + Arrondi supérieur(34166*1.007^(niveau N+1-101))
+      // Avec en valeur initial pour N=100: XP du niveau N = 12 527 830 et XP du niveau N-1 = 11 388 936
       else lvls[i] = lvls[i-1]*2-lvls[i-2]+Math.ceil(34166*Math.pow(1.007, i-100));
     }
     function FindLvl(v, a, b)
