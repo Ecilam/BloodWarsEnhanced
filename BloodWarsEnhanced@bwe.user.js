@@ -2,14 +2,32 @@
 // ==UserScript==
 // @name        Blood Wars Enhanced
 // @author      Ecilam
-// @version     2022.11.28
+// @version     2022.12.10
 // @namespace   BWE
 // @description Ce script ajoute des fonctionnalités supplémentaires à Blood Wars.
 // @license     GPL version 3 ou suivantes; http://www.gnu.org/copyleft/gpl.html
 // @homepageURL https://github.com/Ecilam/BloodWarsEnhanced
 // @supportURL  https://github.com/Ecilam/BloodWarsEnhanced/issues
-// @match       https://*.bloodwars.net/*
-// @match       https://*.bloodwars.interia.pl/*
+// @match       https://r1.bloodwars.net/*
+// @match       https://r2.bloodwars.net/*
+// @match       https://r3.bloodwars.net/*
+// @match       https://r4.bloodwars.net/*
+// @match       https://r1.fr.bloodwars.net/*
+// @match       https://r1.fr.bloodwars.net/*
+// @match       https://r2.fr.bloodwars.net/*
+// @match       https://r3.fr.bloodwars.net/*
+// @match       https://r4.fr.bloodwars.net/*
+// @match       https://r7.fr.bloodwars.net/*
+// @match       https://r8.fr.bloodwars.net/*
+// @match       https://r1.bloodwars.interia.pl/*
+// @match       https://r2.bloodwars.interia.pl/*
+// @match       https://r3.bloodwars.interia.pl/*
+// @match       https://r7.bloodwars.interia.pl/*
+// @match       https://r8.bloodwars.interia.pl/*
+// @match       https://r14.bloodwars.interia.pl/*
+// @match       https://r17.bloodwars.interia.pl/*
+// @match       https://r20.bloodwars.interia.pl/*
+// @match       https://r21.bloodwars.interia.pl/*
 // @grant       none
 // ==/UserScript==
 
