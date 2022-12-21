@@ -7,7 +7,7 @@ Ensemble de Userscripts améliorant le jeu [Blood Wars](http://www.fr.bloodwars.
 * [BloodWarsItemTest](https://github.com/Ecilam/BloodWarsItemTest)
 * [BloodWarsMix](https://github.com/Ecilam/BloodWarsMix)
 
-Ce script est compatible avec les serveurs Anglais/Français/Polonais et les navigateurs Firefox, Google Chrome, Microsoft Edge, Opera next et d'autres.
+Ce script est compatible avec les serveurs Anglais/Français/Polonais et les navigateurs Firefox, Google Chrome, Microsoft Edge, Opera next et d'autres. **Elle n'est pas compatible avec la texture graphique Awakening !**
 
 Testé principalement sur Firefox + Tampermonkey sur serveur R3FR.
 
