@@ -1,3 +1,5 @@
+# 02/03/2023 - Ayant arrêté de jouer à BloodWars, je ne vais plus pouvoir assurer la maintenance de ces scripts. Merci aux utilisateurs et à ceux qui m'ont aidé au fil du temps. Bonne continuation.
+
 ### DESCRIPTION
 
 Ensemble de Userscripts améliorant le jeu [Blood Wars](http://www.fr.bloodwars.net) où vous incarnez un vampire dans un monde post-apocalyptique :
